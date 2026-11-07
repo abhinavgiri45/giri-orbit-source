@@ -68,6 +68,41 @@ void CreateRibbonToolbar(HWND);
 void UpdateStatusBar(HWND);
 void DoFileNew(HWND);
 void DoFileOpen(HWND);
+void RecordRecentDoc(const std::wstring& fullPath) {
+    if (fullPath.empty()) return;
+    wchar_t localApp[MAX_PATH] = { 0 };
+    DWORD len = ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\Giri Orbit", localApp, MAX_PATH);
+    if (len == 0 || len >= MAX_PATH) return;
+    CreateDirectoryW(localApp, NULL);
+    std::wstring recentFile = std::wstring(localApp) + L"\\recent_docs.txt";
+
+    std::vector<std::wstring> existing;
+    existing.push_back(fullPath);
+
+    FILE* fp = NULL;
+    if (_wfopen_s(&fp, recentFile.c_str(), L"r, ccs=UTF-8") == 0 && fp) {
+        wchar_t line[MAX_PATH];
+        while (fgetws(line, MAX_PATH, fp)) {
+            size_t l = wcslen(line);
+            while (l > 0 && (line[l-1] == L'\r' || line[l-1] == L'\n' || line[l-1] == L' ')) {
+                line[--l] = L'\0';
+            }
+            if (l > 0 && line != fullPath && PathFileExistsW(line)) {
+                existing.push_back(line);
+            }
+        }
+        fclose(fp);
+    }
+    if (existing.size() > 25) existing.resize(25);
+    if (_wfopen_s(&fp, recentFile.c_str(), L"w, ccs=UTF-8") == 0 && fp) {
+        for (const auto& p : existing) {
+            fwprintf(fp, L"%s\n", p.c_str());
+        }
+        fclose(fp);
+    }
+}
+
+
 void DoFileSave(HWND, bool);
 void DoFormatBold(HWND);
 void DoFormatItalic(HWND);
@@ -538,6 +573,7 @@ void DoFileOpen(HWND hwnd) {
             SETTEXTEX st = { ST_DEFAULT, CP_UTF8 };
             SendMessageW(g_hRichEdit, EM_SETTEXTEX, (WPARAM)&st, (LPARAM)content.c_str());
             g_currentFilePath = szFile;
+            RecordRecentDoc(szFile);
             SendMessageW(g_hRichEdit, EM_SETMODIFY, FALSE, 0);
             SetWindowTextW(hwnd, (PathFindFileNameW(szFile) + std::wstring(L" — Giri Drift")).c_str());
             UpdateStatusBar(hwnd);
@@ -558,6 +594,7 @@ void DoFileSave(HWND hwnd, bool saveAs) {
 
         if (!GetSaveFileNameW(&ofn)) return;
         g_currentFilePath = szFile;
+        RecordRecentDoc(szFile);
     }
 
     int len = GetWindowTextLengthA(g_hRichEdit);

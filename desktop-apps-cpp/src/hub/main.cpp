@@ -187,15 +187,95 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     return (int)msg.wParam;
 }
 
+std::wstring GetRecentDocsFilePath() {
+    wchar_t localApp[MAX_PATH] = { 0 };
+    DWORD len = ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\Giri Orbit", localApp, MAX_PATH);
+    if (len > 0 && len < MAX_PATH) {
+        CreateDirectoryW(localApp, NULL);
+        return std::wstring(localApp) + L"\\recent_docs.txt";
+    }
+    return g_appDir + L"\\recent_docs.txt";
+}
+
+void AddRecentDoc(const std::wstring& fullPath) {
+    if (fullPath.empty() || !PathFileExistsW(fullPath.c_str())) return;
+
+    std::wstring recentFile = GetRecentDocsFilePath();
+    std::vector<std::wstring> existing;
+    existing.push_back(fullPath);
+
+    FILE* fp = NULL;
+    if (_wfopen_s(&fp, recentFile.c_str(), L"r, ccs=UTF-8") == 0 && fp) {
+        wchar_t line[MAX_PATH];
+        while (fgetws(line, MAX_PATH, fp)) {
+            size_t l = wcslen(line);
+            while (l > 0 && (line[l-1] == L'\r' || line[l-1] == L'\n' || line[l-1] == L' ')) {
+                line[--l] = L'\0';
+            }
+            if (l > 0) {
+                std::wstring p = line;
+                if (p != fullPath && PathFileExistsW(p.c_str())) {
+                    existing.push_back(p);
+                }
+            }
+        }
+        fclose(fp);
+    }
+
+    if (existing.size() > 25) existing.resize(25);
+
+    if (_wfopen_s(&fp, recentFile.c_str(), L"w, ccs=UTF-8") == 0 && fp) {
+        for (const auto& p : existing) {
+            fwprintf(fp, L"%s\n", p.c_str());
+        }
+        fclose(fp);
+    }
+
+    PopulateRecentDocs();
+    FilterDocs(g_searchQuery);
+    if (g_hWnd) InvalidateRect(g_hWnd, NULL, FALSE);
+}
+
 void PopulateRecentDocs() {
     g_recentDocs.clear();
-    g_recentDocs.push_back({ L"Annual Strategic Corporate Charter.gdrift", L"drift", L"Just now", L"This PC", L"Opened by you", g_appDir + L"\\templates\\drift\\corporate_charter.giri" });
-    g_recentDocs.push_back({ L"Q4 Financial Matrix & Projections.xlsx", L"axis", L"2 hours ago", L"This PC", L"Modified", g_appDir + L"\\templates\\axis\\annual_budget.giri" });
-    g_recentDocs.push_back({ L"Executive Keynote Pitch Deck.giri", L"kinetic", L"Yesterday", L"This PC", L"Presented", g_appDir + L"\\templates\\kinetic\\investor_pitch.giri" });
-    g_recentDocs.push_back({ L"Mutual Enterprise NDA Agreement.docx", L"drift", L"3 days ago", L"This PC", L"Created", g_appDir + L"\\templates\\drift\\executive_nda.giri" });
-    g_recentDocs.push_back({ L"SaaS Unit Economics & Cap Table.giri", L"axis", L"Oct 28", L"This PC", L"Shared", g_appDir + L"\\templates\\axis\\cap_table.giri" });
-    g_recentDocs.push_back({ L"हिन्दी दस्तावेज़ (Google Devanagari).gdrift", L"drift", L"Oct 26", L"This PC", L"Hindi Ready", g_appDir + L"\\templates\\drift\\business_proposal.giri" });
-    g_recentDocs.push_back({ L"Corporate Legal Seal & Identity.pdf", L"pdf", L"Oct 22", L"This PC", L"Signed", g_appDir + L"\\README.md" });
+
+    // 100% Real User Documents Only - Zero Fake / Mock Files
+    std::wstring recentFile = GetRecentDocsFilePath();
+    FILE* fp = NULL;
+    if (_wfopen_s(&fp, recentFile.c_str(), L"r, ccs=UTF-8") == 0 && fp) {
+        wchar_t line[MAX_PATH];
+        while (fgetws(line, MAX_PATH, fp)) {
+            size_t l = wcslen(line);
+            while (l > 0 && (line[l-1] == L'\r' || line[l-1] == L'\n' || line[l-1] == L' ')) {
+                line[--l] = L'\0';
+            }
+            if (l > 0 && PathFileExistsW(line)) {
+                std::wstring p = line;
+                std::wstring ext = PathFindExtensionW(p.c_str());
+                std::transform(ext.begin(), ext.end(), ext.begin(), ::towlower);
+
+                std::wstring type = L"drift";
+                if (ext == L".xlsx" || ext == L".xls" || ext == L".csv" || ext == L".gaxis") type = L"axis";
+                else if (ext == L".pptx" || ext == L".ppt" || ext == L".gkinetic") type = L"kinetic";
+                else if (ext == L".pdf" || ext == L".aegis") type = L"pdf";
+
+                std::wstring name = PathFindFileNameW(p.c_str());
+
+                std::wstring modStr = L"Recent";
+                WIN32_FILE_ATTRIBUTE_DATA fad;
+                if (GetFileAttributesExW(p.c_str(), GetFileExInfoStandard, &fad)) {
+                    SYSTEMTIME st;
+                    FileTimeToSystemTime(&fad.ftLastWriteTime, &st);
+                    wchar_t buf[64];
+                    swprintf_s(buf, L"%02d/%02d/%04d", st.wMonth, st.wDay, st.wYear);
+                    modStr = buf;
+                }
+
+                g_recentDocs.push_back({ name, type, modStr, L"This PC", L"Opened by you", p });
+            }
+        }
+        fclose(fp);
+    }
 }
 
 void FilterDocs(const std::wstring& query) {
@@ -244,6 +324,7 @@ void OpenAnyFileDialog(HWND hwnd) {
 
     if (GetOpenFileNameW(&ofn)) {
         std::wstring path = szFile;
+        AddRecentDoc(path);
         std::wstring ext = PathFindExtensionW(path.c_str());
         std::transform(ext.begin(), ext.end(), ext.begin(), ::towlower);
 
@@ -657,6 +738,44 @@ void RenderQuickAccess(Graphics& g, int contentX, int startY, int w) {
     g.DrawRectangle(&vPen, gX + 8, pillY + 8, 5, 5);
     g.DrawRectangle(&vPen, gX, pillY + 16, 5, 5);
     g.DrawRectangle(&vPen, gX + 8, pillY + 16, 5, 5);
+
+    // If NO real documents exist: display the modern empty state card
+    if (g_filteredDocs.empty()) {
+        int emptyY = pillY + 44;
+        int emptyW = w - contentX - 40;
+        int emptyH = 190;
+
+        GraphicsPath emptyCard;
+        AddRoundedRect(emptyCard, RectF((float)contentX, (float)emptyY, (float)emptyW, (float)emptyH), 8.0f);
+        SolidBrush emptyBg(Color(250, 250, 252));
+        g.FillPath(&emptyBg, &emptyCard);
+
+        Pen emptyBorder(Color(226, 232, 240), 1.0f);
+        emptyBorder.SetDashStyle(DashStyleDash);
+        g.DrawPath(&emptyBorder, &emptyCard);
+
+        StringFormat sfCenter;
+        sfCenter.SetAlignment(StringAlignmentCenter);
+        sfCenter.SetLineAlignment(StringAlignmentCenter);
+
+        Font fIcon(L"Segoe UI", 24.0f, FontStyleRegular, UnitPoint);
+        SolidBrush iconBrush(Color(156, 163, 175));
+        g.DrawString(L"[ - ]", -1, &fIcon, PointF((float)contentX + emptyW / 2.0f, (float)emptyY + 36.0f), &sfCenter, &iconBrush);
+
+        Font fEmptyTitle(L"Segoe UI", 12.0f, FontStyleBold, UnitPoint);
+        SolidBrush textTitle(Color(55, 65, 81));
+        g.DrawString(L"No documents yet", -1, &fEmptyTitle, PointF((float)contentX + emptyW / 2.0f, (float)emptyY + 78.0f), &sfCenter, &textTitle);
+
+        Font fEmptySub(L"Segoe UI", 9.0f, FontStyleRegular, UnitPoint);
+        SolidBrush textSub(Color(107, 114, 128));
+        g.DrawString(L"Files you create, open, or save will appear here automatically.", -1, &fEmptySub, PointF((float)contentX + emptyW / 2.0f, (float)emptyY + 106.0f), &sfCenter, &textSub);
+        g.DrawString(L"All files remain 100% private, sovereign, and saved locally on your device.", -1, &fEmptySub, PointF((float)contentX + emptyW / 2.0f, (float)emptyY + 124.0f), &sfCenter, &textSub);
+
+        Font fHint(L"Segoe UI", 8.5f, FontStyleBold, UnitPoint);
+        SolidBrush textHint(Color(37, 99, 235));
+        g.DrawString(L"Click \"+ Document\", \"+ Presentation\", or \"+ Workbook\" above to get started", -1, &fHint, PointF((float)contentX + emptyW / 2.0f, (float)emptyY + 152.0f), &sfCenter, &textHint);
+        return;
+    }
 
     // Table Header
     int tableY = pillY + 44;
