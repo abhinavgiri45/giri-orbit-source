@@ -1,7 +1,7 @@
 # Giri Orbit — Complete Source Code Repository
 **The Cloud-Free, Sovereign Office Productivity Suite**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: Proprietary](https://img.shields.io/badge/License-Proprietary%20%26%20Restricted-dc2626.svg)](LICENSE)
 [![Platform: Windows | Android](https://img.shields.io/badge/Platform-Windows%20%7C%20Android-0078D4.svg)](#architecture--repository-structure)
 [![C++: C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](#1-compiling-native-win32-c-desktop-apps-exe)
 [![Android: Gradle / Java 17](https://img.shields.io/badge/Android-Java%2017%20%7C%20Gradle-3DDC84.svg)](#2-building-android-native-app-apk)
@@ -224,8 +224,8 @@ cd packaging-and-zip
 
 ## License & Attribution
 
-Developed by **Abhinav Giri**.  
-Released under the permissive **[MIT License](LICENSE)**.
+Developed exclusively by **Abhinav Giri**.  
+Protected under the **[Proprietary Commercial Software License](LICENSE)**. All Rights Reserved. Unauthorized copying, modification, or distribution is strictly prohibited.
 
 For questions, support, or contributions:
 - **Author**: Abhinav Giri
