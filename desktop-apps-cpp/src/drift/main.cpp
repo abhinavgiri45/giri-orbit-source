@@ -319,6 +319,7 @@ LRESULT CALLBACK RibbonBtnSubclass(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
             SetTextColor(hdcStatic, RGB(15, 23, 42));
             return (INT_PTR)GetStockObject(WHITE_BRUSH);
         }
+        case WM_ERASEBKGND: return 1;
         case WM_PAINT: {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
@@ -798,6 +799,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             SetTextColor(hdcStatic, RGB(15, 23, 42));
             return (INT_PTR)GetStockObject(WHITE_BRUSH);
         }
+        case WM_ERASEBKGND: return 1;
         case WM_PAINT: {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd, &ps);
@@ -866,6 +868,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             return 0;
         }
 
+        case WM_TIMER: {
+            if (wParam == 5003) {
+                KillTimer(hwnd, 5003);
+                UpdateStatusBar(hwnd);
+            }
+            return 0;
+        }
         case WM_COMMAND: {
             WORD id = LOWORD(wParam);
             WORD code = HIWORD(wParam);

@@ -197,6 +197,7 @@ int CountSlideAnimationSteps(const Slide& s) {
 static WNDPROC g_oldKinBtnProc = NULL;
 LRESULT CALLBACK KinBtnSubclass(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
+    case WM_ERASEBKGND: return 1;
     case WM_PAINT: {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
@@ -878,6 +879,7 @@ LRESULT CALLBACK CanvasWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
         }
         break;
     }
+    case WM_ERASEBKGND: return 1;
     case WM_PAINT: {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
@@ -1006,6 +1008,7 @@ LRESULT CALLBACK ShowWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
         }
         break;
     }
+    case WM_ERASEBKGND: return 1;
     case WM_PAINT: {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
@@ -1388,6 +1391,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
         static HBRUSH hKinBg = CreateSolidBrush(RGB(241, 245, 249));
         return (INT_PTR)hKinBg;
     }
+    case WM_ERASEBKGND: return 1;
     case WM_COMMAND: {
         WORD id = LOWORD(wParam);
         WORD code = HIWORD(wParam);
