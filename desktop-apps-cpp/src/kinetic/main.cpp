@@ -529,6 +529,15 @@ void CreateMainMenu(HWND hwnd) {
     // Help
     HMENU hHelp = CreatePopupMenu();
     AppendMenuW(hHelp, MF_STRING, IDM_HELP_ABOUT, L"&About Giri Kinetic...");
+        // Integrated Language Menu
+    HMENU hLang = CreatePopupMenu();
+    AppendMenuW(hLang, MF_STRING, 8101, L"English (United States)");
+    AppendMenuW(hLang, MF_STRING, 8102, L"\x0939\x093F\x0928\x094D\x0926\x0940 (Hindi - Google Devanagari Typography)");
+    AppendMenuW(hLang, MF_STRING, 8103, L"Espa\x00F1ol (Spanish)");
+    AppendMenuW(hLang, MF_STRING, 8104, L"Fran\x00E7ais (French)");
+    AppendMenuW(hLang, MF_STRING, 8105, L"Deutsch (German)");
+    AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hLang, L"&Language");
+
     AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hHelp, L"&Help");
 
     SetMenu(hwnd, hMenuBar);

@@ -67,6 +67,8 @@ struct Sheet {
 
 // Global handles & state
 HINSTANCE g_hInst = NULL;
+wchar_t g_currencySymbol[8] = L"$";
+wchar_t g_activeFontName[64] = L"Segoe UI";
 HWND g_hMainWnd = NULL;
 HWND g_hFormulaBar = NULL;
 HWND g_hCellCoordLbl = NULL;
@@ -445,6 +447,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
     ShowWindow(g_hMainWnd, nCmdShow);
     UpdateWindow(g_hMainWnd);
+    if (wcsstr(lpCmdLine, L"-lang:hi")) {
+        wcscpy_s(g_currencySymbol, L"\x20B9 ");
+        wcscpy_s(g_activeFontName, L"Noto Sans Devanagari");
+        if (g_hStatusBar) SendMessageW(g_hStatusBar, SB_SETTEXTW, 1, (LPARAM)L" Currency: \x20B9 INR | \x0939\x093F\x0928\x094D\x0926\x0940 (Google Devanagari)");
+    }
     UpdateStatusBar(g_hMainWnd);
 
     // Message Loop
@@ -507,6 +514,16 @@ void CreateMainMenu(HWND hwnd) {
     // Help
     HMENU hHelp = CreatePopupMenu();
     AppendMenuW(hHelp, MF_STRING, IDM_HELP_ABOUT, L"&About Giri Axis...");
+        // Integrated Language & Currency Menu
+    HMENU hLang = CreatePopupMenu();
+    AppendMenuW(hLang, MF_STRING, 7101, L"English (US) - Currency: $ USD");
+    AppendMenuW(hLang, MF_STRING, 7102, L"\x0939\x093F\x0928\x094D\x0926\x0940 (Hindi - Google Devanagari) - Currency: \x20B9 INR");
+    AppendMenuW(hLang, MF_STRING, 7103, L"Espa\x00F1ol - Currency: \x20AC EUR");
+    AppendMenuW(hLang, MF_STRING, 7104, L"Fran\x00E7ais - Currency: \x20AC EUR");
+    AppendMenuW(hLang, MF_STRING, 7105, L"Deutsch - Currency: \x20AC EUR");
+    AppendMenuW(hLang, MF_STRING, 7106, L"Japanese - Currency: \x00A5 JPY");
+    AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hLang, L"&Language && Currency");
+
     AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hHelp, L"&Help");
 
     SetMenu(hwnd, hMenuBar);
@@ -980,7 +997,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
         } else if (id == IDC_BTN_CURRENCY) {
             double v = GetCellValueAsNumber(g_sheets[g_activeSheet], g_selectedRow, g_selectedCol);
             wchar_t buf[64];
-            swprintf_s(buf, L"$%.2f", v);
+            swprintf_s(buf, L"%ls%.2f", g_currencySymbol, v);
             g_sheets[g_activeSheet].cells[{ g_selectedRow, g_selectedCol }].raw = buf;
             g_sheets[g_activeSheet].cells[{ g_selectedRow, g_selectedCol }].display = buf;
             InvalidateRect(g_hGridWnd, NULL, TRUE);

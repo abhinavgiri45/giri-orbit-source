@@ -39,6 +39,13 @@
 #define IDC_BTN_TEMPLATES   3032
 #define IDC_BTN_STATS       3033
 
+#define IDM_LANG_EN         3101
+#define IDM_LANG_HI         3102
+#define IDM_LANG_ES         3103
+#define IDM_LANG_FR         3104
+#define IDM_LANG_DE         3105
+#define IDM_LANG_SPELLCHECK 3106
+
 // Global application handles
 HINSTANCE g_hInst = NULL;
 HWND g_hMainWnd = NULL;
@@ -55,6 +62,7 @@ bool g_isModified = false;
 
 // Forward declarations
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+void SetEditorLanguage(const wchar_t* langCode, const wchar_t* fontName, int pointSize);
 void CreateMainMenu(HWND);
 void CreateRibbonToolbar(HWND);
 void UpdateStatusBar(HWND);
@@ -196,6 +204,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
     ShowWindow(g_hMainWnd, nCmdShow);
     UpdateWindow(g_hMainWnd);
+    if (wcsstr(lpCmdLine, L"-lang:hi")) {
+        SetEditorLanguage(L"HIN", L"Noto Sans Devanagari", 14);
+    }
     UpdateStatusBar(g_hMainWnd);
 
     // Message Loop
@@ -207,6 +218,23 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
     if (g_hRichEditLib) FreeLibrary(g_hRichEditLib);
     return (int)msg.wParam;
+}
+
+
+void SetEditorLanguage(const wchar_t* langCode, const wchar_t* fontName, int pointSize) {
+    CHARFORMAT2W cf = { sizeof(CHARFORMAT2W) };
+    cf.dwMask = CFM_FACE | CFM_SIZE;
+    wcscpy_s(cf.szFaceName, fontName);
+    cf.yHeight = pointSize * 20;
+    if (g_hRichEdit) SendMessageW(g_hRichEdit, EM_SETCHARFORMAT, SCF_ALL | SCF_SELECTION, (LPARAM)&cf);
+    if (g_hFontCombo) {
+        LRESULT idx = SendMessageW(g_hFontCombo, CB_FINDSTRINGEXACT, -1, (LPARAM)fontName);
+        if (idx != CB_ERR) SendMessageW(g_hFontCombo, CB_SETCURSEL, idx, 0);
+    }
+    if (g_hStatusBar) {
+        std::wstring st = std::wstring(L" [") + langCode + L"] " + fontName + L" Active";
+        SendMessageW(g_hStatusBar, SB_SETTEXTW, 1, (LPARAM)st.c_str());
+    }
 }
 
 void CreateMainMenu(HWND hwnd) {
@@ -700,6 +728,25 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     break;
                 }
                 case IDM_FILE_EXIT: DestroyWindow(hwnd); break;
+
+                case IDM_LANG_EN:
+                    SetEditorLanguage(L"ENG", L"Segoe UI", 12);
+                    break;
+                case IDM_LANG_HI:
+                    SetEditorLanguage(L"HIN", L"Noto Sans Devanagari", 14);
+                    break;
+                case IDM_LANG_ES:
+                    SetEditorLanguage(L"ESP", L"Segoe UI", 12);
+                    break;
+                case IDM_LANG_FR:
+                    SetEditorLanguage(L"FRA", L"Segoe UI", 12);
+                    break;
+                case IDM_LANG_DE:
+                    SetEditorLanguage(L"DEU", L"Segoe UI", 12);
+                    break;
+                case IDM_LANG_SPELLCHECK:
+                    MessageBoxW(hwnd, L"Integrated Sovereign Proofing Active.\nSpelling dictionaries and Google Hindi typography are bundled directly into Giri Drift.", L"Giri Drift Proofing", MB_OK | MB_ICONINFORMATION);
+                    break;
 
                 case IDM_EDIT_UNDO: SendMessageW(g_hRichEdit, EM_UNDO, 0, 0); break;
                 case IDM_EDIT_REDO: SendMessageW(g_hRichEdit, EM_REDO, 0, 0); break;

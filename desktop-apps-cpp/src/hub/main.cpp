@@ -1,75 +1,83 @@
 /* ============================================================================
- * GIRI ORBIT — EXECUTIVE ENTERPRISE SUITE HUB & ORCHESTRATOR (main.cpp)
+ * GIRI ORBIT — SOVEREIGN ENTERPRISE OFFICE SUITE (main.cpp)
  * Made by Abhinav Giri (GitHub: @abhinavgiri45 | Instagram: @abhinavgiri45)
  * Official Contact: abhinavgiri370@gmail.com
  * 100% Offline Standalone Native C++ Win32 Desktop Application
- * Zero Browser • Zero Cloud Telemetry • Sovereign Suite Manager
+ * Zero Telemetry • Pure Sovereign Office Hub • Ultra-Modern Fluent Dark UI
  * ============================================================================
  */
 
 #include "../common/sovereign_types.h"
 #include "../common/universal_file.h"
+#include <shlobj.h>
 #include <commdlg.h>
 #include <commctrl.h>
 #include <shellapi.h>
 #include <shlwapi.h>
-#include <psapi.h>
-#include <wininet.h>
-#include <thread>
 #include <string>
 #include <vector>
-#include <sstream>
-#include <iomanip>
-#include <chrono>
 
-#pragma comment(lib, "wininet.lib")
-#pragma comment(lib, "psapi.lib")
 #pragma comment(lib, "comctl32.lib")
+#pragma comment(lib, "shlwapi.lib")
+#pragma comment(lib, "shell32.lib")
 
 // Control Identifiers
-#define IDC_BTN_LAUNCH_DRIFT      4001
-#define IDC_BTN_LAUNCH_AXIS       4002
-#define IDC_BTN_LAUNCH_KINETIC    4003
-#define IDC_BTN_OPEN_FILE         4004
-#define IDC_BTN_CHECK_UPDATES     4005
-#define IDC_BTN_GITHUB            4006
-#define IDC_BTN_INSTA             4007
-#define IDC_BTN_QUICK_DRIFT       4008
-#define IDC_BTN_QUICK_AXIS        4009
-#define IDC_BTN_QUICK_KINETIC     4010
-#define IDC_BTN_QUICK_HINDI       4011
-#define IDC_BTN_RUN_DIAGNOSTICS   4012
-#define IDC_BTN_RUN_SYNC          4013
-#define IDC_BTN_VIEW_LANGS        4014
-#define IDC_BTN_FONT_INSPECTOR    4015
-#define IDC_BTN_BENCHMARK         4016
-#define IDC_BTN_DRIFT_CHARTER     4017
-#define IDC_BTN_AXIS_BUDGET       4018
-#define IDC_BTN_KINETIC_PITCH     4019
+#define IDC_BTN_NEW_DRIFT         5001
+#define IDC_BTN_OPEN_DRIFT        5002
+#define IDC_BTN_DRIFT_TEMPLATE    5003
+
+#define IDC_BTN_NEW_AXIS          5004
+#define IDC_BTN_OPEN_AXIS         5005
+#define IDC_BTN_AXIS_TEMPLATE     5006
+
+#define IDC_BTN_NEW_KINETIC       5007
+#define IDC_BTN_OPEN_KINETIC      5008
+#define IDC_BTN_KINETIC_TEMPLATE  5009
+
+#define IDC_BTN_OPEN_UNIVERSAL    5010
+#define IDC_COMBO_SUITE_LANG      5011
+#define IDC_BTN_GITHUB            5012
+
+#define IDC_HUB_STATUSBAR         6001
 
 HINSTANCE g_hInst = NULL;
 HWND g_hMainWnd = NULL;
 HWND g_hStatusBar = NULL;
+HWND g_hLangCombo = NULL;
 std::wstring g_appDir = L"";
+HICON g_hAppIcon = NULL;
 
-// Live Memory & System Stats
-MEMORYSTATUSEX g_memInfo;
+// Active Suite Language: 0=English, 1=Hindi (Google Writing Style), 2=Spanish, 3=French, 4=German
+int g_currentLangIndex = 0;
+
+struct SuiteLocale {
+    const wchar_t* displayName;
+    const wchar_t* langCode;
+    const wchar_t* defaultFont;
+};
+
+const SuiteLocale g_locales[] = {
+    { L"🌐 English (United States)", L"en_US", L"Segoe UI" },
+    { L"🇮🇳 हिन्दी (Hindi - Google Devanagari)", L"hi_IN", L"Noto Sans Devanagari" },
+    { L"🇪🇸 Español (Spanish)", L"es_ES", L"Segoe UI" },
+    { L"🇫🇷 Français (French)", L"fr_FR", L"Segoe UI" },
+    { L"🇩🇪 Deutsch (German)", L"de_DE", L"Segoe UI" },
+    { L"🇯🇵 日本語 (Japanese)", L"ja_JP", L"Meiryo" },
+    { L"🇨🇳 中文 (Simplified Chinese)", L"zh_CN", L"Microsoft YaHei" },
+    { L"🇸🇦 العربية (Arabic)", L"ar_SA", L"Noto Sans Arabic" }
+};
 
 // Forward declarations
 LRESULT CALLBACK HubWndProc(HWND, UINT, WPARAM, LPARAM);
 void LaunchApp(const std::wstring& exeName, const std::wstring& args = L"");
-void CheckUpdatesAsync(HWND hwnd);
-void RefreshSystemMemory();
-void DoRunDiagnostics(HWND hwnd);
-void DoRunSync(HWND hwnd);
-void DoViewLanguages(HWND hwnd);
-void DoFontInspector(HWND hwnd);
-void DoBenchmark(HWND hwnd);
+void OpenUniversalFile(HWND hwnd);
+void SavePreferredLanguage(int index);
+int LoadPreferredLanguage();
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
     g_hInst = hInstance;
 
-    // Determine current directory where executables are located
+    // Resolve app directory
     wchar_t szPath[MAX_PATH] = { 0 };
     GetModuleFileNameW(NULL, szPath, MAX_PATH);
     PathRemoveFileSpecW(szPath);
@@ -81,131 +89,107 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     if (PathFileExistsW(fontPath1.c_str())) AddFontResourceExW(fontPath1.c_str(), FR_PRIVATE, NULL);
     else if (PathFileExistsW(fontPath2.c_str())) AddFontResourceExW(fontPath2.c_str(), FR_PRIVATE, NULL);
 
-    INITCOMMONCONTROLSEX icex = { sizeof(INITCOMMONCONTROLSEX), ICC_WIN95_CLASSES | ICC_BAR_CLASSES | ICC_PROGRESS_CLASS };
+    INITCOMMONCONTROLSEX icex = { sizeof(INITCOMMONCONTROLSEX), ICC_WIN95_CLASSES | ICC_BAR_CLASSES };
     InitCommonControlsEx(&icex);
+
+    g_hAppIcon = (HICON)LoadImageW(hInstance, MAKEINTRESOURCEW(101), IMAGE_ICON, 256, 256, LR_DEFAULTSIZE);
+    if (!g_hAppIcon) g_hAppIcon = LoadIconW(hInstance, MAKEINTRESOURCEW(101));
 
     WNDCLASSEXW wcex = { sizeof(WNDCLASSEXW) };
     wcex.style = CS_HREDRAW | CS_VREDRAW;
     wcex.lpfnWndProc = HubWndProc;
     wcex.hInstance = hInstance;
     wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground = CreateSolidBrush(RGB(15, 23, 42)); // Slate Navy 900
-    wcex.lpszClassName = L"GiriOrbitHubWindowClass";
-    wcex.hIcon = LoadIconW(hInstance, MAKEINTRESOURCEW(101));
+    wcex.hbrBackground = CreateSolidBrush(RGB(11, 15, 25)); // Ultra-Dark Modern Slate
+    wcex.lpszClassName = L"GiriOrbitMasterHubClass";
+    wcex.hIcon = g_hAppIcon;
     wcex.hIconSm = (HICON)LoadImageW(hInstance, MAKEINTRESOURCEW(101), IMAGE_ICON, 16, 16, 0);
 
     if (!RegisterClassExW(&wcex)) return 0;
 
-    RefreshSystemMemory();
+    g_currentLangIndex = LoadPreferredLanguage();
 
-    // Create Hub Window (1060 x 730)
+    // Create Main Hub Window (1040 x 700)
     g_hMainWnd = CreateWindowExW(
-        0, L"GiriOrbitHubWindowClass",
-        L"Giri Orbit Sovereign Suite — Executive Enterprise Dashboard (v11.8.6)",
+        0, L"GiriOrbitMasterHubClass",
+        L"Giri Orbit — Sovereign Office Productivity Suite",
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN,
-        CW_USEDEFAULT, CW_USEDEFAULT, 1080, 750,
+        CW_USEDEFAULT, CW_USEDEFAULT, 1040, 710,
         NULL, NULL, hInstance, NULL
     );
 
     if (!g_hMainWnd) return 0;
 
-    HFONT hBtnFont = CreateFontW(13, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
-                                 OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
-                                 VARIABLE_PITCH, L"Segoe UI");
+    // Header Language Dropdown
+    HFONT hUiFont = CreateFontW(14, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                                OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+                                VARIABLE_PITCH, L"Segoe UI");
+
+    g_hLangCombo = CreateWindowExW(
+        0, L"COMBOBOX", L"",
+        WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL,
+        710, 24, 275, 240,
+        g_hMainWnd, (HMENU)IDC_COMBO_SUITE_LANG, hInstance, NULL
+    );
+    SendMessageW(g_hLangCombo, WM_SETFONT, (WPARAM)hUiFont, TRUE);
+
+    for (const auto& loc : g_locales) {
+        SendMessageW(g_hLangCombo, CB_ADDSTRING, 0, (LPARAM)loc.displayName);
+    }
+    SendMessageW(g_hLangCombo, CB_SETCURSEL, (WPARAM)g_currentLangIndex, 0);
 
     // ==========================================
-    // TOP QUICK CREATION BAR (y = 110)
+    // 3 MODERN APP CARDS (Drift, Axis, Kinetic)
+    // Left: 40, Width: 300 each, Gap: 30
+    // Card 1: x = 40
+    // Card 2: x = 370
+    // Card 3: x = 700
     // ==========================================
-    HWND bq1 = CreateWindowExW(0, L"BUTTON", L"+ New Document", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                               48, 110, 140, 32, g_hMainWnd, (HMENU)IDC_BTN_QUICK_DRIFT, hInstance, NULL);
-    HWND bq2 = CreateWindowExW(0, L"BUTTON", L"+ New Matrix", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                               196, 110, 130, 32, g_hMainWnd, (HMENU)IDC_BTN_QUICK_AXIS, hInstance, NULL);
-    HWND bq3 = CreateWindowExW(0, L"BUTTON", L"+ New Deck", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                               334, 110, 130, 32, g_hMainWnd, (HMENU)IDC_BTN_QUICK_KINETIC, hInstance, NULL);
-    HWND bq4 = CreateWindowExW(0, L"BUTTON", L"🇮🇳 हिन्दी दस्तावेज़", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                               472, 110, 160, 32, g_hMainWnd, (HMENU)IDC_BTN_QUICK_HINDI, hInstance, NULL);
 
-    SendMessageW(bq1, WM_SETFONT, (WPARAM)hBtnFont, TRUE);
-    SendMessageW(bq2, WM_SETFONT, (WPARAM)hBtnFont, TRUE);
-    SendMessageW(bq3, WM_SETFONT, (WPARAM)hBtnFont, TRUE);
-    SendMessageW(bq4, WM_SETFONT, (WPARAM)hBtnFont, TRUE);
+    // CARD 1: GIRI DRIFT (Word Processor)
+    HWND bDriftNew = CreateWindowExW(0, L"BUTTON", L"+ Blank Document", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
+                                    60, 360, 260, 38, g_hMainWnd, (HMENU)IDC_BTN_NEW_DRIFT, hInstance, NULL);
+    HWND bDriftTmpl = CreateWindowExW(0, L"BUTTON", L"Strategic Charter Template", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
+                                     60, 408, 260, 34, g_hMainWnd, (HMENU)IDC_BTN_DRIFT_TEMPLATE, hInstance, NULL);
+    HWND bDriftOpen = CreateWindowExW(0, L"BUTTON", L"Open Document (.giri, .docx)...", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
+                                     60, 452, 260, 34, g_hMainWnd, (HMENU)IDC_BTN_OPEN_DRIFT, hInstance, NULL);
 
-    // ==========================================
-    // LEFT COLUMN: SUITE APP CARDS
-    // ==========================================
-    // Card 1: Drift
-    HWND b1 = CreateWindowExW(0, L"BUTTON", L"Launch Giri Drift", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
-                              64, 218, 180, 34, g_hMainWnd, (HMENU)IDC_BTN_LAUNCH_DRIFT, hInstance, NULL);
-    HWND b1t = CreateWindowExW(0, L"BUTTON", L"Charter Template", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                               252, 218, 150, 34, g_hMainWnd, (HMENU)IDC_BTN_DRIFT_CHARTER, hInstance, NULL);
+    // CARD 2: GIRI AXIS (Spreadsheet Matrix)
+    HWND bAxisNew = CreateWindowExW(0, L"BUTTON", L"+ Blank Spreadsheet", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
+                                   390, 360, 260, 38, g_hMainWnd, (HMENU)IDC_BTN_NEW_AXIS, hInstance, NULL);
+    HWND bAxisTmpl = CreateWindowExW(0, L"BUTTON", L"Annual Budget Template", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
+                                    390, 408, 260, 34, g_hMainWnd, (HMENU)IDC_BTN_AXIS_TEMPLATE, hInstance, NULL);
+    HWND bAxisOpen = CreateWindowExW(0, L"BUTTON", L"Open Spreadsheet (.giri, .xlsx)...", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
+                                    390, 452, 260, 34, g_hMainWnd, (HMENU)IDC_BTN_OPEN_AXIS, hInstance, NULL);
 
-    // Card 2: Axis
-    HWND b2 = CreateWindowExW(0, L"BUTTON", L"Launch Giri Axis", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
-                              64, 338, 180, 34, g_hMainWnd, (HMENU)IDC_BTN_LAUNCH_AXIS, hInstance, NULL);
-    HWND b2t = CreateWindowExW(0, L"BUTTON", L"Budget Template", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                               252, 338, 150, 34, g_hMainWnd, (HMENU)IDC_BTN_AXIS_BUDGET, hInstance, NULL);
+    // CARD 3: GIRI KINETIC (Presentation Studio)
+    HWND bKinNew = CreateWindowExW(0, L"BUTTON", L"+ Blank Presentation", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
+                                  720, 360, 260, 38, g_hMainWnd, (HMENU)IDC_BTN_NEW_KINETIC, hInstance, NULL);
+    HWND bKinTmpl = CreateWindowExW(0, L"BUTTON", L"Keynote Pitch Deck Template", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
+                                   720, 408, 260, 34, g_hMainWnd, (HMENU)IDC_BTN_KINETIC_TEMPLATE, hInstance, NULL);
+    HWND bKinOpen = CreateWindowExW(0, L"BUTTON", L"Open Slide Deck (.giri, .pptx)...", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
+                                   720, 452, 260, 34, g_hMainWnd, (HMENU)IDC_BTN_OPEN_KINETIC, hInstance, NULL);
 
-    // Card 3: Kinetic
-    HWND b3 = CreateWindowExW(0, L"BUTTON", L"Launch Giri Kinetic", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
-                              64, 458, 180, 34, g_hMainWnd, (HMENU)IDC_BTN_LAUNCH_KINETIC, hInstance, NULL);
-    HWND b3t = CreateWindowExW(0, L"BUTTON", L"Keynote Pitch", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                               252, 458, 150, 34, g_hMainWnd, (HMENU)IDC_BTN_KINETIC_PITCH, hInstance, NULL);
+    // BOTTOM UNIVERSAL STRIP: OPEN ANY FILE
+    HWND bUniv = CreateWindowExW(0, L"BUTTON", L"📁  Browse & Open Any Sovereign Office File (.giri, .docx, .xlsx, .pptx, .pdf)...",
+                                WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
+                                40, 520, 940, 46, g_hMainWnd, (HMENU)IDC_BTN_OPEN_UNIVERSAL, hInstance, NULL);
 
-    // Card 4: Open File
-    HWND b4 = CreateWindowExW(0, L"BUTTON", L"Browse & Open Sovereign File (.giri, .docx, .xlsx)...", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                              64, 568, 540, 34, g_hMainWnd, (HMENU)IDC_BTN_OPEN_FILE, hInstance, NULL);
-
-    // Set Fonts for Suite Buttons
-    SendMessageW(b1, WM_SETFONT, (WPARAM)hBtnFont, TRUE);
-    SendMessageW(b1t, WM_SETFONT, (WPARAM)hBtnFont, TRUE);
-    SendMessageW(b2, WM_SETFONT, (WPARAM)hBtnFont, TRUE);
-    SendMessageW(b2t, WM_SETFONT, (WPARAM)hBtnFont, TRUE);
-    SendMessageW(b3, WM_SETFONT, (WPARAM)hBtnFont, TRUE);
-    SendMessageW(b3t, WM_SETFONT, (WPARAM)hBtnFont, TRUE);
-    SendMessageW(b4, WM_SETFONT, (WPARAM)hBtnFont, TRUE);
-
-    // ==========================================
-    // RIGHT COLUMN: ENTERPRISE SERVICES & DIAGNOSTICS
-    // ==========================================
-    HWND bDiag = CreateWindowExW(0, L"BUTTON", L"⚡ Run Telemetry Health Check", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                                 660, 260, 350, 34, g_hMainWnd, (HMENU)IDC_BTN_RUN_DIAGNOSTICS, hInstance, NULL);
-    HWND bSync = CreateWindowExW(0, L"BUTTON", L"🔄 Run Sovereign Snapshot Backup", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                                 660, 302, 350, 34, g_hMainWnd, (HMENU)IDC_BTN_RUN_SYNC, hInstance, NULL);
-    HWND bLang = CreateWindowExW(0, L"BUTTON", L"🌐 105 Language Packs Explorer", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                                 660, 344, 350, 34, g_hMainWnd, (HMENU)IDC_BTN_VIEW_LANGS, hInstance, NULL);
-    HWND bFont = CreateWindowExW(0, L"BUTTON", L"🔤 Google Hindi & Font Inspector", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                                 660, 386, 350, 34, g_hMainWnd, (HMENU)IDC_BTN_FONT_INSPECTOR, hInstance, NULL);
-    HWND bBench = CreateWindowExW(0, L"BUTTON", L"🚀 Run Memory Speed Benchmark", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                                  660, 428, 350, 34, g_hMainWnd, (HMENU)IDC_BTN_BENCHMARK, hInstance, NULL);
-
-    SendMessageW(bDiag, WM_SETFONT, (WPARAM)hBtnFont, TRUE);
-    SendMessageW(bSync, WM_SETFONT, (WPARAM)hBtnFont, TRUE);
-    SendMessageW(bLang, WM_SETFONT, (WPARAM)hBtnFont, TRUE);
-    SendMessageW(bFont, WM_SETFONT, (WPARAM)hBtnFont, TRUE);
-    SendMessageW(bBench, WM_SETFONT, (WPARAM)hBtnFont, TRUE);
-
-    // Bottom Links
-    HWND bUpd = CreateWindowExW(0, L"BUTTON", L"Check GitHub Updates", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                                660, 568, 160, 34, g_hMainWnd, (HMENU)IDC_BTN_CHECK_UPDATES, hInstance, NULL);
-    HWND bGit = CreateWindowExW(0, L"BUTTON", L"GitHub (@abhinavgiri45)", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                                830, 568, 180, 34, g_hMainWnd, (HMENU)IDC_BTN_GITHUB, hInstance, NULL);
-
-    SendMessageW(bUpd, WM_SETFONT, (WPARAM)hBtnFont, TRUE);
-    SendMessageW(bGit, WM_SETFONT, (WPARAM)hBtnFont, TRUE);
+    HWND bGit = CreateWindowExW(0, L"BUTTON", L"GitHub: @abhinavgiri45",
+                               WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
+                               40, 580, 200, 32, g_hMainWnd, (HMENU)IDC_BTN_GITHUB, hInstance, NULL);
 
     // Status Bar
     g_hStatusBar = CreateWindowExW(
         0, STATUSCLASSNAMEW, NULL,
         WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP,
-        0, 0, 0, 0, g_hMainWnd, (HMENU)ID_STATUSBAR, hInstance, NULL
+        0, 0, 0, 0, g_hMainWnd, (HMENU)IDC_HUB_STATUSBAR, hInstance, NULL
     );
-    int statwidths[] = { 260, 600, -1 };
-    SendMessageW(g_hStatusBar, SB_SETPARTS, 3, (LPARAM)statwidths);
-    SendMessageW(g_hStatusBar, SB_SETTEXTW, 0, (LPARAM)L"Giri Orbit v11.8.6 — Native Win32 C++");
-    SendMessageW(g_hStatusBar, SB_SETTEXTW, 1, (LPARAM)L"Author: Abhinav Giri (abhinavgiri370@gmail.com)");
-    SendMessageW(g_hStatusBar, SB_SETTEXTW, 2, (LPARAM)L"● 100% Offline Sovereign (0 Cloud Leak)");
-
-    CheckUpdatesAsync(g_hMainWnd);
+    int parts[] = { 340, 680, -1 };
+    SendMessageW(g_hStatusBar, SB_SETPARTS, 3, (LPARAM)parts);
+    SendMessageW(g_hStatusBar, SB_SETTEXTW, 0, (LPARAM)L" Giri Orbit v11.8.7 — Native Win32 C++");
+    SendMessageW(g_hStatusBar, SB_SETTEXTW, 1, (LPARAM)L" Author: Abhinav Giri (abhinavgiri370@gmail.com)");
+    SendMessageW(g_hStatusBar, SB_SETTEXTW, 2, (LPARAM)L" 100% Offline • Zero Telemetry");
 
     ShowWindow(g_hMainWnd, nCmdShow);
     UpdateWindow(g_hMainWnd);
@@ -215,13 +199,34 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
     }
-
     return (int)msg.wParam;
 }
 
-void RefreshSystemMemory() {
-    g_memInfo.dwLength = sizeof(MEMORYSTATUSEX);
-    GlobalMemoryStatusEx(&g_memInfo);
+void SavePreferredLanguage(int index) {
+    if (index < 0 || index >= sizeof(g_locales)/sizeof(g_locales[0])) return;
+    std::wstring cfgDir = g_appDir;
+    std::wstring cfgPath = cfgDir + L"\\locale.cfg";
+    FILE* f = _wfopen(cfgPath.c_str(), L"w, ccs=UTF-8");
+    if (f) {
+        fwprintf(f, L"%d\n%ls\n", index, g_locales[index].langCode);
+        fclose(f);
+    }
+}
+
+int LoadPreferredLanguage() {
+    std::wstring cfgPath = g_appDir + L"\\locale.cfg";
+    FILE* f = _wfopen(cfgPath.c_str(), L"r, ccs=UTF-8");
+    if (f) {
+        int idx = 0;
+        if (fwscanf(f, L"%d", &idx) == 1) {
+            fclose(f);
+            if (idx >= 0 && idx < sizeof(g_locales)/sizeof(g_locales[0])) {
+                return idx;
+            }
+        }
+        fclose(f);
+    }
+    return 0; // Default English
 }
 
 void LaunchApp(const std::wstring& exeName, const std::wstring& args) {
@@ -229,144 +234,210 @@ void LaunchApp(const std::wstring& exeName, const std::wstring& args) {
     if (!PathFileExistsW(fullPath.c_str())) {
         fullPath = g_appDir + L"\\bin\\" + exeName;
     }
-    HINSTANCE h = ShellExecuteW(NULL, L"open", fullPath.c_str(), args.empty() ? NULL : args.c_str(), NULL, SW_SHOWNORMAL);
-    if ((INT_PTR)h <= 32) {
-        MessageBoxW(g_hMainWnd, (L"Unable to launch " + exeName + L". Please verify installation path:\n" + fullPath).c_str(),
-                    L"Giri Orbit Hub", MB_OK | MB_ICONERROR);
+    if (!PathFileExistsW(fullPath.c_str())) {
+        wchar_t localApp[MAX_PATH];
+        DWORD len = ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\Programs\\Giri Orbit", localApp, MAX_PATH);
+        if (len > 0 && len < MAX_PATH) {
+            std::wstring cand = std::wstring(localApp) + L"\\" + exeName;
+            if (PathFileExistsW(cand.c_str())) fullPath = cand;
+        }
+    }
+
+    // Append active language flag if Hindi or non-English selected
+    std::wstring launchArgs = args;
+    if (g_currentLangIndex > 0) {
+        if (!launchArgs.empty()) launchArgs += L" ";
+        launchArgs += L"-lang:" + std::wstring(g_locales[g_currentLangIndex].langCode);
+    }
+
+    HINSTANCE hRes = ShellExecuteW(NULL, L"open", fullPath.c_str(), launchArgs.empty() ? NULL : launchArgs.c_str(), g_appDir.c_str(), SW_SHOWNORMAL);
+    if ((INT_PTR)hRes <= 32) {
+        std::wstring err = L"Could not locate " + exeName + L".\nExpected path: " + fullPath;
+        MessageBoxW(g_hMainWnd, err.c_str(), L"Application Launch Error", MB_OK | MB_ICONERROR);
     }
 }
 
-void CheckUpdatesAsync(HWND hwnd) {
-    std::thread([hwnd]() {
-        HINTERNET hInternet = InternetOpenW(L"GiriOrbit-UpdateCheck", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
-        if (!hInternet) {
-            PostMessageW(hwnd, WM_USER + 10, 0, (LPARAM)L"● 100% Offline Sovereign");
-            return;
-        }
-        DWORD timeout = 2000;
-        InternetSetOptionW(hInternet, INTERNET_OPTION_CONNECT_TIMEOUT, &timeout, sizeof(timeout));
-        InternetSetOptionW(hInternet, INTERNET_OPTION_RECEIVE_TIMEOUT, &timeout, sizeof(timeout));
+void OpenUniversalFile(HWND hwnd) {
+    wchar_t szFile[MAX_PATH] = { 0 };
+    OPENFILENAMEW ofn = { sizeof(OPENFILENAMEW) };
+    ofn.hwndOwner = hwnd;
+    ofn.lpstrFilter = L"All Supported Sovereign Office Files (*.giri;*.docx;*.xlsx;*.pptx;*.txt;*.csv)\0*.giri;*.docx;*.xlsx;*.pptx;*.txt;*.csv\0Sovereign Office (.giri)\0*.giri\0Word Documents (.docx)\0*.docx\0Excel Sheets (.xlsx)\0*.xlsx\0PowerPoint Presentations (.pptx)\0*.pptx\0All Files (*.*)\0*.*\0";
+    ofn.lpstrFile = szFile;
+    ofn.nMaxFile = MAX_PATH;
+    ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
 
-        HINTERNET hConnect = InternetOpenUrlW(
-            hInternet,
-            L"https://raw.githubusercontent.com/abhinavgiri45/giri-orbit/main/version.json",
-            NULL, 0, INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE, 0
-        );
+    if (GetOpenFileNameW(&ofn)) {
+        std::wstring ext = PathFindExtensionW(szFile);
+        std::wstring sExt = ext;
+        for (auto& c : sExt) c = towlower(c);
 
-        if (hConnect) {
-            char buffer[128] = { 0 };
-            DWORD bytesRead = 0;
-            if (InternetReadFile(hConnect, buffer, sizeof(buffer) - 1, &bytesRead) && bytesRead > 0) {
-                PostMessageW(hwnd, WM_USER + 10, 0, (LPARAM)L"● GitHub Cloud Sync: Up to Date");
+        std::wstring quoted = L"\"" + std::wstring(szFile) + L"\"";
+
+        if (sExt == L".docx" || sExt == L".doc" || sExt == L".txt") {
+            LaunchApp(L"GiriDrift.exe", quoted);
+        } else if (sExt == L".xlsx" || sExt == L".xls" || sExt == L".csv") {
+            LaunchApp(L"GiriAxis.exe", quoted);
+        } else if (sExt == L".pptx" || sExt == L".ppt") {
+            LaunchApp(L"GiriKinetic.exe", quoted);
+        } else if (sExt == L".giri") {
+            // Inspect universal file type
+            std::string content, toolType;
+            if (LoadUniversalGiriFile(szFile, content, toolType)) {
+                if (toolType == "axis") LaunchApp(L"GiriAxis.exe", quoted);
+                else if (toolType == "kinetic") LaunchApp(L"GiriKinetic.exe", quoted);
+                else LaunchApp(L"GiriDrift.exe", quoted);
             } else {
-                PostMessageW(hwnd, WM_USER + 10, 0, (LPARAM)L"● 100% Offline Sovereign");
+                LaunchApp(L"GiriDrift.exe", quoted);
             }
-            InternetCloseHandle(hConnect);
         } else {
-            PostMessageW(hwnd, WM_USER + 10, 0, (LPARAM)L"● 100% Offline Sovereign");
+            LaunchApp(L"GiriDrift.exe", quoted);
         }
-        InternetCloseHandle(hInternet);
-    }).detach();
-}
-
-void DoRunDiagnostics(HWND hwnd) {
-    RefreshSystemMemory();
-    std::wstring diagExe = g_appDir + L"\\Runtimes\\OrbitTelemetryService.exe";
-    if (!PathFileExistsW(diagExe.c_str())) diagExe = g_appDir + L"\\OrbitTelemetryService.exe";
-    if (PathFileExistsW(diagExe.c_str())) {
-        ShellExecuteW(NULL, L"open", diagExe.c_str(), L"-once", NULL, SW_HIDE);
     }
-
-    std::wstringstream ss;
-    ss << L"=====================================================\n"
-       << L"  GIRI ORBIT SOVEREIGN TELEMETRY & HEALTH REPORT\n"
-       << L"  Author: Abhinav Giri (@abhinavgiri45)\n"
-       << L"=====================================================\n\n"
-       << L"• System Memory Load: " << g_memInfo.dwMemoryLoad << L"%\n"
-       << L"• Available Physical RAM: " << (g_memInfo.ullAvailPhys / (1024 * 1024)) << L" MB\n"
-       << L"• Total Physical RAM: " << (g_memInfo.ullTotalPhys / (1024 * 1024)) << L" MB\n"
-       << L"• Architecture: Native x86-64 Machine Instructions\n"
-       << L"• Active Engine: Win32 API & Hardware Accelerated GDI+\n"
-       << L"• Cloud Telemetry Leak: 0 KB (Completely Zero Outbound)\n"
-       << L"• Offline Cryptographic Vault: AES-256 Verified\n\n"
-       << L"Status: OPTIMAL — All sovereign subsystems operating with 0 latency.";
-
-    MessageBoxW(hwnd, ss.str().c_str(), L"Sovereign Health Diagnostics", MB_OK | MB_ICONINFORMATION);
-}
-
-void DoRunSync(HWND hwnd) {
-    std::wstring syncExe = g_appDir + L"\\Runtimes\\OrbitSyncDaemon.exe";
-    if (!PathFileExistsW(syncExe.c_str())) syncExe = g_appDir + L"\\OrbitSyncDaemon.exe";
-    if (PathFileExistsW(syncExe.c_str())) {
-        ShellExecuteW(NULL, L"open", syncExe.c_str(), NULL, NULL, SW_HIDE);
-    }
-
-    MessageBoxW(hwnd,
-                L"Sovereign snapshot backup completed successfully!\n\n"
-                L"• Destination: %LOCALAPPDATA%\\Programs\\Giri Orbit\\Backups\\\n"
-                L"• Encryption: In-memory confidential isolation\n"
-                L"• Status: All active documents mirrored and protected locally with zero cloud exposure.",
-                L"Giri Orbit Sync Daemon", MB_OK | MB_ICONINFORMATION);
-}
-
-void DoViewLanguages(HWND hwnd) {
-    std::wstring msg =
-        L"105 Multilingual Language Packs & Dictionaries Installed:\n\n"
-        L"• Hindi (India) — हिन्दी [₹] (Google Noto Sans Devanagari)\n"
-        L"• English (US / UK) — English [$ / £]\n"
-        L"• Spanish — Español [€]\n"
-        L"• French — Français [€]\n"
-        L"• German — Deutsch [€]\n"
-        L"• Chinese (Simplified & Traditional) — 中文 [¥ / NT$]\n"
-        L"• Japanese — 日本語 [¥] (Meiryo & Kanji)\n"
-        L"• Korean — 한국어 [₩] (Hangul)\n"
-        L"• Arabic — العربية [ر.س] (Noto Sans Arabic)\n"
-        L"• Russian — Русский [₽]\n"
-        L"• Portuguese, Italian, Bengali, Telugu, Marathi, Tamil, Urdu, Gujarati, Kannada, Malayalam, Punjabi...\n\n"
-        L"Plus 82 additional world languages with native dictionaries and hyphenation tables.";
-
-    MessageBoxW(hwnd, msg.c_str(), L"105 Multilingual Language Packs Registry", MB_OK | MB_ICONINFORMATION);
-}
-
-void DoFontInspector(HWND hwnd) {
-    std::wstring msg =
-        L"International Fonts & Google Hindi Typography Engine:\n\n"
-        L"• Google Hindi Font: Noto Sans Devanagari (NotoSansDevanagari.ttf)\n"
-        L"• Classic Hindi Font: Mangal & Mangal Bold (mangal.ttf)\n"
-        L"• Pan-Indian Scripts: Nirmala UI (Devanagari, Bengali, Gujarati, Tamil, Telugu, Kannada, Malayalam)\n"
-        L"• Google Arabic Font: Noto Sans Arabic (NotoSansArabic.ttf)\n"
-        L"• Google Latin/Cyrillic: Noto Sans (NotoSans.ttf)\n"
-        L"• CJK Fonts: Microsoft YaHei, SimSun, Meiryo, Malgun Gothic\n\n"
-        L"All fonts are dynamically registered in memory via AddFontResourceExW and ready for instant typographic rendering in Giri Drift, Axis, and Kinetic.";
-
-    MessageBoxW(hwnd, msg.c_str(), L"Google Hindi & Font Inspector", MB_OK | MB_ICONINFORMATION);
-}
-
-void DoBenchmark(HWND hwnd) {
-    auto start = std::chrono::high_resolution_clock::now();
-
-    // High throughput in-memory matrix benchmark (1,000,000 iterations)
-    volatile double sum = 0.0;
-    for (int i = 0; i < 1000000; ++i) {
-        sum += (i * 1.0001);
-    }
-
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> elapsed = end - start;
-
-    std::wstringstream ss;
-    ss << L"GIRI ORBIT IN-MEMORY BENCHMARK RESULTS:\n\n"
-       << L"• 1,000,000 In-Memory Floating Operations: " << std::fixed << std::setprecision(2) << elapsed.count() << L" ms\n"
-       << L"• Direct Machine Code Execution: Passed (0 VM JIT lag)\n"
-       << L"• Memory Cache Bandwidth: Verified High-Velocity (DDR4/DDR5)\n"
-       << L"• Network Leakage Detection: 0 Packets (100% Sovereign)\n\n"
-       << L"Native C++ Win32 execution operates ~20x faster than web browser hybrids.";
-
-    MessageBoxW(hwnd, ss.str().c_str(), L"In-Memory Benchmark", MB_OK | MB_ICONINFORMATION);
 }
 
 LRESULT CALLBACK HubWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
+    case WM_COMMAND: {
+        int wmId = LOWORD(wParam);
+        int wmEvent = HIWORD(wParam);
+
+        if (wmId == IDC_COMBO_SUITE_LANG && wmEvent == CBN_SELCHANGE) {
+            int sel = (int)SendMessageW(g_hLangCombo, CB_GETCURSEL, 0, 0);
+            if (sel >= 0) {
+                g_currentLangIndex = sel;
+                SavePreferredLanguage(sel);
+                InvalidateRect(hwnd, NULL, TRUE);
+            }
+            return 0;
+        }
+
+        switch (wmId) {
+        case IDC_BTN_NEW_DRIFT:
+            LaunchApp(L"GiriDrift.exe");
+            break;
+        case IDC_BTN_OPEN_DRIFT: {
+            wchar_t szFile[MAX_PATH] = { 0 };
+            OPENFILENAMEW ofn = { sizeof(OPENFILENAMEW) };
+            ofn.hwndOwner = hwnd;
+            ofn.lpstrFilter = L"Word & Drift Documents (*.giri;*.docx;*.txt)\0*.giri;*.docx;*.txt\0All Files (*.*)\0*.*\0";
+            ofn.lpstrFile = szFile;
+            ofn.nMaxFile = MAX_PATH;
+            ofn.Flags = OFN_FILEMUSTEXIST;
+            if (GetOpenFileNameW(&ofn)) LaunchApp(L"GiriDrift.exe", L"\"" + std::wstring(szFile) + L"\"");
+            break;
+        }
+        case IDC_BTN_DRIFT_TEMPLATE:
+            LaunchApp(L"GiriDrift.exe", L"-template:charter");
+            break;
+
+        case IDC_BTN_NEW_AXIS:
+            LaunchApp(L"GiriAxis.exe");
+            break;
+        case IDC_BTN_OPEN_AXIS: {
+            wchar_t szFile[MAX_PATH] = { 0 };
+            OPENFILENAMEW ofn = { sizeof(OPENFILENAMEW) };
+            ofn.hwndOwner = hwnd;
+            ofn.lpstrFilter = L"Excel & Axis Spreadsheets (*.giri;*.xlsx;*.csv)\0*.giri;*.xlsx;*.csv\0All Files (*.*)\0*.*\0";
+            ofn.lpstrFile = szFile;
+            ofn.nMaxFile = MAX_PATH;
+            ofn.Flags = OFN_FILEMUSTEXIST;
+            if (GetOpenFileNameW(&ofn)) LaunchApp(L"GiriAxis.exe", L"\"" + std::wstring(szFile) + L"\"");
+            break;
+        }
+        case IDC_BTN_AXIS_TEMPLATE:
+            LaunchApp(L"GiriAxis.exe", L"-template:budget");
+            break;
+
+        case IDC_BTN_NEW_KINETIC:
+            LaunchApp(L"GiriKinetic.exe");
+            break;
+        case IDC_BTN_OPEN_KINETIC: {
+            wchar_t szFile[MAX_PATH] = { 0 };
+            OPENFILENAMEW ofn = { sizeof(OPENFILENAMEW) };
+            ofn.hwndOwner = hwnd;
+            ofn.lpstrFilter = L"PowerPoint & Kinetic Slide Decks (*.giri;*.pptx)\0*.giri;*.pptx\0All Files (*.*)\0*.*\0";
+            ofn.lpstrFile = szFile;
+            ofn.nMaxFile = MAX_PATH;
+            ofn.Flags = OFN_FILEMUSTEXIST;
+            if (GetOpenFileNameW(&ofn)) LaunchApp(L"GiriKinetic.exe", L"\"" + std::wstring(szFile) + L"\"");
+            break;
+        }
+        case IDC_BTN_KINETIC_TEMPLATE:
+            LaunchApp(L"GiriKinetic.exe", L"-template:pitch");
+            break;
+
+        case IDC_BTN_OPEN_UNIVERSAL:
+            OpenUniversalFile(hwnd);
+            break;
+
+        case IDC_BTN_GITHUB:
+            ShellExecuteW(NULL, L"open", L"https://github.com/abhinavgiri45", NULL, NULL, SW_SHOWNORMAL);
+            break;
+        }
+        return 0;
+    }
+
+    case WM_DRAWITEM: {
+        LPDRAWITEMSTRUCT pDis = (LPDRAWITEMSTRUCT)lParam;
+        if (!pDis) return FALSE;
+
+        HDC hdc = pDis->hDC;
+        RECT rc = pDis->rcItem;
+        UINT id = pDis->CtlID;
+        bool isDown = (pDis->itemState & ODS_SELECTED) != 0;
+
+        // Custom Modern Fluent Owner-Drawn Buttons
+        HBRUSH hBg = NULL;
+        HPEN hPen = NULL;
+        COLORREF textColor = RGB(255, 255, 255);
+
+        if (id == IDC_BTN_NEW_DRIFT) {
+            hBg = CreateSolidBrush(isDown ? RGB(29, 78, 216) : RGB(37, 99, 235)); // Primary Royal Blue
+            hPen = CreatePen(PS_SOLID, 1, RGB(59, 130, 246));
+        } else if (id == IDC_BTN_NEW_AXIS) {
+            hBg = CreateSolidBrush(isDown ? RGB(5, 150, 105) : RGB(16, 185, 129)); // Primary Emerald Green
+            hPen = CreatePen(PS_SOLID, 1, RGB(52, 211, 153));
+        } else if (id == IDC_BTN_NEW_KINETIC) {
+            hBg = CreateSolidBrush(isDown ? RGB(217, 119, 6) : RGB(245, 158, 11)); // Primary Amber Orange
+            hPen = CreatePen(PS_SOLID, 1, RGB(251, 191, 36));
+        } else if (id == IDC_BTN_OPEN_UNIVERSAL) {
+            hBg = CreateSolidBrush(isDown ? RGB(30, 41, 59) : RGB(15, 23, 42));
+            hPen = CreatePen(PS_SOLID, 2, RGB(59, 130, 246));
+            textColor = RGB(147, 197, 253);
+        } else {
+            // Secondary buttons
+            hBg = CreateSolidBrush(isDown ? RGB(30, 41, 59) : RGB(24, 32, 47));
+            hPen = CreatePen(PS_SOLID, 1, RGB(51, 65, 85));
+            textColor = RGB(203, 213, 225);
+        }
+
+        HGDIOBJ oldBrush = SelectObject(hdc, hBg);
+        HGDIOBJ oldPen = SelectObject(hdc, hPen);
+
+        RoundRect(hdc, rc.left, rc.top, rc.right, rc.bottom, 8, 8);
+
+        // Get Button text
+        wchar_t text[256] = { 0 };
+        GetWindowTextW(pDis->hwndItem, text, 256);
+
+        HFONT hFont = CreateFontW(13, 0, 0, 0, (id == IDC_BTN_NEW_DRIFT || id == IDC_BTN_NEW_AXIS || id == IDC_BTN_NEW_KINETIC || id == IDC_BTN_OPEN_UNIVERSAL) ? FW_BOLD : FW_SEMIBOLD,
+                                  FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+                                  CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, L"Segoe UI");
+        HGDIOBJ oldFont = SelectObject(hdc, hFont);
+
+        SetBkMode(hdc, TRANSPARENT);
+        SetTextColor(hdc, textColor);
+        DrawTextW(hdc, text, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+        SelectObject(hdc, oldFont);
+        DeleteObject(hFont);
+        SelectObject(hdc, oldBrush);
+        SelectObject(hdc, oldPen);
+        DeleteObject(hBg);
+        DeleteObject(hPen);
+        return TRUE;
+    }
+
     case WM_PAINT: {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
@@ -375,197 +446,182 @@ LRESULT CALLBACK HubWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
         SetBkMode(hdc, TRANSPARENT);
 
-        // Fonts
-        HFONT hFontTitle = CreateFontW(28, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
-                                      OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
-                                      VARIABLE_PITCH, L"Segoe UI");
-        HFONT hFontSub = CreateFontW(14, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
-                                    OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
-                                    VARIABLE_PITCH, L"Segoe UI");
-        HFONT hFontCardTitle = CreateFontW(17, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+        // Typography
+        HFONT hFontHeaderTitle = CreateFontW(24, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                                            OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+                                            VARIABLE_PITCH, L"Segoe UI");
+        HFONT hFontHeroTitle = CreateFontW(22, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
                                           OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
                                           VARIABLE_PITCH, L"Segoe UI");
+        HFONT hFontSub = CreateFontW(13, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                                    OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+                                    VARIABLE_PITCH, L"Segoe UI");
+        HFONT hFontCardTitle = CreateFontW(18, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                                          OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+                                          VARIABLE_PITCH, L"Segoe UI");
+        HFONT hFontCardSub = CreateFontW(13, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                                        OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+                                        VARIABLE_PITCH, L"Segoe UI");
         HFONT hFontCardDesc = CreateFontW(12, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
                                          OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
                                          VARIABLE_PITCH, L"Segoe UI");
-        HFONT hFontBadge = CreateFontW(11, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
-                                       OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
-                                       VARIABLE_PITCH, L"Segoe UI");
 
-        // Header Title
-        HGDIOBJ oldFont = SelectObject(hdc, hFontTitle);
-        SetTextColor(hdc, RGB(248, 250, 252)); // Slate-50
-        RECT titleRect = { 48, 24, client.right - 48, 60 };
-        DrawTextW(hdc, L"GIRI ORBIT SOVEREIGN SUITE", -1, &titleRect, DT_LEFT | DT_SINGLELINE);
+        // 1. TOP HEADER (y: 18 - 60)
+        // Draw Suite Icon (36x36)
+        if (g_hAppIcon) {
+            DrawIconEx(hdc, 40, 20, g_hAppIcon, 36, 36, 0, NULL, DI_NORMAL);
+        }
 
-        // Header Subtitle
+        HGDIOBJ oldFont = SelectObject(hdc, hFontHeaderTitle);
+        SetTextColor(hdc, RGB(255, 255, 255));
+        RECT rTitle = { 88, 22, 450, 56 };
+        DrawTextW(hdc, L"GIRI ORBIT", -1, &rTitle, DT_LEFT | DT_SINGLELINE);
+
         SelectObject(hdc, hFontSub);
-        SetTextColor(hdc, RGB(56, 189, 248)); // Sky-400
-        RECT subRect = { 48, 62, client.right - 48, 86 };
-        DrawTextW(hdc, L"Made by Abhinav Giri • abhinavgiri370@gmail.com • github.com/abhinavgiri45", -1, &subRect, DT_LEFT | DT_SINGLELINE);
+        SetTextColor(hdc, RGB(56, 189, 248)); // Sky Blue
+        RECT rBadge = { 228, 28, 550, 54 };
+        DrawTextW(hdc, L"SOVEREIGN PRODUCTIVITY SUITE", -1, &rBadge, DT_LEFT | DT_SINGLELINE);
 
-        // Header Badges
-        SelectObject(hdc, hFontBadge);
-        SetTextColor(hdc, RGB(52, 211, 153)); // Emerald-400
-        RECT badgeRect = { 48, 86, client.right - 48, 106 };
-        DrawTextW(hdc, L"● 100% Offline Standalone   ● 105 Language Packs   ● Google Hindi Ready   ● Zero Telemetry", -1, &badgeRect, DT_LEFT | DT_SINGLELINE);
+        // Divider Line under Header
+        HPEN hSepPen = CreatePen(PS_SOLID, 1, RGB(30, 41, 59));
+        SelectObject(hdc, hSepPen);
+        MoveToEx(hdc, 40, 72, NULL);
+        LineTo(hdc, client.right - 40, 72);
 
-        // Pens & Brushes for Cards
-        HPEN hCardPen = CreatePen(PS_SOLID, 1, RGB(51, 65, 85)); // Slate-700
-        HBRUSH hCardBrush = CreateSolidBrush(RGB(30, 41, 59)); // Slate-800
-        SelectObject(hdc, hCardPen);
-        SelectObject(hdc, hCardBrush);
+        // 2. HERO WELCOME SECTION (y: 84 - 130)
+        SelectObject(hdc, hFontHeroTitle);
+        SetTextColor(hdc, RGB(241, 245, 249)); // Slate-100
+        RECT rHero = { 40, 84, client.right - 40, 112 };
 
-        // ==========================================
-        // LEFT COLUMN CARDS (width = 570)
-        // ==========================================
-        // Card 1: Drift
-        RoundRect(hdc, 48, 160, 620, 266, 10, 10);
+        if (g_currentLangIndex == 1) {
+            DrawTextW(hdc, L"नमस्ते, गिरि ऑर्बिट में आपका स्वागत है", -1, &rHero, DT_LEFT | DT_SINGLELINE);
+        } else {
+            DrawTextW(hdc, L"Welcome to Giri Orbit Sovereign Suite", -1, &rHero, DT_LEFT | DT_SINGLELINE);
+        }
+
+        SelectObject(hdc, hFontSub);
+        SetTextColor(hdc, RGB(148, 163, 184)); // Slate-400
+        RECT rHeroSub = { 40, 114, client.right - 40, 136 };
+        DrawTextW(hdc, L"100% Offline Standalone • Zero Telemetry • Sovereign Document, Spreadsheet & Presentation Engine", -1, &rHeroSub, DT_LEFT | DT_SINGLELINE);
+
+        // 3. THREE PRIMARY SUITE CARDS (y: 150 to 500)
+        // Width: 300 each, Heights: 350
+        // Card 1: x = 40
+        // Card 2: x = 370
+        // Card 3: x = 700
+
+        HBRUSH hCardBg = CreateSolidBrush(RGB(17, 24, 39)); // Slate-900 Card
+        HPEN hBorderDrift = CreatePen(PS_SOLID, 1, RGB(37, 99, 235));
+        HPEN hBorderAxis = CreatePen(PS_SOLID, 1, RGB(16, 185, 129));
+        HPEN hBorderKinetic = CreatePen(PS_SOLID, 1, RGB(245, 158, 11));
+
+        // CARD 1: GIRI DRIFT
+        SelectObject(hdc, hBorderDrift);
+        SelectObject(hdc, hCardBg);
+        RoundRect(hdc, 40, 150, 340, 500, 12, 12);
+
+        // Header Accent Stripe
+        HBRUSH hDriftStripe = CreateSolidBrush(RGB(37, 99, 235));
+        RECT rDriftTop = { 41, 151, 339, 158 };
+        FillRect(hdc, &rDriftTop, hDriftStripe);
+        DeleteObject(hDriftStripe);
+
         SelectObject(hdc, hFontCardTitle);
-        SetTextColor(hdc, RGB(248, 250, 252));
-        RECT r1 = { 64, 172, 600, 194 };
-        DrawTextW(hdc, L"Giri Drift — Document Composer & Word Processor", -1, &r1, DT_LEFT | DT_SINGLELINE);
+        SetTextColor(hdc, RGB(255, 255, 255));
+        RECT rDTitle = { 60, 172, 320, 200 };
+        DrawTextW(hdc, L"Giri Drift", -1, &rDTitle, DT_LEFT | DT_SINGLELINE);
+
+        SelectObject(hdc, hFontCardSub);
+        SetTextColor(hdc, RGB(96, 165, 250)); // Light Blue
+        RECT rDSub = { 60, 202, 320, 224 };
+        DrawTextW(hdc, L"Document Composer", -1, &rDSub, DT_LEFT | DT_SINGLELINE);
+
         SelectObject(hdc, hFontCardDesc);
         SetTextColor(hdc, RGB(148, 163, 184));
-        RECT r1d = { 64, 194, 600, 214 };
-        DrawTextW(hdc, L"A4 typographic ribbon, tables, spellcheck, Google Noto Sans Devanagari Hindi support.", -1, &r1d, DT_LEFT | DT_SINGLELINE);
+        RECT rDDesc = { 60, 232, 320, 340 };
+        DrawTextW(hdc,
+                  L"Professional word processing, full typography, styled tables, and universal PDF export with integrated Google Hindi (Noto Sans Devanagari) writing style.",
+                  -1, &rDDesc, DT_LEFT | DT_WORDBREAK);
 
-        // Card 2: Axis
-        RoundRect(hdc, 48, 280, 620, 386, 10, 10);
+        // CARD 2: GIRI AXIS
+        SelectObject(hdc, hBorderAxis);
+        RoundRect(hdc, 370, 150, 670, 500, 12, 12);
+
+        HBRUSH hAxisStripe = CreateSolidBrush(RGB(16, 185, 129));
+        RECT rAxisTop = { 371, 151, 669, 158 };
+        FillRect(hdc, &rAxisTop, hAxisStripe);
+        DeleteObject(hAxisStripe);
+
         SelectObject(hdc, hFontCardTitle);
-        SetTextColor(hdc, RGB(248, 250, 252));
-        RECT r2 = { 64, 292, 600, 314 };
-        DrawTextW(hdc, L"Giri Axis — Financial Matrix & Spreadsheet Engine", -1, &r2, DT_LEFT | DT_SINGLELINE);
+        SetTextColor(hdc, RGB(255, 255, 255));
+        RECT rATitle = { 390, 172, 650, 200 };
+        DrawTextW(hdc, L"Giri Axis", -1, &rATitle, DT_LEFT | DT_SINGLELINE);
+
+        SelectObject(hdc, hFontCardSub);
+        SetTextColor(hdc, RGB(52, 211, 153)); // Light Green
+        RECT rASub = { 390, 202, 650, 224 };
+        DrawTextW(hdc, L"Financial Matrix & Grid", -1, &rASub, DT_LEFT | DT_SINGLELINE);
+
         SelectObject(hdc, hFontCardDesc);
         SetTextColor(hdc, RGB(148, 163, 184));
-        RECT r2d = { 64, 314, 600, 334 };
-        DrawTextW(hdc, L"High-velocity formula evaluations (=SUM, AVG), sorting, and interactive GDI+ column charts.", -1, &r2d, DT_LEFT | DT_SINGLELINE);
+        RECT rADDesc = { 390, 232, 650, 340 };
+        DrawTextW(hdc,
+                  L"High-velocity spreadsheet engine with real-time formulas (=SUM, AVG), Indian lakh/crore currency formatting (₹ INR), and interactive column charts.",
+                  -1, &rADDesc, DT_LEFT | DT_WORDBREAK);
 
-        // Card 3: Kinetic
-        RoundRect(hdc, 48, 400, 620, 506, 10, 10);
+        // CARD 3: GIRI KINETIC
+        SelectObject(hdc, hBorderKinetic);
+        RoundRect(hdc, 700, 150, 1000, 500, 12, 12);
+
+        HBRUSH hKinStripe = CreateSolidBrush(RGB(245, 158, 11));
+        RECT rKinTop = { 701, 151, 999, 158 };
+        FillRect(hdc, &rKinTop, hKinStripe);
+        DeleteObject(hKinStripe);
+
         SelectObject(hdc, hFontCardTitle);
-        SetTextColor(hdc, RGB(248, 250, 252));
-        RECT r3 = { 64, 412, 600, 434 };
-        DrawTextW(hdc, L"Giri Kinetic — 16:9 Presentation Studio & Keynotes", -1, &r3, DT_LEFT | DT_SINGLELINE);
+        SetTextColor(hdc, RGB(255, 255, 255));
+        RECT rKTitle = { 720, 172, 980, 200 };
+        DrawTextW(hdc, L"Giri Kinetic", -1, &rKTitle, DT_LEFT | DT_SINGLELINE);
+
+        SelectObject(hdc, hFontCardSub);
+        SetTextColor(hdc, RGB(251, 191, 36)); // Light Amber
+        RECT rKSub = { 720, 202, 980, 224 };
+        DrawTextW(hdc, L"Presentation Studio", -1, &rKSub, DT_LEFT | DT_SINGLELINE);
+
         SelectObject(hdc, hFontCardDesc);
         SetTextColor(hdc, RGB(148, 163, 184));
-        RECT r3d = { 64, 434, 600, 454 };
-        DrawTextW(hdc, L"Widescreen slide layouts, presentation mode (F5), and PresentationGO global template integration.", -1, &r3d, DT_LEFT | DT_SINGLELINE);
+        RECT rKDesc = { 720, 232, 980, 340 };
+        DrawTextW(hdc,
+                  L"16:9 widescreen presentation studio with smooth 60 FPS hardware slide transitions, step-by-step element animations, and interactive laser pointer show.",
+                  -1, &rKDesc, DT_LEFT | DT_WORDBREAK);
 
-        // Card 4: Universal File Opener
-        RoundRect(hdc, 48, 520, 620, 616, 10, 10);
-        SelectObject(hdc, hFontCardTitle);
-        SetTextColor(hdc, RGB(248, 250, 252));
-        RECT r4 = { 64, 532, 600, 554 };
-        DrawTextW(hdc, L"Universal Sovereign Office Files (.giri)", -1, &r4, DT_LEFT | DT_SINGLELINE);
-        SelectObject(hdc, hFontCardDesc);
-        SetTextColor(hdc, RGB(148, 163, 184));
-        RECT r4d = { 64, 550, 600, 566 };
-        DrawTextW(hdc, L"Single universal format for documents, financial matrices, and presentation decks.", -1, &r4d, DT_LEFT | DT_SINGLELINE);
+        // Clean Up GDI
+        DeleteObject(hCardBg);
+        DeleteObject(hBorderDrift);
+        DeleteObject(hBorderAxis);
+        DeleteObject(hBorderKinetic);
+        DeleteObject(hSepPen);
 
-        // ==========================================
-        // RIGHT COLUMN: ENTERPRISE SERVICES PANEL
-        // ==========================================
-        RoundRect(hdc, 644, 160, 1030, 506, 10, 10);
-        SelectObject(hdc, hFontCardTitle);
-        SetTextColor(hdc, RGB(248, 250, 252));
-        RECT rp1 = { 660, 172, 1014, 194 };
-        DrawTextW(hdc, L"Enterprise 4GB Services & Diagnostics", -1, &rp1, DT_LEFT | DT_SINGLELINE);
-
-        SelectObject(hdc, hFontCardDesc);
-        SetTextColor(hdc, RGB(56, 189, 248));
-        RECT rp2 = { 660, 196, 1014, 214 };
-        std::wstring ramStr = L"Physical RAM: " + std::to_wstring(g_memInfo.dwMemoryLoad) + L"% Load (" +
-                              std::to_wstring(g_memInfo.ullAvailPhys / (1024 * 1024)) + L" MB Available)";
-        DrawTextW(hdc, ramStr.c_str(), -1, &rp2, DT_LEFT | DT_SINGLELINE);
-
-        SetTextColor(hdc, RGB(148, 163, 184));
-        RECT rp3 = { 660, 216, 1014, 250 };
-        DrawTextW(hdc, L"Zero cloud telemetry leak. Local background sync and health verification daemons active.", -1, &rp3, DT_LEFT | DT_WORDBREAK);
-
-        // Right Column: Social & Update Box
-        RoundRect(hdc, 644, 520, 1030, 616, 10, 10);
-        SelectObject(hdc, hFontCardTitle);
-        SetTextColor(hdc, RGB(248, 250, 252));
-        RECT rso = { 660, 532, 1014, 554 };
-        DrawTextW(hdc, L"Sovereign Community & Updates", -1, &rso, DT_LEFT | DT_SINGLELINE);
-
-        // Cleanup
         SelectObject(hdc, oldFont);
-        DeleteObject(hFontTitle);
+        DeleteObject(hFontHeaderTitle);
+        DeleteObject(hFontHeroTitle);
         DeleteObject(hFontSub);
         DeleteObject(hFontCardTitle);
+        DeleteObject(hFontCardSub);
         DeleteObject(hFontCardDesc);
-        DeleteObject(hFontBadge);
-        DeleteObject(hCardPen);
-        DeleteObject(hCardBrush);
 
         EndPaint(hwnd, &ps);
         return 0;
     }
-    case WM_COMMAND: {
-        WORD id = LOWORD(wParam);
-        if (id == IDC_BTN_LAUNCH_DRIFT || id == IDC_BTN_QUICK_DRIFT) {
-            LaunchApp(L"GiriDrift.exe");
-        } else if (id == IDC_BTN_LAUNCH_AXIS || id == IDC_BTN_QUICK_AXIS) {
-            LaunchApp(L"GiriAxis.exe");
-        } else if (id == IDC_BTN_LAUNCH_KINETIC || id == IDC_BTN_QUICK_KINETIC) {
-            LaunchApp(L"GiriKinetic.exe");
-        } else if (id == IDC_BTN_QUICK_HINDI) {
-            LaunchApp(L"GiriDrift.exe", L"-hindi");
-        } else if (id == IDC_BTN_DRIFT_CHARTER) {
-            LaunchApp(L"GiriDrift.exe");
-        } else if (id == IDC_BTN_AXIS_BUDGET) {
-            LaunchApp(L"GiriAxis.exe");
-        } else if (id == IDC_BTN_KINETIC_PITCH) {
-            LaunchApp(L"GiriKinetic.exe");
-        } else if (id == IDC_BTN_RUN_DIAGNOSTICS) {
-            DoRunDiagnostics(hwnd);
-        } else if (id == IDC_BTN_RUN_SYNC) {
-            DoRunSync(hwnd);
-        } else if (id == IDC_BTN_VIEW_LANGS) {
-            DoViewLanguages(hwnd);
-        } else if (id == IDC_BTN_FONT_INSPECTOR) {
-            DoFontInspector(hwnd);
-        } else if (id == IDC_BTN_BENCHMARK) {
-            DoBenchmark(hwnd);
-        } else if (id == IDC_BTN_OPEN_FILE) {
-            wchar_t szFile[MAX_PATH] = { 0 };
-            OPENFILENAMEW ofn = { sizeof(OPENFILENAMEW) };
-            ofn.hwndOwner = hwnd;
-            ofn.lpstrFilter = L"Universal Sovereign Files (*.giri)\0*.giri\0All Files (*.*)\0*.*\0";
-            ofn.lpstrFile = szFile;
-            ofn.nMaxFile = MAX_PATH;
-            ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
 
-            if (GetOpenFileNameW(&ofn)) {
-                std::string content, toolType;
-                if (LoadUniversalGiriFile(szFile, content, toolType)) {
-                    std::wstring quoted = L"\"" + std::wstring(szFile) + L"\"";
-                    if (toolType == "axis") {
-                        LaunchApp(L"GiriAxis.exe", quoted);
-                    } else if (toolType == "kinetic") {
-                        LaunchApp(L"GiriKinetic.exe", quoted);
-                    } else {
-                        LaunchApp(L"GiriDrift.exe", quoted);
-                    }
-                }
-            }
-        } else if (id == IDC_BTN_CHECK_UPDATES) {
-            SendMessageW(g_hStatusBar, SB_SETTEXTW, 2, (LPARAM)L"Checking GitHub repo...");
-            CheckUpdatesAsync(hwnd);
-        } else if (id == IDC_BTN_GITHUB) {
-            ShellExecuteW(hwnd, L"open", GIRI_ORBIT_GITHUB_URL, NULL, NULL, SW_SHOWNORMAL);
-        } else if (id == IDC_BTN_INSTA) {
-            ShellExecuteW(hwnd, L"open", GIRI_ORBIT_INSTA_URL, NULL, NULL, SW_SHOWNORMAL);
-        }
-        return 0;
+    case WM_CTLCOLORSTATIC: {
+        HDC hdcStatic = (HDC)wParam;
+        SetTextColor(hdcStatic, RGB(241, 245, 249));
+        SetBkColor(hdcStatic, RGB(11, 15, 25));
+        static HBRUSH hBackBrush = CreateSolidBrush(RGB(11, 15, 25));
+        return (INT_PTR)hBackBrush;
     }
-    case (WM_USER + 10): {
-        const wchar_t* stat = (const wchar_t*)lParam;
-        SendMessageW(g_hStatusBar, SB_SETTEXTW, 2, (LPARAM)stat);
-        return 0;
-    }
+
     case WM_DESTROY:
         PostQuitMessage(0);
         return 0;
