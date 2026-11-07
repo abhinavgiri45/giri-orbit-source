@@ -189,12 +189,102 @@ namespace GiriOrbit.App
                 initialUrl += "#hub";
             }
 
-            MainWindow mainForm = new MainWindow(initialUrl, server, dedicatedTool);
-            Application.Run(mainForm);
+            string modernBrowser = FindModernBrowser();
+            if (!string.IsNullOrEmpty(modernBrowser))
+            {
+                string profileDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GiriOrbit", "AppData", "Profile");
+                if (!Directory.Exists(profileDir)) Directory.CreateDirectory(profileDir);
 
-            // Cleanup
-            if (server != null) server.Stop();
+                // Launch Edge Chromium in dedicated standalone App Mode
+                // Pixel-accurate reproduction of the full web office suite, zero address bar, zero browser tabs, full hardware acceleration
+                string appArgs = string.Format("--app=\"{0}\" --user-data-dir=\"{1}\" --window-size=1366,850", initialUrl, profileDir);
+                try
+                {
+                    ProcessStartInfo psi = new ProcessStartInfo(modernBrowser, appArgs);
+                    psi.UseShellExecute = false;
+                    Process browserProc = Process.Start(psi);
+                    if (browserProc != null)
+                    {
+                        browserProc.WaitForExit();
+                    }
+                }
+                catch
+                {
+                    MainWindow mainForm = new MainWindow(initialUrl, server, dedicatedTool);
+                    Application.Run(mainForm);
+                }
+            }
+            else
+            {
+                MainWindow mainForm = new MainWindow(initialUrl, server, dedicatedTool);
+                Application.Run(mainForm);
+            }
+
+            // Cleanup server safely (only stop if no sibling Giri apps are running)
+            if (server != null)
+            {
+                bool othersRunning = false;
+                Process current = Process.GetCurrentProcess();
+                foreach (Process p in Process.GetProcesses())
+                {
+                    try
+                    {
+                        if (p.Id != current.Id && (p.ProcessName.StartsWith("Giri", StringComparison.OrdinalIgnoreCase)))
+                        {
+                            othersRunning = true;
+                            break;
+                        }
+                    }
+                    catch { }
+                }
+                if (!othersRunning)
+                {
+                    server.Stop();
+                }
+            }
             GC.KeepAlive(appMutex);
+        }
+
+        public static string FindModernBrowser()
+        {
+            string[] candidates = new string[]
+            {
+                @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+                @"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), @"Microsoft\Edge\Application\msedge.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"Microsoft\Edge\Application\msedge.exe"),
+                @"C:\Program Files\Google\Chrome\Application\chrome.exe",
+                @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+                @"C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe"
+            };
+
+            foreach (string p in candidates)
+            {
+                if (File.Exists(p)) return p;
+            }
+
+            try
+            {
+                using (RegistryKey k = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\msedge.exe"))
+                {
+                    if (k != null)
+                    {
+                        object v = k.GetValue("");
+                        if (v != null && File.Exists(v.ToString())) return v.ToString();
+                    }
+                }
+                using (RegistryKey k = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe"))
+                {
+                    if (k != null)
+                    {
+                        object v = k.GetValue("");
+                        if (v != null && File.Exists(v.ToString())) return v.ToString();
+                    }
+                }
+            }
+            catch { }
+
+            return null;
         }
 
         private static void ConfigureBrowserRegistry()
