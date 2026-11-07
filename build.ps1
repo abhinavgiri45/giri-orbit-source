@@ -32,7 +32,7 @@ g++ -std=c++20 -O2 -mwindows -municode "$baseDir\src\kinetic\main.cpp" "$baseDir
 # 4. Giri Orbit Hub
 Write-Host "[4/5] Compiling Giri Orbit Hub (Orchestrator)..." -ForegroundColor Yellow
 windres -i "$baseDir\src\hub\resource.rc" -o "$baseDir\src\hub\resource.o"
-g++ -std=c++20 -O2 -mwindows -municode "$baseDir\src\hub\main.cpp" "$baseDir\src\hub\resource.o" -o "$baseDir\bin\GiriOrbit.exe" -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lwininet
+g++ -std=c++20 -O2 -mwindows -municode "$baseDir\src\hub\main.cpp" "$baseDir\src\hub\resource.o" -o "$baseDir\bin\GiriOrbit.exe" -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lwininet -lgdiplus -lole32
 
 # 5. Dedicated Setup Wizard
 Write-Host "[5/5] Compiling Setup Wizard..." -ForegroundColor Yellow
