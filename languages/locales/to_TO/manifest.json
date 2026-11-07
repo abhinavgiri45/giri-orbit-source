@@ -1,0 +1,30 @@
+{
+  "code": "to_TO",
+  "name": "Tongan",
+  "native": "Lea Faka-Tonga",
+  "script": "Latin",
+  "direction": "ltr",
+  "currency": "T$",
+  "vocab": [
+    "office",
+    "document",
+    "save",
+    "open",
+    "format",
+    "edit",
+    "table",
+    "chart",
+    "presentation",
+    "system",
+    "sovereign",
+    "secure",
+    "font",
+    "page",
+    "tools",
+    "help",
+    "view",
+    "export",
+    "import",
+    "print"
+  ]
+}

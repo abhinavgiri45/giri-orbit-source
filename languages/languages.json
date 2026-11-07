@@ -1,0 +1,842 @@
+[
+  {
+    "code": "hi_IN",
+    "name": "Hindi",
+    "native": "हिन्दी",
+    "script": "Devanagari",
+    "direction": "ltr",
+    "currency": "₹"
+  },
+  {
+    "code": "en_US",
+    "name": "English (US)",
+    "native": "English (US)",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "$"
+  },
+  {
+    "code": "en_GB",
+    "name": "English (UK)",
+    "native": "English (UK)",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "£"
+  },
+  {
+    "code": "es_ES",
+    "name": "Spanish",
+    "native": "Español",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "€"
+  },
+  {
+    "code": "fr_FR",
+    "name": "French",
+    "native": "Français",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "€"
+  },
+  {
+    "code": "de_DE",
+    "name": "German",
+    "native": "Deutsch",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "€"
+  },
+  {
+    "code": "zh_CN",
+    "name": "Chinese Simplified",
+    "native": "简体中文",
+    "script": "Han",
+    "direction": "ltr",
+    "currency": "¥"
+  },
+  {
+    "code": "zh_TW",
+    "name": "Chinese Traditional",
+    "native": "繁體中文",
+    "script": "Han",
+    "direction": "ltr",
+    "currency": "NT$"
+  },
+  {
+    "code": "ja_JP",
+    "name": "Japanese",
+    "native": "日本語",
+    "script": "Kanji/Kana",
+    "direction": "ltr",
+    "currency": "¥"
+  },
+  {
+    "code": "ko_KR",
+    "name": "Korean",
+    "native": "한국어",
+    "script": "Hangul",
+    "direction": "ltr",
+    "currency": "₩"
+  },
+  {
+    "code": "ar_SA",
+    "name": "Arabic",
+    "native": "العربية",
+    "script": "Arabic",
+    "direction": "rtl",
+    "currency": "ر.س"
+  },
+  {
+    "code": "ru_RU",
+    "name": "Russian",
+    "native": "Русский",
+    "script": "Cyrillic",
+    "direction": "ltr",
+    "currency": "₽"
+  },
+  {
+    "code": "pt_BR",
+    "name": "Portuguese",
+    "native": "Português",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "R$"
+  },
+  {
+    "code": "it_IT",
+    "name": "Italian",
+    "native": "Italiano",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "€"
+  },
+  {
+    "code": "bn_IN",
+    "name": "Bengali",
+    "native": "বাংলা",
+    "script": "Bengali",
+    "direction": "ltr",
+    "currency": "৳"
+  },
+  {
+    "code": "te_IN",
+    "name": "Telugu",
+    "native": "తెలుగు",
+    "script": "Telugu",
+    "direction": "ltr",
+    "currency": "₹"
+  },
+  {
+    "code": "mr_IN",
+    "name": "Marathi",
+    "native": "मराठी",
+    "script": "Devanagari",
+    "direction": "ltr",
+    "currency": "₹"
+  },
+  {
+    "code": "ta_IN",
+    "name": "Tamil",
+    "native": "தமிழ்",
+    "script": "Tamil",
+    "direction": "ltr",
+    "currency": "₹"
+  },
+  {
+    "code": "ur_PK",
+    "name": "Urdu",
+    "native": "اردو",
+    "script": "Arabic",
+    "direction": "rtl",
+    "currency": "₨"
+  },
+  {
+    "code": "gu_IN",
+    "name": "Gujarati",
+    "native": "ગુજરાતી",
+    "script": "Gujarati",
+    "direction": "ltr",
+    "currency": "₹"
+  },
+  {
+    "code": "kn_IN",
+    "name": "Kannada",
+    "native": "ಕನ್ನಡ",
+    "script": "Kannada",
+    "direction": "ltr",
+    "currency": "₹"
+  },
+  {
+    "code": "ml_IN",
+    "name": "Malayalam",
+    "native": "മലയാളം",
+    "script": "Malayalam",
+    "direction": "ltr",
+    "currency": "₹"
+  },
+  {
+    "code": "pa_IN",
+    "name": "Punjabi",
+    "native": "ਪੰਜਾਬੀ",
+    "script": "Gurmukhi",
+    "direction": "ltr",
+    "currency": "₹"
+  },
+  {
+    "code": "af_ZA",
+    "name": "Afrikaans",
+    "native": "Afrikaans",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "R"
+  },
+  {
+    "code": "sq_AL",
+    "name": "Albanian",
+    "native": "Shqip",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "L"
+  },
+  {
+    "code": "am_ET",
+    "name": "Amharic",
+    "native": "አማርኛ",
+    "script": "Ge'ez",
+    "direction": "ltr",
+    "currency": "Br"
+  },
+  {
+    "code": "hy_AM",
+    "name": "Armenian",
+    "native": "Հայերեն",
+    "script": "Armenian",
+    "direction": "ltr",
+    "currency": "֏"
+  },
+  {
+    "code": "az_AZ",
+    "name": "Azerbaijani",
+    "native": "Azərbaycan",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "₼"
+  },
+  {
+    "code": "eu_ES",
+    "name": "Basque",
+    "native": "Euskara",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "€"
+  },
+  {
+    "code": "be_BY",
+    "name": "Belarusian",
+    "native": "Беларуская",
+    "script": "Cyrillic",
+    "direction": "ltr",
+    "currency": "Br"
+  },
+  {
+    "code": "bs_BA",
+    "name": "Bosnian",
+    "native": "Bosanski",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "KM"
+  },
+  {
+    "code": "bg_BG",
+    "name": "Bulgarian",
+    "native": "Български",
+    "script": "Cyrillic",
+    "direction": "ltr",
+    "currency": "лв"
+  },
+  {
+    "code": "my_MM",
+    "name": "Burmese",
+    "native": "မြန်မာစာ",
+    "script": "Burmese",
+    "direction": "ltr",
+    "currency": "K"
+  },
+  {
+    "code": "ca_ES",
+    "name": "Catalan",
+    "native": "Català",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "€"
+  },
+  {
+    "code": "hr_HR",
+    "name": "Croatian",
+    "native": "Hrvatski",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "€"
+  },
+  {
+    "code": "cs_CZ",
+    "name": "Czech",
+    "native": "Čeština",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "Kč"
+  },
+  {
+    "code": "da_DK",
+    "name": "Danish",
+    "native": "Dansk",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "kr"
+  },
+  {
+    "code": "nl_NL",
+    "name": "Dutch",
+    "native": "Nederlands",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "€"
+  },
+  {
+    "code": "et_EE",
+    "name": "Estonian",
+    "native": "Eesti",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "€"
+  },
+  {
+    "code": "fil_PH",
+    "name": "Filipino",
+    "native": "Filipino",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "₱"
+  },
+  {
+    "code": "fi_FI",
+    "name": "Finnish",
+    "native": "Suomi",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "€"
+  },
+  {
+    "code": "gl_ES",
+    "name": "Galician",
+    "native": "Galego",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "€"
+  },
+  {
+    "code": "ka_GE",
+    "name": "Georgian",
+    "native": "ქართული",
+    "script": "Georgian",
+    "direction": "ltr",
+    "currency": "₾"
+  },
+  {
+    "code": "el_GR",
+    "name": "Greek",
+    "native": "Ελληνικά",
+    "script": "Greek",
+    "direction": "ltr",
+    "currency": "€"
+  },
+  {
+    "code": "he_IL",
+    "name": "Hebrew",
+    "native": "עברית",
+    "script": "Hebrew",
+    "direction": "rtl",
+    "currency": "₪"
+  },
+  {
+    "code": "hu_HU",
+    "name": "Hungarian",
+    "native": "Magyar",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "Ft"
+  },
+  {
+    "code": "is_IS",
+    "name": "Icelandic",
+    "native": "Íslenska",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "kr"
+  },
+  {
+    "code": "id_ID",
+    "name": "Indonesian",
+    "native": "Bahasa Indonesia",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "Rp"
+  },
+  {
+    "code": "ga_IE",
+    "name": "Irish",
+    "native": "Gaeilge",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "€"
+  },
+  {
+    "code": "kk_KZ",
+    "name": "Kazakh",
+    "native": "Қазақ тілі",
+    "script": "Cyrillic",
+    "direction": "ltr",
+    "currency": "₸"
+  },
+  {
+    "code": "km_KH",
+    "name": "Khmer",
+    "native": "ភាសាខ្មែរ",
+    "script": "Khmer",
+    "direction": "ltr",
+    "currency": "៛"
+  },
+  {
+    "code": "ky_KG",
+    "name": "Kyrgyz",
+    "native": "Кыргызча",
+    "script": "Cyrillic",
+    "direction": "ltr",
+    "currency": "сом"
+  },
+  {
+    "code": "lo_LA",
+    "name": "Lao",
+    "native": "ພາສາລາວ",
+    "script": "Lao",
+    "direction": "ltr",
+    "currency": "₭"
+  },
+  {
+    "code": "lv_LV",
+    "name": "Latvian",
+    "native": "Latviešu",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "€"
+  },
+  {
+    "code": "lt_LT",
+    "name": "Lithuanian",
+    "native": "Lietuvių",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "€"
+  },
+  {
+    "code": "mk_MK",
+    "name": "Macedonian",
+    "native": "Македонски",
+    "script": "Cyrillic",
+    "direction": "ltr",
+    "currency": "ден"
+  },
+  {
+    "code": "ms_MY",
+    "name": "Malay",
+    "native": "Bahasa Melayu",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "RM"
+  },
+  {
+    "code": "mt_MT",
+    "name": "Maltese",
+    "native": "Malti",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "€"
+  },
+  {
+    "code": "mn_MN",
+    "name": "Mongolian",
+    "native": "Монгол",
+    "script": "Cyrillic",
+    "direction": "ltr",
+    "currency": "₮"
+  },
+  {
+    "code": "ne_NP",
+    "name": "Nepali",
+    "native": "नेपाली",
+    "script": "Devanagari",
+    "direction": "ltr",
+    "currency": "₨"
+  },
+  {
+    "code": "no_NO",
+    "name": "Norwegian",
+    "native": "Norsk",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "kr"
+  },
+  {
+    "code": "or_IN",
+    "name": "Odia",
+    "native": "ଓଡ଼ିଆ",
+    "script": "Odia",
+    "direction": "ltr",
+    "currency": "₹"
+  },
+  {
+    "code": "ps_AF",
+    "name": "Pashto",
+    "native": "پښتو",
+    "script": "Arabic",
+    "direction": "rtl",
+    "currency": "؋"
+  },
+  {
+    "code": "fa_IR",
+    "name": "Persian",
+    "native": "فارسی",
+    "script": "Arabic",
+    "direction": "rtl",
+    "currency": "﷼"
+  },
+  {
+    "code": "pl_PL",
+    "name": "Polish",
+    "native": "Polski",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "zł"
+  },
+  {
+    "code": "ro_RO",
+    "name": "Romanian",
+    "native": "Română",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "lei"
+  },
+  {
+    "code": "sa_IN",
+    "name": "Sanskrit",
+    "native": "संस्कृतम्",
+    "script": "Devanagari",
+    "direction": "ltr",
+    "currency": "₹"
+  },
+  {
+    "code": "sr_RS",
+    "name": "Serbian",
+    "native": "Српски",
+    "script": "Cyrillic",
+    "direction": "ltr",
+    "currency": "дин"
+  },
+  {
+    "code": "si_LK",
+    "name": "Sinhala",
+    "native": "සිංහල",
+    "script": "Sinhala",
+    "direction": "ltr",
+    "currency": "Rs"
+  },
+  {
+    "code": "sk_SK",
+    "name": "Slovak",
+    "native": "Slovenčina",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "€"
+  },
+  {
+    "code": "sl_SI",
+    "name": "Slovenian",
+    "native": "Slovenščina",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "€"
+  },
+  {
+    "code": "sw_KE",
+    "name": "Swahili",
+    "native": "Kiswahili",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "KSh"
+  },
+  {
+    "code": "sv_SE",
+    "name": "Swedish",
+    "native": "Svenska",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "kr"
+  },
+  {
+    "code": "th_TH",
+    "name": "Thai",
+    "native": "ไทย",
+    "script": "Thai",
+    "direction": "ltr",
+    "currency": "฿"
+  },
+  {
+    "code": "tr_TR",
+    "name": "Turkish",
+    "native": "Türkçe",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "₺"
+  },
+  {
+    "code": "uk_UA",
+    "name": "Ukrainian",
+    "native": "Українська",
+    "script": "Cyrillic",
+    "direction": "ltr",
+    "currency": "₴"
+  },
+  {
+    "code": "uz_UZ",
+    "name": "Uzbek",
+    "native": "Oʻzbekcha",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "soʻm"
+  },
+  {
+    "code": "vi_VN",
+    "name": "Vietnamese",
+    "native": "Tiếng Việt",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "₫"
+  },
+  {
+    "code": "cy_GB",
+    "name": "Welsh",
+    "native": "Cymraeg",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "£"
+  },
+  {
+    "code": "yi_YD",
+    "name": "Yiddish",
+    "native": "ייִדיש",
+    "script": "Hebrew",
+    "direction": "rtl",
+    "currency": "$"
+  },
+  {
+    "code": "zu_ZA",
+    "name": "Zulu",
+    "native": "isiZulu",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "R"
+  },
+  {
+    "code": "xh_ZA",
+    "name": "Xhosa",
+    "native": "isiXhosa",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "R"
+  },
+  {
+    "code": "gd_GB",
+    "name": "Scots Gaelic",
+    "native": "Gàidhlig",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "£"
+  },
+  {
+    "code": "la_VA",
+    "name": "Latin",
+    "native": "Latina",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "€"
+  },
+  {
+    "code": "eo_EO",
+    "name": "Esperanto",
+    "native": "Esperanto",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "€"
+  },
+  {
+    "code": "so_SO",
+    "name": "Somali",
+    "native": "Soomaali",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "Sh"
+  },
+  {
+    "code": "tg_TJ",
+    "name": "Tajik",
+    "native": "Тоҷикӣ",
+    "script": "Cyrillic",
+    "direction": "ltr",
+    "currency": "SM"
+  },
+  {
+    "code": "tt_RU",
+    "name": "Tatar",
+    "native": "Татарча",
+    "script": "Cyrillic",
+    "direction": "ltr",
+    "currency": "₽"
+  },
+  {
+    "code": "tk_TM",
+    "name": "Turkmen",
+    "native": "Türkmençe",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "m"
+  },
+  {
+    "code": "ug_CN",
+    "name": "Uyghur",
+    "native": "ئۇيغۇرچە",
+    "script": "Arabic",
+    "direction": "rtl",
+    "currency": "¥"
+  },
+  {
+    "code": "fy_NL",
+    "name": "Western Frisian",
+    "native": "Frysk",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "€"
+  },
+  {
+    "code": "lb_LU",
+    "name": "Luxembourgish",
+    "native": "Lëtzebuergesch",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "€"
+  },
+  {
+    "code": "hmn_LA",
+    "name": "Hmong",
+    "native": "Hmoob",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "$"
+  },
+  {
+    "code": "haw_US",
+    "name": "Hawaiian",
+    "native": "ʻŌlelo Hawaiʻi",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "$"
+  },
+  {
+    "code": "mg_MG",
+    "name": "Malagasy",
+    "native": "Malagasy",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "Ar"
+  },
+  {
+    "code": "mi_NZ",
+    "name": "Maori",
+    "native": "Te Reo Māori",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "$"
+  },
+  {
+    "code": "sm_WS",
+    "name": "Samoan",
+    "native": "Gagana Samoa",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "T"
+  },
+  {
+    "code": "to_TO",
+    "name": "Tongan",
+    "native": "Lea Faka-Tonga",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "T$"
+  },
+  {
+    "code": "st_LS",
+    "name": "Southern Sotho",
+    "native": "Sesotho",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "M"
+  },
+  {
+    "code": "sn_ZW",
+    "name": "Shona",
+    "native": "chiShona",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "$"
+  },
+  {
+    "code": "rw_RW",
+    "name": "Kinyarwanda",
+    "native": "Ikinyarwanda",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "FRw"
+  },
+  {
+    "code": "ig_NG",
+    "name": "Igbo",
+    "native": "Asụsụ Igbo",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "₦"
+  },
+  {
+    "code": "yo_NG",
+    "name": "Yoruba",
+    "native": "Èdè Yorùbá",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "₦"
+  },
+  {
+    "code": "ha_NG",
+    "name": "Hausa",
+    "native": "Harshen Hausa",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "₦"
+  },
+  {
+    "code": "ceb_PH",
+    "name": "Cebuano",
+    "native": "Sinugboanon",
+    "script": "Latin",
+    "direction": "ltr",
+    "currency": "₱"
+  }
+]

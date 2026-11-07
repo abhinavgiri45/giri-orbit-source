@@ -1,0 +1,16 @@
+{
+  "code": "ur_PK",
+  "name": "Urdu",
+  "native": "اردو",
+  "script": "Arabic",
+  "direction": "rtl",
+  "currency": "₨",
+  "vocab": [
+    "دستاویز",
+    "سپرspread شیٹ",
+    "پیشکش",
+    "دفتر",
+    "فائل",
+    "محفوظ"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "code": "pt_BR",
+  "name": "Portuguese",
+  "native": "Português",
+  "script": "Latin",
+  "direction": "ltr",
+  "currency": "R$",
+  "vocab": [
+    "documento",
+    "planilha",
+    "apresentacao",
+    "soberano",
+    "escritorio",
+    "arquivo",
+    "salvar",
+    "editar",
+    "tabela",
+    "grafico"
+  ]
+}

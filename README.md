@@ -1,233 +1,114 @@
-# Giri Orbit — Complete Source Code Repository
-**The Cloud-Free, Sovereign Office Productivity Suite**
+# Giri Orbit PC — Sovereign Desktop Suite (Native C++)
 
-[![License: Proprietary](https://img.shields.io/badge/License-Proprietary%20%26%20Restricted-dc2626.svg)](LICENSE)
-[![Platform: Windows | Android](https://img.shields.io/badge/Platform-Windows%20%7C%20Android-0078D4.svg)](#architecture--repository-structure)
-[![C++: C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](#1-compiling-native-win32-c-desktop-apps-exe)
-[![Android: Gradle / Java 17](https://img.shields.io/badge/Android-Java%2017%20%7C%20Gradle-3DDC84.svg)](#2-building-android-native-app-apk)
-
-> **Author**: **Abhinav Giri**  
-> **GitHub**: [@abhinavgiri45](https://github.com/abhinavgiri45)  
-> **Email**: `abhinavgiri370@gmail.com`  
-> **Main Repository & Web Hub**: [github.com/abhinavgiri45/giri-orbit](https://github.com/abhinavgiri45/giri-orbit)  
+> **100% Offline Standalone Desktop Applications Built From Scratch in Native C++**  
+> **Author & Creator:** Abhinav Giri  
+> **GitHub:** [@abhinavgiri45](https://github.com/abhinavgiri45) • **Instagram:** [@abhinavgiri45](https://instagram.com/abhinavgiri45) • **Email:** [abhinavgiri370@gmail.com](mailto:abhinavgiri370@gmail.com)  
+> **Architecture:** Pure Native Win32 C++20 • Zero Browser • Zero Cloud Telemetry • In-Memory Confidential Computing
 
 ---
 
-## Overview
+## ⚡ Overview
 
-This repository contains the complete, uncompiled **source code** for all executables (`.exe`), distribution packages (`.zip`), and mobile applications (`.apk`) of the **Giri Orbit** productivity suite:
-
-1. **Native Win32 C++ Desktop Apps (`.exe`)**:
-   - **Giri Drift** (`GiriDrift.exe`): Word processor & sovereign document composer.
-   - **Giri Axis** (`GiriAxis.exe`): Mathematical matrix calculator & spreadsheet engine.
-   - **Giri Kinetic** (`GiriKinetic.exe`): Widescreen slide deck studio with hardware double-buffered 60 FPS transitions and sequential animations.
-   - **Giri Orbit Hub** (`GiriOrbit.exe`): Central desktop app launcher and workspace coordinator.
-   - **Setup & Uninstaller** (`Setup.exe`): Native standalone offline installer.
-   - **Local Background Services**: Offline sync daemon (`OrbitSyncDaemon.exe`) and telemetry stub (`OrbitTelemetryService.exe`).
-2. **C# .NET Launchers & Tools**:
-   - Source code for .NET launchers, webview container bridges, and diagnostic helpers.
-3. **Native Android Studio App (`.apk`)**:
-   - Full Gradle Android project with native Java bridge (`MainActivity.java`, `OrbitFileProvider.java`, `WebAppInterface.java`), AndroidManifest, and offline embedded assets.
-4. **Distribution Packaging & Automation (`.zip`)**:
-   - Python & PowerShell scripts that build portable `.zip` archives, multilingual satellite DLLs, and enterprise distribution bundles.
-
----
-
-## Architecture & Repository Structure
+Giri Orbit PC is an independent, sovereign desktop productivity suite crafted in pure native C++ with direct Win32 API integration. Designed for executive speed, maximum privacy, and absolute offline resilience, Giri Orbit eliminates web wrappers, electron bloat, and remote server dependencies.
 
 ```
-giri-orbit-source/
-├── .gitignore
-├── LICENSE
-├── README.md
-│
-├── desktop-apps-cpp/                # Native Win32 C++ Desktop Applications (EXE Source)
-│   ├── src/
-│   │   ├── drift/                   # Giri Drift (Document Composer)
-│   │   │   ├── main.cpp
-│   │   │   └── resource.rc
-│   │   ├── axis/                    # Giri Axis (Spreadsheets & Calculation Grid)
-│   │   │   ├── main.cpp
-│   │   │   └── resource.rc
-│   │   ├── kinetic/                 # Giri Kinetic (Slide Deck Studio)
-│   │   │   ├── main.cpp
-│   │   │   └── resource.rc
-│   │   ├── hub/                     # Giri Orbit Hub (Central Dashboard)
-│   │   │   ├── main.cpp
-│   │   │   └── resource.rc
-│   │   ├── installer/               # Setup & Uninstaller (Offline Installer)
-│   │   │   ├── main.cpp
-│   │   │   └── resource.rc
-│   │   ├── services/                # Local Daemons & Satellite Language DLL Sources
-│   │   │   ├── OrbitSyncDaemon.cpp
-│   │   │   ├── OrbitTelemetryService.cpp
-│   │   │   ├── satellite_lang.c
-│   │   │   └── lang_*.c
-│   │   └── common/                  # Shared headers, types, and manifests
-│   │       ├── sovereign_types.h
-│   │       ├── universal_file.h
-│   │       └── app.manifest
-│   ├── assets/                      # High-resolution application icons (.ico, .png)
-│   ├── build.ps1                    # Master PowerShell compilation script (MinGW g++)
-│   └── Install_Giri_Orbit.bat       # Portable local launch & installation script
-│
-├── desktop-launchers-cs/            # C# .NET Launchers & Universal Tools
-│   ├── src/
-│   │   ├── app/                     # Program.cs, DriftLauncher.cs
-│   │   ├── installer/               # SetupProgram.cs
-│   │   ├── uninstaller/             # UninstallProgram.cs
-│   │   ├── native_cpp/              # C++ launcher wrappers & AutoUpdater headers
-│   │   └── shared/                  # AssemblyInfo.cs, app.manifest
-│   ├── assets/                      # Branding graphics & icons
-│   ├── build.ps1                    # .NET compile script
-│   └── build.bat                    # Batch compile runner
-│
-├── mobile-android-apk/              # Native Android App (APK Project)
-│   ├── app/
-│   │   ├── src/
-│   │   │   └── main/
-│   │   │       ├── AndroidManifest.xml
-│   │   │       ├── java/com/giricorporation/giriorbit/
-│   │   │       │   ├── MainActivity.java
-│   │   │       │   ├── OrbitFileProvider.java
-│   │   │       │   └── WebAppInterface.java
-│   │   │       ├── res/             # Android layouts, drawables, XML providers
-│   │   │       └── assets/www/      # 100% offline embedded web application bundle
-│   │   └── build.gradle.kts         # App-level Gradle build configuration
-│   ├── gradle/wrapper/              # Gradle wrapper files
-│   ├── build.gradle.kts             # Top-level Gradle configuration
-│   ├── settings.gradle.kts          # Gradle settings
-│   ├── gradle.properties            # Build parameters
-│   ├── local.properties.example     # SDK location template
-│   ├── gradlew / gradlew.bat        # Gradle wrapper CLI
-│   └── build_apk.ps1                # Automated PowerShell direct-to-APK builder
-│
-└── packaging-and-zip/               # Distribution & Packaging Automation (ZIP Source)
-    ├── package_safe_zip.py          # Portable standalone ZIP builder for x64, x86, and arm64
-    ├── package_full_enterprise.py   # Multi-language enterprise bundle packager
-    ├── generate_satellite_dlls.py   # 100+ Multilingual Satellite DLL compiler
-    └── build_all_distributions.ps1  # Master orchestrator for end-to-end releases
+┌────────────────────────────────────────────────────────────────────────┐
+│                        GIRI ORBIT SOVEREIGN SUITE                      │
+├─────────────────┬──────────────────────┬───────────────────────────────┤
+│   Giri Drift    │      Giri Axis       │         Giri Kinetic          │
+│ Document Studio │   Financial Matrix   │      Widescreen Studio        │
+│ (.giri, .gdrift)│   (.giri, .gaxis)    │      (.giri, .gkinetic)       │
+├─────────────────┴──────────────────────┴───────────────────────────────┤
+│                        Giri Orbit Suite Hub                            │
+│           Unified Launcher & Sovereign Orchestration Engine           │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Build Instructions
+## 📦 Dedicated Native Applications
 
-### 1. Compiling Native Win32 C++ Desktop Apps (`.exe`)
+### 1. ✍️ Giri Drift (`GiriDrift.exe`)
+*Executive Document Composer & Sovereign Word Processor*
+- **Native RichEdit Engine**: In-memory document formatting, bold, italics, underline, strikethrough, alignment, bulleted/numbered lists, color typography.
+- **Real-Time Analytics**: Character counts, live word counts, and line/column cursor positioning.
+- **Sovereign Formats**: Native support for Universal `.giri`, `.gdrift`, Rich Text (`.rtf`), and plain text (`.txt`).
+- **Zero Cloud**: Operates completely in-memory with zero network telemetry.
 
-#### Prerequisites
-- Windows 10 / 11 (x64, x86, or ARM64)
-- **MinGW-w64** or **w64devkit** with GCC supporting `-std=c++20`
-- `windres` (included with MinGW binutils)
+### 2. 📊 Giri Axis (`GiriAxis.exe`)
+*High-Velocity Financial Matrix & Formula Spreadsheet*
+- **Dynamic 1000x52 Cell Grid**: Fast row/column headers, arrow key & Tab navigation, active emerald border highlighting.
+- **Embedded Formula Parser**: Real-time evaluation of `=SUM(...)`, `=AVERAGE(...)`, `=COUNT(...)`, `=MAX(...)`, `=MIN(...)`, and arithmetic expressions across ranges (e.g. `=SUM(B2:C2)`).
+- **Multi-Sheet Tabs**: Bottom tab control for multi-sheet modeling with dynamic sheet additions.
+- **Sovereign Formats**: Universal `.giri` format, `.gaxis` spreadsheets, and standard `.csv` data exchange.
 
-#### Quick Build
-Open PowerShell in the `desktop-apps-cpp` directory:
+### 3. 🎬 Giri Kinetic (`GiriKinetic.exe`)
+*Cinematic Widescreen Presentation Studio*
+- **16:9 Widescreen Canvas**: Pixel-perfect presentation rendering with live editable titles, subtitles, and slide notes.
+- **Slide Thumbnails Strip**: Instant slide reordering, creation, duplication, and navigation.
+- **F5 Fullscreen Slide Show**: Hardware-accelerated full-screen presentation mode with keyboard arrow navigation.
+- **Global Templates & Watermarks**: Built-in template themes featuring external motif integration and watermark reference links to [PresentationGo](https://www.presentationgo.com).
+- **Sovereign Formats**: Universal `.giri` and `.gkinetic` slide decks.
+
+### 4. 🌐 Giri Orbit Hub (`GiriOrbit.exe`)
+*Sovereign Workspace Launcher & Orchestrator*
+- Single unified desktop dashboard for launching Drift, Axis, Kinetic, and quick-opening universal sovereign `.giri` files.
+- Non-blocking background GitHub update checker for automatic update notifications when connected online.
+
+### 5. 🛠️ Dedicated Setup Wizard (`Setup.exe`)
+*Native C++ Sovereign Installer*
+- Component Selection: Select individual tools (Drift, Axis, Kinetic, Hub) or click **Select All**.
+- Sovereign End-User License by **Abhinav Giri**.
+- Automated shortcut creation and `.giri` file association.
+
+---
+
+## 🔒 The Universal `.giri` Format
+
+The `.giri` file format is an open, sovereign container that universally represents any office document across Drift, Axis, and Kinetic without vendor lock-in:
+
+```
+GIRI_ORBIT_SOVEREIGN_V1
+TOOL:drift | axis | kinetic
+AUTHOR:Abhinav Giri
+ENCODING:UTF-8
+DATA_START
+<Encrypted or Plaintext Document / Matrix / Slide Deck Payload>
+```
+
+---
+
+## 🛠️ Building From Source
+
+Prerequisites: MinGW-w64 GCC with C++20 support (`w64devkit` or MSYS2).
+
 ```powershell
-cd desktop-apps-cpp
-.\build.ps1
-```
-*Note: Add `-NoSign` to skip Authenticode signing if building without an installed digital certificate.*
+# Compile Giri Drift
+windres -i src/drift/resource.rc -o src/drift/resource.o
+g++ -std=c++20 -O2 -mwindows -municode src/drift/main.cpp src/drift/resource.o -o bin/GiriDrift.exe -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lole32
 
-#### Individual Component Compilation Flags
-- **Giri Drift** (`GiriDrift.exe`):
-  ```bash
-  windres -i src/drift/resource.rc -o src/drift/resource.o
-  g++ -std=c++20 -O2 -mwindows -municode src/drift/main.cpp src/drift/resource.o -o bin/GiriDrift.exe -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lole32
-  ```
-- **Giri Axis** (`GiriAxis.exe`):
-  ```bash
-  windres -i src/axis/resource.rc -o src/axis/resource.o
-  g++ -std=c++20 -O2 -mwindows -municode src/axis/main.cpp src/axis/resource.o -o bin/GiriAxis.exe -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lole32
-  ```
-- **Giri Kinetic** (`GiriKinetic.exe`):
-  ```bash
-  windres -i src/kinetic/resource.rc -o src/kinetic/resource.o
-  g++ -std=c++20 -O2 -mwindows -municode src/kinetic/main.cpp src/kinetic/resource.o -o bin/GiriKinetic.exe -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lole32 -lmsimg32
-  ```
-- **Giri Orbit Hub** (`GiriOrbit.exe`):
-  ```bash
-  windres -i src/hub/resource.rc -o src/hub/resource.o
-  g++ -std=c++20 -O2 -mwindows -municode src/hub/main.cpp src/hub/resource.o -o bin/GiriOrbit.exe -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lwininet
-  ```
-- **Setup Wizard** (`Setup.exe`):
-  ```bash
-  windres -i src/installer/resource.rc -o src/installer/resource.o
-  g++ -std=c++20 -O2 -mwindows -municode src/installer/main.cpp src/installer/resource.o -o bin/Setup.exe -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lole32 -luuid
-  ```
+# Compile Giri Axis
+windres -i src/axis/resource.rc -o src/axis/resource.o
+g++ -std=c++20 -O2 -mwindows -municode src/axis/main.cpp src/axis/resource.o -o bin/GiriAxis.exe -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lole32
 
----
+# Compile Giri Kinetic
+windres -i src/kinetic/resource.rc -o src/kinetic/resource.o
+g++ -std=c++20 -O2 -mwindows -municode src/kinetic/main.cpp src/kinetic/resource.o -o bin/GiriKinetic.exe -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lole32
 
-### 2. Building Android Native App (`.apk`)
+# Compile Giri Orbit Hub
+windres -i src/hub/resource.rc -o src/hub/resource.o
+g++ -std=c++20 -O2 -mwindows -municode src/hub/main.cpp src/hub/resource.o -o bin/GiriOrbit.exe -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lwininet
 
-#### Prerequisites
-- **Android SDK** (API Level 34 / Build-Tools 34.0.0+)
-- **OpenJDK 17** or **OpenJDK 21**
-
-#### Building via Gradle Wrapper
-```bash
-cd mobile-android-apk
-./gradlew assembleRelease
-```
-The output APK will be generated at:
-`mobile-android-apk/app/build/outputs/apk/release/app-release.apk`
-
-#### Building via Standalone PowerShell Script
-```powershell
-cd mobile-android-apk
-.\build_apk.ps1
+# Compile Dedicated Setup Wizard
+windres -i src/installer/resource.rc -o src/installer/resource.o
+g++ -std=c++20 -O2 -mwindows -municode src/installer/main.cpp src/installer/resource.o -o bin/Setup.exe -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lole32 -luuid
 ```
 
 ---
 
-### 3. Generating Standalone Distribution Packages (`.zip`)
+## 👤 Author & Licensing
 
-#### Prerequisites
-- **Python 3.8+**
-
-#### Building Portable ZIP Packages
-```bash
-cd packaging-and-zip
-python package_safe_zip.py
-```
-This generates:
-- `output/dist/GiriOrbit-Setup-x64.zip`
-- `output/dist/GiriOrbit-Setup-x86.zip`
-- `output/dist/GiriOrbit-Setup-arm64.zip`
-
-#### Generating Multilingual Satellite DLLs
-```bash
-cd packaging-and-zip
-python generate_satellite_dlls.py
-```
-Compiles satellite DLLs for over 25 major languages including Hindi (Devanagari), English, Spanish, French, German, Chinese, Japanese, Arabic, Russian, Portuguese, and regional Indic languages.
-
----
-
-### 4. End-to-End Master Pipeline
-
-To compile the desktop apps, compile the satellite DLLs, build the Android APK, and bundle all distribution ZIP packages with one command:
-```powershell
-cd packaging-and-zip
-.\build_all_distributions.ps1
-```
-
----
-
-## Key Features & Design Philosophy
-
-- **Zero Cloud Telemetry**: 100% offline standalone operation. No third-party network pings or telemetry daemons.
-- **Pure Win32 GDI & Double-Buffered Rendering**: High-speed, responsive native UI with zero Chromium/WebView2 overhead in the desktop apps.
-- **Hardware-Accelerated Kinetic Studio**: True 60 FPS transitions (Fade, Push, Wipe, Dissolve) powered by Win32 `AlphaBlend` (`msimg32`).
-- **Complete Android Offline Support**: Full office features packed directly into the APK's asset bundle without requiring external web connectivity.
-
----
-
-## License & Attribution
-
-Developed exclusively by **Abhinav Giri**.  
-Protected under the **[Proprietary Commercial Software License](LICENSE)**. All Rights Reserved. Unauthorized copying, modification, or distribution is strictly prohibited.
-
-For questions, support, or contributions:
 - **Author**: Abhinav Giri
-- **Email**: `abhinavgiri370@gmail.com`
-- **GitHub**: [https://github.com/abhinavgiri45](https://github.com/abhinavgiri45)
+- **GitHub**: [github.com/abhinavgiri45](https://github.com/abhinavgiri45)
+- **Instagram**: [@abhinavgiri45](https://instagram.com/abhinavgiri45)
+- **License**: Proprietary Commercial Software License (All Rights Reserved - Abhinav Giri).

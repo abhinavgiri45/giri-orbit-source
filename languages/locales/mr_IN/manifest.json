@@ -1,0 +1,16 @@
+{
+  "code": "mr_IN",
+  "name": "Marathi",
+  "native": "मराठी",
+  "script": "Devanagari",
+  "direction": "ltr",
+  "currency": "₹",
+  "vocab": [
+    "दस्तऐवज",
+    "स्प्रेडशीट",
+    "सादरीकरण",
+    "कार्यालय",
+    "साठवा",
+    "फाईल"
+  ]
+}

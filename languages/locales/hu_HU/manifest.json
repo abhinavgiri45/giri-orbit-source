@@ -1,0 +1,30 @@
+{
+  "code": "hu_HU",
+  "name": "Hungarian",
+  "native": "Magyar",
+  "script": "Latin",
+  "direction": "ltr",
+  "currency": "Ft",
+  "vocab": [
+    "office",
+    "document",
+    "save",
+    "open",
+    "format",
+    "edit",
+    "table",
+    "chart",
+    "presentation",
+    "system",
+    "sovereign",
+    "secure",
+    "font",
+    "page",
+    "tools",
+    "help",
+    "view",
+    "export",
+    "import",
+    "print"
+  ]
+}

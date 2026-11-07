@@ -1,0 +1,21 @@
+{
+  "code": "zh_TW",
+  "name": "Chinese Traditional",
+  "native": "繁體中文",
+  "script": "Han",
+  "direction": "ltr",
+  "currency": "NT$",
+  "vocab": [
+    "文檔",
+    "試算表",
+    "簡報",
+    "辦公軟體",
+    "主權",
+    "離線",
+    "檔案",
+    "儲存",
+    "編輯",
+    "字型",
+    "圖表"
+  ]
+}

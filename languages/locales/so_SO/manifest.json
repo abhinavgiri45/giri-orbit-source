@@ -1,0 +1,30 @@
+{
+  "code": "so_SO",
+  "name": "Somali",
+  "native": "Soomaali",
+  "script": "Latin",
+  "direction": "ltr",
+  "currency": "Sh",
+  "vocab": [
+    "office",
+    "document",
+    "save",
+    "open",
+    "format",
+    "edit",
+    "table",
+    "chart",
+    "presentation",
+    "system",
+    "sovereign",
+    "secure",
+    "font",
+    "page",
+    "tools",
+    "help",
+    "view",
+    "export",
+    "import",
+    "print"
+  ]
+}

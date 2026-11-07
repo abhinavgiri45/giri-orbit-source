@@ -1,0 +1,21 @@
+{
+  "code": "de_DE",
+  "name": "German",
+  "native": "Deutsch",
+  "script": "Latin",
+  "direction": "ltr",
+  "currency": "€",
+  "vocab": [
+    "dokument",
+    "tabelle",
+    "prasentation",
+    "souveran",
+    "buro",
+    "datei",
+    "speichern",
+    "bearbeiten",
+    "schriftart",
+    "grafik",
+    "sprache"
+  ]
+}

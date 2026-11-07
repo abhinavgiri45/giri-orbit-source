@@ -1,0 +1,21 @@
+{
+  "code": "fr_FR",
+  "name": "French",
+  "native": "Français",
+  "script": "Latin",
+  "direction": "ltr",
+  "currency": "€",
+  "vocab": [
+    "document",
+    "feuille",
+    "presentation",
+    "souverain",
+    "bureau",
+    "fichier",
+    "enregistrer",
+    "modifier",
+    "tableau",
+    "graphique",
+    "police"
+  ]
+}

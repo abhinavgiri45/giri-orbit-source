@@ -1,0 +1,16 @@
+{
+  "code": "gu_IN",
+  "name": "Gujarati",
+  "native": "ગુજરાતી",
+  "script": "Gujarati",
+  "direction": "ltr",
+  "currency": "₹",
+  "vocab": [
+    "દસ્તાવેજ",
+    "સ્પ્રેડશીટ",
+    "રજૂઆત",
+    "કાર્યાલય",
+    "ફાઇલ",
+    "સંગ્રહ"
+  ]
+}

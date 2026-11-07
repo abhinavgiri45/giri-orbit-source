@@ -1,0 +1,30 @@
+{
+  "code": "bs_BA",
+  "name": "Bosnian",
+  "native": "Bosanski",
+  "script": "Latin",
+  "direction": "ltr",
+  "currency": "KM",
+  "vocab": [
+    "office",
+    "document",
+    "save",
+    "open",
+    "format",
+    "edit",
+    "table",
+    "chart",
+    "presentation",
+    "system",
+    "sovereign",
+    "secure",
+    "font",
+    "page",
+    "tools",
+    "help",
+    "view",
+    "export",
+    "import",
+    "print"
+  ]
+}

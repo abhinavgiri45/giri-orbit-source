@@ -1,0 +1,30 @@
+{
+  "code": "af_ZA",
+  "name": "Afrikaans",
+  "native": "Afrikaans",
+  "script": "Latin",
+  "direction": "ltr",
+  "currency": "R",
+  "vocab": [
+    "office",
+    "document",
+    "save",
+    "open",
+    "format",
+    "edit",
+    "table",
+    "chart",
+    "presentation",
+    "system",
+    "sovereign",
+    "secure",
+    "font",
+    "page",
+    "tools",
+    "help",
+    "view",
+    "export",
+    "import",
+    "print"
+  ]
+}

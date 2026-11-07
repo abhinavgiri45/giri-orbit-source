@@ -150,10 +150,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
     // Create Main Copilot Window (1220 x 800)
     g_hWnd = CreateWindowExW(
-        WS_EX_COMPOSITED | WS_EX_APPWINDOW,
+        WS_EX_APPWINDOW,
         L"GiriOrbitHubClass",
         L"Giri Orbit — Sovereign Office Productivity Suite",
-        WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_THICKFRAME | WS_CLIPCHILDREN,
+        WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
         CW_USEDEFAULT, CW_USEDEFAULT, 1220, 800,
         NULL, NULL, hInstance, NULL
     );
@@ -258,6 +258,10 @@ void PopulateRecentDocs() {
                 if (ext == L".xlsx" || ext == L".xls" || ext == L".csv" || ext == L".gaxis") type = L"axis";
                 else if (ext == L".pptx" || ext == L".ppt" || ext == L".gkinetic") type = L"kinetic";
                 else if (ext == L".pdf" || ext == L".aegis") type = L"pdf";
+                else if (ext == L".gform") type = L"forms";
+                else if (ext == L".gquiz") type = L"quiz";
+                else if (ext == L".glist") type = L"lists";
+                else if (ext == L".gdesign") type = L"designer";
 
                 std::wstring name = PathFindFileNameW(p.c_str());
 
@@ -328,10 +332,18 @@ void OpenAnyFileDialog(HWND hwnd) {
         std::wstring ext = PathFindExtensionW(path.c_str());
         std::transform(ext.begin(), ext.end(), ext.begin(), ::towlower);
 
-        if (ext == L".xlsx" || ext == L".csv") {
+        if (ext == L".xlsx" || ext == L".csv" || ext == L".gaxis") {
             LaunchApp(L"GiriAxis.exe", L"\"" + path + L"\"");
-        } else if (ext == L".pptx") {
+        } else if (ext == L".pptx" || ext == L".gkinetic") {
             LaunchApp(L"GiriKinetic.exe", L"\"" + path + L"\"");
+        } else if (ext == L".gform") {
+            LaunchApp(L"GiriForms.exe", L"\"" + path + L"\"");
+        } else if (ext == L".gquiz") {
+            LaunchApp(L"GiriQuiz.exe", L"\"" + path + L"\"");
+        } else if (ext == L".glist") {
+            LaunchApp(L"GiriLists.exe", L"\"" + path + L"\"");
+        } else if (ext == L".gdesign") {
+            LaunchApp(L"GiriDesigner.exe", L"\"" + path + L"\"");
         } else {
             LaunchApp(L"GiriDrift.exe", L"\"" + path + L"\"");
         }
@@ -549,7 +561,7 @@ void RenderCreateCard(Graphics& g, int x, int y, int index, bool isHover) {
         { L"Form", L"Forms", Color(13, 148, 136), L"F" },
         { L"Quiz", L"Quiz", Color(8, 145, 178), L"Q" },
         { L"List", L"Lists", Color(124, 58, 237), L"L" },
-        { L"Design", L"Designer", Color(219, 39, 119), L"G" }
+        { L"Design", L"Designer", Color(219, 39, 119), L"D" }
     };
 
     if (index >= 0 && index < 7) {
@@ -815,6 +827,10 @@ void RenderQuickAccess(Graphics& g, int contentX, int startY, int w) {
         if (doc.type == L"axis") { bColor = Color(22, 163, 74); ch = L"A"; }
         else if (doc.type == L"kinetic") { bColor = Color(234, 88, 12); ch = L"K"; }
         else if (doc.type == L"pdf") { bColor = Color(220, 38, 38); ch = L"P"; }
+        else if (doc.type == L"forms") { bColor = Color(13, 148, 136); ch = L"F"; }
+        else if (doc.type == L"quiz") { bColor = Color(8, 145, 178); ch = L"Q"; }
+        else if (doc.type == L"lists") { bColor = Color(124, 58, 237); ch = L"L"; }
+        else if (doc.type == L"designer") { bColor = Color(219, 39, 119); ch = L"D"; }
 
         SolidBrush ib(bColor);
         g.FillPath(&ib, &ip);
@@ -992,10 +1008,10 @@ LRESULT CALLBACK HubWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             if (g_hoverCard == 0) LaunchApp(L"GiriDrift.exe");
             else if (g_hoverCard == 1) LaunchApp(L"GiriKinetic.exe");
             else if (g_hoverCard == 2) LaunchApp(L"GiriAxis.exe");
-            else if (g_hoverCard == 3) LaunchApp(L"GiriAxis.exe", L"\"" + g_appDir + L"\\templates\\axis\\form_survey_template.giri\"");
-            else if (g_hoverCard == 4) LaunchApp(L"GiriAxis.exe", L"\"" + g_appDir + L"\\templates\\axis\\quiz_assessment_template.giri\"");
-            else if (g_hoverCard == 5) LaunchApp(L"GiriAxis.exe", L"\"" + g_appDir + L"\\templates\\axis\\task_tracker_kanban.giri\"");
-            else if (g_hoverCard == 6) LaunchApp(L"GiriKinetic.exe", L"\"" + g_appDir + L"\\templates\\kinetic\\creative_social_banner.giri\"");
+            else if (g_hoverCard == 3) LaunchApp(L"GiriForms.exe");
+            else if (g_hoverCard == 4) LaunchApp(L"GiriQuiz.exe");
+            else if (g_hoverCard == 5) LaunchApp(L"GiriLists.exe");
+            else if (g_hoverCard == 6) LaunchApp(L"GiriDesigner.exe");
             return 0;
         }
 
@@ -1018,6 +1034,10 @@ LRESULT CALLBACK HubWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             if (doc.type == L"drift") LaunchApp(L"GiriDrift.exe", L"\"" + doc.fullPath + L"\"");
             else if (doc.type == L"axis") LaunchApp(L"GiriAxis.exe", L"\"" + doc.fullPath + L"\"");
             else if (doc.type == L"kinetic") LaunchApp(L"GiriKinetic.exe", L"\"" + doc.fullPath + L"\"");
+            else if (doc.type == L"forms") LaunchApp(L"GiriForms.exe", L"\"" + doc.fullPath + L"\"");
+            else if (doc.type == L"quiz") LaunchApp(L"GiriQuiz.exe", L"\"" + doc.fullPath + L"\"");
+            else if (doc.type == L"lists") LaunchApp(L"GiriLists.exe", L"\"" + doc.fullPath + L"\"");
+            else if (doc.type == L"designer") LaunchApp(L"GiriDesigner.exe", L"\"" + doc.fullPath + L"\"");
             else OpenAnyFileDialog(hwnd);
             return 0;
         }
@@ -1079,7 +1099,7 @@ LRESULT CALLBACK HubWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
         Font fSub(L"Segoe UI", 8.5f, FontStyleRegular, UnitPoint);
         SolidBrush subText(Color(107, 114, 128));
-        g.DrawString(L"🛡️ 0 MB used of Sovereign Storage (100% Offline Standalone)", -1, &fSub, PointF((float)centerHeaderX - 90.0f, (float)subY + 2.0f), &subText);
+        g.DrawString(L"0 MB used of Sovereign Storage • 100% Offline Standalone", -1, &fSub, PointF((float)centerHeaderX - 90.0f, (float)subY + 2.0f), &subText);
 
         // 4. Centered Search Pill
         int searchW = (w - contentX - 48);

@@ -487,7 +487,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
     // Create Main Word-Grade Window
     g_hMainWnd = CreateWindowExW(
-        WS_EX_COMPOSITED | WS_EX_APPWINDOW, L"GiriDriftWindowClass",
+        WS_EX_APPWINDOW, L"GiriDriftWindowClass",
         L"Untitled Document — Giri Drift (Executive Sovereign Word Processor)",
         WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
         CW_USEDEFAULT, CW_USEDEFAULT, 1200, 820,
@@ -658,7 +658,7 @@ void CreateRibbonToolbar(HWND hwnd) {
     int stripY = 36;
 
     // Clipboard Group
-    makeBtn(RIBBON_TAB_HOME, L"📋 Paste", 12, stripY + 4, 60, 56, IDC_BTN_PASTE);
+    makeBtn(RIBBON_TAB_HOME, L"Paste", 12, stripY + 4, 60, 56, IDC_BTN_PASTE);
     makeBtn(RIBBON_TAB_HOME, L"Cut", 76, stripY + 4, 48, 26, IDC_BTN_CUT);
     makeBtn(RIBBON_TAB_HOME, L"Copy", 76, stripY + 34, 48, 26, IDC_BTN_COPY);
 
@@ -696,10 +696,10 @@ void CreateRibbonToolbar(HWND hwnd) {
     makeBtn(RIBBON_TAB_HOME, L"I", 162, stripY + 34, 26, 26, IDC_BTN_ITALIC);
     makeBtn(RIBBON_TAB_HOME, L"U", 190, stripY + 34, 26, 26, IDC_BTN_UNDERLINE);
     makeBtn(RIBBON_TAB_HOME, L"S", 218, stripY + 34, 26, 26, IDC_BTN_STRIKE);
-    makeBtn(RIBBON_TAB_HOME, L"X2", 246, stripY + 34, 28, 26, IDC_BTN_SUBSCRIPT);
-    makeBtn(RIBBON_TAB_HOME, L"X²", 276, stripY + 34, 28, 26, IDC_BTN_SUPERSCRIPT);
+    makeBtn(RIBBON_TAB_HOME, L"X_2", 246, stripY + 34, 28, 26, IDC_BTN_SUBSCRIPT);
+    makeBtn(RIBBON_TAB_HOME, L"X^2", 276, stripY + 34, 28, 26, IDC_BTN_SUPERSCRIPT);
     makeBtn(RIBBON_TAB_HOME, L"Color", 306, stripY + 34, 46, 26, IDC_BTN_COLOR);
-    makeBtn(RIBBON_TAB_HOME, L"Highlt", 354, stripY + 34, 48, 26, IDC_BTN_HIGHLIGHT);
+    makeBtn(RIBBON_TAB_HOME, L"Highlight", 354, stripY + 34, 48, 26, IDC_BTN_HIGHLIGHT);
 
     // Paragraph Group
     makeBtn(RIBBON_TAB_HOME, L"L", 414, stripY + 4, 28, 26, IDC_BTN_ALIGN_L);
@@ -707,9 +707,9 @@ void CreateRibbonToolbar(HWND hwnd) {
     makeBtn(RIBBON_TAB_HOME, L"R", 474, stripY + 4, 28, 26, IDC_BTN_ALIGN_R);
     makeBtn(RIBBON_TAB_HOME, L"J", 504, stripY + 4, 28, 26, IDC_BTN_JUSTIFY);
 
-    makeBtn(RIBBON_TAB_HOME, L"• List", 414, stripY + 34, 44, 26, IDC_BTN_BULLETS);
+    makeBtn(RIBBON_TAB_HOME, L"Bullets", 414, stripY + 34, 44, 26, IDC_BTN_BULLETS);
     makeBtn(RIBBON_TAB_HOME, L"1. Num", 460, stripY + 34, 48, 26, IDC_BTN_NUMBERS);
-    makeBtn(RIBBON_TAB_HOME, L"Line ==", 510, stripY + 34, 52, 26, IDC_BTN_LINE_SPACING);
+    makeBtn(RIBBON_TAB_HOME, L"Spacing", 510, stripY + 34, 52, 26, IDC_BTN_LINE_SPACING);
 
     // Styles Gallery
     makeBtn(RIBBON_TAB_HOME, L"Normal", 574, stripY + 6, 56, 52, IDC_BTN_STYLE_NORMAL);
@@ -719,18 +719,18 @@ void CreateRibbonToolbar(HWND hwnd) {
     makeBtn(RIBBON_TAB_HOME, L"Quote", 846, stripY + 6, 56, 52, IDC_BTN_STYLE_QUOTE);
 
     // Editing Group
-    makeBtn(RIBBON_TAB_HOME, L"🔍 Find", 914, stripY + 4, 60, 26, IDC_BTN_FIND);
+    makeBtn(RIBBON_TAB_HOME, L"Find", 914, stripY + 4, 60, 26, IDC_BTN_FIND);
     makeBtn(RIBBON_TAB_HOME, L"Replace", 914, stripY + 34, 60, 26, IDC_BTN_REPLACE);
 
     // ==========================================
     // TAB 1: INSERT
     // ==========================================
-    makeBtn(RIBBON_TAB_INSERT, L"📊 Table", 14, stripY + 8, 80, 50, IDC_BTN_INSERT_TABLE);
-    makeBtn(RIBBON_TAB_INSERT, L"🖼 Image", 100, stripY + 8, 80, 50, IDC_BTN_INSERT_IMAGE);
-    makeBtn(RIBBON_TAB_INSERT, L"📄 Page Break", 186, stripY + 8, 96, 50, IDC_BTN_PAGE_BREAK);
-    makeBtn(RIBBON_TAB_INSERT, L"📅 Date & Time", 288, stripY + 8, 96, 50, IDC_BTN_INSERT_DATE);
-    makeBtn(RIBBON_TAB_INSERT, L"Ω Special Symbol", 390, stripY + 8, 110, 50, IDC_BTN_INSERT_SYMBOL);
-    makeBtn(RIBBON_TAB_INSERT, L"⎯ Line Rule", 506, stripY + 8, 86, 50, IDC_BTN_HORIZ_LINE);
+    makeBtn(RIBBON_TAB_INSERT, L"Table", 14, stripY + 8, 80, 50, IDC_BTN_INSERT_TABLE);
+    makeBtn(RIBBON_TAB_INSERT, L"Image", 100, stripY + 8, 80, 50, IDC_BTN_INSERT_IMAGE);
+    makeBtn(RIBBON_TAB_INSERT, L"Page Break", 186, stripY + 8, 96, 50, IDC_BTN_PAGE_BREAK);
+    makeBtn(RIBBON_TAB_INSERT, L"Date & Time", 288, stripY + 8, 96, 50, IDC_BTN_INSERT_DATE);
+    makeBtn(RIBBON_TAB_INSERT, L"Symbol (Omega)", 390, stripY + 8, 110, 50, IDC_BTN_INSERT_SYMBOL);
+    makeBtn(RIBBON_TAB_INSERT, L"Divider Line", 506, stripY + 8, 86, 50, IDC_BTN_HORIZ_LINE);
 
     // ==========================================
     // TAB 2: LAYOUT
@@ -744,17 +744,17 @@ void CreateRibbonToolbar(HWND hwnd) {
     // ==========================================
     // TAB 3: REVIEW
     // ==========================================
-    makeBtn(RIBBON_TAB_REVIEW, L"📊 Word Count & Stats", 14, stripY + 8, 150, 50, IDC_BTN_WORD_COUNT);
-    makeBtn(RIBBON_TAB_REVIEW, L"🇮🇳 Google Hindi Toggle", 170, stripY + 8, 160, 50, IDC_BTN_HINDI_TOGGLE);
-    makeBtn(RIBBON_TAB_REVIEW, L"🌐 105 Languages Explorer", 336, stripY + 8, 170, 50, IDC_BTN_LANGUAGES);
+    makeBtn(RIBBON_TAB_REVIEW, L"Word Count", 14, stripY + 8, 150, 50, IDC_BTN_WORD_COUNT);
+    makeBtn(RIBBON_TAB_REVIEW, L"Google Hindi", 170, stripY + 8, 160, 50, IDC_BTN_HINDI_TOGGLE);
+    makeBtn(RIBBON_TAB_REVIEW, L"105 Languages", 336, stripY + 8, 170, 50, IDC_BTN_LANGUAGES);
 
     // ==========================================
     // TAB 4: VIEW
     // ==========================================
-    makeBtn(RIBBON_TAB_VIEW, L"📄 Print Layout (A4)", 14, stripY + 8, 140, 50, IDC_BTN_VIEW_PRINT);
-    makeBtn(RIBBON_TAB_VIEW, L"🌐 Web Layout (Fluid)", 160, stripY + 8, 140, 50, IDC_BTN_VIEW_WEB);
-    makeBtn(RIBBON_TAB_VIEW, L"🔍 Zoom In (+)", 306, stripY + 8, 100, 50, IDC_BTN_ZOOM_IN);
-    makeBtn(RIBBON_TAB_VIEW, L"🔍 Zoom Out (-)", 412, stripY + 8, 100, 50, IDC_BTN_ZOOM_OUT);
+    makeBtn(RIBBON_TAB_VIEW, L"Print Layout (A4)", 14, stripY + 8, 140, 50, IDC_BTN_VIEW_PRINT);
+    makeBtn(RIBBON_TAB_VIEW, L"Web Layout", 160, stripY + 8, 140, 50, IDC_BTN_VIEW_WEB);
+    makeBtn(RIBBON_TAB_VIEW, L"Zoom In (+)", 306, stripY + 8, 100, 50, IDC_BTN_ZOOM_IN);
+    makeBtn(RIBBON_TAB_VIEW, L"Zoom Out (-)", 412, stripY + 8, 100, 50, IDC_BTN_ZOOM_OUT);
     makeBtn(RIBBON_TAB_VIEW, L"100% Reset", 518, stripY + 8, 90, 50, IDC_BTN_ZOOM_RESET);
 
     // Initial Tab visibility
@@ -794,7 +794,7 @@ void UpdateStatusBar(HWND hwnd) {
 
     wchar_t stat0[32] = L"📄 Page 1 of 1";
     wchar_t stat1[64], stat2[64], stat4[32];
-    swprintf_s(stat1, L"🔤 Words: %d | Chars: %d", words, textLen);
+    swprintf_s(stat1, L"Words: %d | Chars: %d", words, textLen);
 
     DWORD selStart = 0;
     SendMessageW(g_hRichEdit, EM_GETSEL, (WPARAM)&selStart, 0);

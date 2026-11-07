@@ -1,0 +1,30 @@
+{
+  "code": "or_IN",
+  "name": "Odia",
+  "native": "ଓଡ଼ିଆ",
+  "script": "Odia",
+  "direction": "ltr",
+  "currency": "₹",
+  "vocab": [
+    "office",
+    "document",
+    "save",
+    "open",
+    "format",
+    "edit",
+    "table",
+    "chart",
+    "presentation",
+    "system",
+    "sovereign",
+    "secure",
+    "font",
+    "page",
+    "tools",
+    "help",
+    "view",
+    "export",
+    "import",
+    "print"
+  ]
+}

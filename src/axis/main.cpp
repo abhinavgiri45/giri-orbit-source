@@ -53,6 +53,9 @@
 #define IDC_BTN_INS_COL      3120
 #define IDC_BTN_CHART        3121
 #define IDC_BTN_TEMPLATES    3122
+#define IDC_BTN_DEL_ROW      3123
+#define IDC_BTN_DEL_COL      3124
+#define IDC_BTN_CLEAR        3125
 
 
 struct CellData {
@@ -386,7 +389,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     if (!RegisterClassExW(&gridWcex)) return 0;
 
     g_hMainWnd = CreateWindowExW(
-        WS_EX_COMPOSITED | WS_EX_APPWINDOW, L"GiriAxisMainWindowClass",
+        WS_EX_APPWINDOW, L"GiriAxisMainWindowClass",
         L"Workbook 1 — Giri Axis (High-Velocity Financial Matrix)",
         WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
         CW_USEDEFAULT, CW_USEDEFAULT, 1100, 750,
@@ -981,36 +984,42 @@ void CreateRibbonToolbar(HWND hwnd) {
     g_hToolbarPanel = CreateWindowExW(
         0, L"STATIC", L"",
         WS_CHILD | WS_VISIBLE | SS_LEFT | WS_CLIPCHILDREN,
-        0, 0, 1280, 38, hwnd, (HMENU)IDC_TOOLBAR_PANEL, g_hInst, NULL
+        0, 0, 1280, 74, hwnd, (HMENU)IDC_TOOLBAR_PANEL, g_hInst, NULL
     );
 
-    HFONT hFont = CreateFontW(14, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+    HFONT hFont = CreateFontW(13, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
                               OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
                               VARIABLE_PITCH, L"Segoe UI");
 
-    auto makeBtn = [hFont](const wchar_t* text, int x, int w, int id) {
+    auto makeBtn = [hFont](const wchar_t* text, int x, int y, int w, int h, int id) {
         HWND btn = CreateWindowExW(
             0, L"BUTTON", text,
             WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-            x, 4, w, 30, g_hToolbarPanel, (HMENU)(INT_PTR)id, g_hInst, NULL
+            x, y, w, h, g_hToolbarPanel, (HMENU)(INT_PTR)id, g_hInst, NULL
         );
         SendMessageW(btn, WM_SETFONT, (WPARAM)hFont, TRUE);
         StyleAxisBtn(btn);
         return btn;
     };
 
-    makeBtn(L"Σ AutoSum", 8, 92, IDC_BTN_AUTOSUM);
-    makeBtn(L"Average", 104, 68, IDC_BTN_AVERAGE);
-    makeBtn(L"Count", 176, 56, IDC_BTN_COUNT);
-    makeBtn(L"Max/Min", 236, 68, IDC_BTN_MAXMIN);
-    makeBtn(L"₹ Currency", 308, 86, IDC_BTN_CURRENCY);
-    makeBtn(L"% Percent", 398, 76, IDC_BTN_PERCENT);
-    makeBtn(L"Sort A-Z", 478, 70, IDC_BTN_SORT_ASC);
-    makeBtn(L"Sort Z-A", 552, 70, IDC_BTN_SORT_DESC);
-    makeBtn(L"+ Row", 626, 56, IDC_BTN_INS_ROW);
-    makeBtn(L"+ Col", 686, 56, IDC_BTN_INS_COL);
-    makeBtn(L"📊 Chart", 746, 72, IDC_BTN_CHART);
-    makeBtn(L"📑 Templates ▼", 822, 114, IDC_BTN_TEMPLATES);
+    // Row 1: Core Calc Functions & Formatting
+    makeBtn(L"AutoSum", 8, 4, 80, 30, IDC_BTN_AUTOSUM);
+    makeBtn(L"Average", 92, 4, 72, 30, IDC_BTN_AVERAGE);
+    makeBtn(L"Count", 168, 4, 60, 30, IDC_BTN_COUNT);
+    makeBtn(L"Max/Min", 232, 4, 72, 30, IDC_BTN_MAXMIN);
+    makeBtn(L"Currency ($)", 308, 4, 96, 30, IDC_BTN_CURRENCY);
+    makeBtn(L"Percent (%)", 408, 4, 88, 30, IDC_BTN_PERCENT);
+    makeBtn(L"Sort A-Z", 500, 4, 72, 30, IDC_BTN_SORT_ASC);
+    makeBtn(L"Sort Z-A", 576, 4, 72, 30, IDC_BTN_SORT_DESC);
+    makeBtn(L"+ Row", 652, 4, 60, 30, IDC_BTN_INS_ROW);
+    makeBtn(L"+ Col", 716, 4, 60, 30, IDC_BTN_INS_COL);
+
+    // Row 2: Grid Formatting, Charts & Templates
+    makeBtn(L"Analytics Chart", 8, 38, 120, 30, IDC_BTN_CHART);
+    makeBtn(L"Financial Templates", 132, 38, 140, 30, IDC_BTN_TEMPLATES);
+    makeBtn(L"Delete Row", 276, 38, 86, 30, IDC_BTN_DEL_ROW);
+    makeBtn(L"Delete Col", 366, 38, 86, 30, IDC_BTN_DEL_COL);
+    makeBtn(L"Clear Cell", 456, 38, 80, 30, IDC_BTN_CLEAR);
 }
 
 
@@ -1100,11 +1109,11 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
         int w = LOWORD(lParam);
         int h = HIWORD(lParam);
 
-        SetWindowPos(g_hToolbarPanel, NULL, 0, 0, w, 36, SWP_NOZORDER);
-        SetWindowPos(g_hCellCoordLbl, NULL, 8, 42, 64, 26, SWP_NOZORDER);
-        SetWindowPos(g_hFxLbl, NULL, 76, 42, 24, 26, SWP_NOZORDER);
-        SetWindowPos(g_hFormulaBar, NULL, 104, 42, w - 120, 26, SWP_NOZORDER);
-        SetWindowPos(g_hGridWnd, NULL, 0, 74, w, h - 74 - 58, SWP_NOZORDER);
+        SetWindowPos(g_hToolbarPanel, NULL, 0, 0, w, 74, SWP_NOZORDER);
+        SetWindowPos(g_hCellCoordLbl, NULL, 8, 80, 64, 26, SWP_NOZORDER);
+        SetWindowPos(g_hFxLbl, NULL, 76, 80, 24, 26, SWP_NOZORDER);
+        SetWindowPos(g_hFormulaBar, NULL, 104, 80, w - 120, 26, SWP_NOZORDER);
+        SetWindowPos(g_hGridWnd, NULL, 0, 112, w, h - 112 - 58, SWP_NOZORDER);
         SetWindowPos(g_hTabCtrl, NULL, 0, h - 58, w, 32, SWP_NOZORDER);
         SendMessageW(g_hStatusBar, WM_SIZE, wParam, lParam);
         return 0;

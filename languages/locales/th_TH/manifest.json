@@ -1,0 +1,30 @@
+{
+  "code": "th_TH",
+  "name": "Thai",
+  "native": "ไทย",
+  "script": "Thai",
+  "direction": "ltr",
+  "currency": "฿",
+  "vocab": [
+    "office",
+    "document",
+    "save",
+    "open",
+    "format",
+    "edit",
+    "table",
+    "chart",
+    "presentation",
+    "system",
+    "sovereign",
+    "secure",
+    "font",
+    "page",
+    "tools",
+    "help",
+    "view",
+    "export",
+    "import",
+    "print"
+  ]
+}

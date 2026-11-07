@@ -1,0 +1,30 @@
+{
+  "code": "st_LS",
+  "name": "Southern Sotho",
+  "native": "Sesotho",
+  "script": "Latin",
+  "direction": "ltr",
+  "currency": "M",
+  "vocab": [
+    "office",
+    "document",
+    "save",
+    "open",
+    "format",
+    "edit",
+    "table",
+    "chart",
+    "presentation",
+    "system",
+    "sovereign",
+    "secure",
+    "font",
+    "page",
+    "tools",
+    "help",
+    "view",
+    "export",
+    "import",
+    "print"
+  ]
+}

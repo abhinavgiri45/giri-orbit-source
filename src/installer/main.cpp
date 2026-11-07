@@ -462,6 +462,18 @@ void PerformInstallation(HWND hwnd) {
         InstallAppFile(1004, L"GiriKinetic.exe", binSource);
     }
 
+    updateStep(68, L"Installing Giri Forms (Survey Studio)...");
+    InstallAppFile(1005, L"GiriForms.exe", binSource);
+
+    updateStep(72, L"Installing Giri Quiz (Assessment Studio)...");
+    InstallAppFile(1006, L"GiriQuiz.exe", binSource);
+
+    updateStep(76, L"Installing Giri Lists (Task Matrix & Kanban)...");
+    InstallAppFile(1007, L"GiriLists.exe", binSource);
+
+    updateStep(79, L"Installing Giri Designer (Graphic & Banner Studio)...");
+    InstallAppFile(1008, L"GiriDesigner.exe", binSource);
+
     if (g_installHub) {
         updateStep(80, L"Installing Giri Orbit Suite Hub...");
         InstallAppFile(1001, L"GiriOrbit.exe", binSource);
@@ -539,6 +551,10 @@ void PerformInstallation(HWND hwnd) {
         if (g_installDrift) CreateShortcut(g_installDir + L"\\GiriDrift.exe", desktop + L"\\Giri Drift.lnk", L"Giri Drift Document Composer");
         if (g_installAxis) CreateShortcut(g_installDir + L"\\GiriAxis.exe", desktop + L"\\Giri Axis.lnk", L"Giri Axis Financial Matrix");
         if (g_installKinetic) CreateShortcut(g_installDir + L"\\GiriKinetic.exe", desktop + L"\\Giri Kinetic.lnk", L"Giri Kinetic Presentation Studio");
+        CreateShortcut(g_installDir + L"\\GiriForms.exe", desktop + L"\\Giri Forms.lnk", L"Giri Forms Survey Studio");
+        CreateShortcut(g_installDir + L"\\GiriQuiz.exe", desktop + L"\\Giri Quiz.lnk", L"Giri Quiz Assessment Studio");
+        CreateShortcut(g_installDir + L"\\GiriLists.exe", desktop + L"\\Giri Lists.lnk", L"Giri Lists Agile Task Matrix");
+        CreateShortcut(g_installDir + L"\\GiriDesigner.exe", desktop + L"\\Giri Designer.lnk", L"Giri Designer Creative Studio");
     }
 
     if (g_registerAssoc) {

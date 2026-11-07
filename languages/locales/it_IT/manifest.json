@@ -1,0 +1,21 @@
+{
+  "code": "it_IT",
+  "name": "Italian",
+  "native": "Italiano",
+  "script": "Latin",
+  "direction": "ltr",
+  "currency": "€",
+  "vocab": [
+    "documento",
+    "foglio",
+    "presentazione",
+    "sovrano",
+    "ufficio",
+    "file",
+    "salva",
+    "modifica",
+    "carattere",
+    "tabella",
+    "grafico"
+  ]
+}

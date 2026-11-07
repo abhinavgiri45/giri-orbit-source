@@ -268,8 +268,8 @@ void InitDefaultSlides() {
     // Slide 2: Enterprise Architecture Overview
     Slide s2;
     s2.title = L"High-Velocity Native Performance";
-    s2.subtitle = L"100% Offline Standalone Execution • Zero Cloud Telemetry";
-    s2.body = L"• Hardware-Accelerated 60+ FPS Rendering Pipeline\n• Sub-15MB RAM Footprint with Zero Keystroke Latency\n• Universal Sovereign Document (.giri / .gkinetic) Compatibility\n• Built-in Fullscreen Presentation Engine with Live Laser & Digital Pen";
+    s2.subtitle = L"100% Offline Standalone Execution Zero Cloud Telemetry";
+    s2.body = L"Hardware-Accelerated 60+ FPS Rendering Pipeline\nSub-15MB RAM Footprint with Zero Keystroke Latency\nUniversal Sovereign Document (.giri / .gkinetic) Compatibility\nBuilt-in Fullscreen Presentation Engine with Live Laser & Digital Pen";
     s2.layout = LAYOUT_TITLE_CONTENT;
     s2.bgColor = RGB(255, 255, 255);
     s2.textColor = RGB(15, 23, 42);
@@ -283,8 +283,8 @@ void InitDefaultSlides() {
     Slide s3;
     s3.title = L"Giri Suite Operational Vectors";
     s3.subtitle = L"Unified Productivity Across Text, Numbers & Cinematic Keynotes";
-    s3.body = L"Core Applications:\n• Giri Drift — Word Processor\n• Giri Axis — Financial Matrix\n• Giri Kinetic — Presentation Studio\n• Giri Orbit Hub — Suite Orchestrator";
-    s3.rightColText = L"Enterprise Capabilities:\n• True Multi-tier Office Ribbon\n• High-Res Widescreen 16:9 Canvas\n• Live Formula Math Engine\n• Google Devanagari Hindi Ready";
+    s3.body = L"Core Applications:\nGiri Drift — Word Processor\nGiri Axis — Financial Matrix\nGiri Kinetic — Presentation Studio\nGiri Orbit Hub — Suite Orchestrator";
+    s3.rightColText = L"Enterprise Capabilities:\nTrue Multi-tier Office Ribbon\nHigh-Res Widescreen 16:9 Canvas\nLive Formula Math Engine\nGoogle Devanagari Hindi Ready";
     s3.layout = LAYOUT_TWO_COLUMN;
     s3.bgColor = RGB(255, 255, 255);
     s3.textColor = RGB(15, 23, 42);
@@ -392,7 +392,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     RegisterClassExW(&shw);
 
     g_hMainWnd = CreateWindowExW(
-        WS_EX_COMPOSITED | WS_EX_APPWINDOW, L"GiriKineticMainWindowClass",
+        WS_EX_APPWINDOW, L"GiriKineticMainWindowClass",
         L"Presentation 1 — Giri Kinetic (PowerPoint Studio)",
         WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
         CW_USEDEFAULT, CW_USEDEFAULT, 1260, 840,
@@ -610,7 +610,7 @@ void CreateRibbonBar(HWND hParent) {
     makeBtn(TAB_HOME, L"L", 566, ribbonY + 8, 28, 24, IDC_BTN_ALIGN_LEFT);
     makeBtn(TAB_HOME, L"C", 598, ribbonY + 8, 28, 24, IDC_BTN_ALIGN_CENTER);
     makeBtn(TAB_HOME, L"R", 630, ribbonY + 8, 28, 24, IDC_BTN_ALIGN_RIGHT);
-    makeBtn(TAB_HOME, L"• Bullets", 566, ribbonY + 33, 62, 24, IDC_BTN_BULLET);
+    makeBtn(TAB_HOME, L"Bullets", 566, ribbonY + 33, 62, 24, IDC_BTN_BULLET);
     makeBtn(TAB_HOME, L"1. Num", 632, ribbonY + 33, 56, 24, IDC_BTN_NUMBERED);
 
     makeBtn(TAB_HOME, L"Layout: Title", 696, ribbonY + 6, 85, 48, IDC_BTN_LAYOUT_TITLE);
@@ -618,7 +618,7 @@ void CreateRibbonBar(HWND hParent) {
     makeBtn(TAB_HOME, L"2-Column", 857, ribbonY + 6, 75, 48, IDC_BTN_LAYOUT_TWOCOL);
     makeBtn(TAB_HOME, L"Metrics", 936, ribbonY + 6, 68, 48, IDC_BTN_LAYOUT_METRICS);
 
-    makeBtn(TAB_HOME, L"▶ Start Show (F5)", 1014, ribbonY + 6, 128, 48, IDC_BTN_PRESENT_F5, true);
+    makeBtn(TAB_HOME, L"Start Show (F5)", 1014, ribbonY + 6, 128, 48, IDC_BTN_PRESENT_F5, true);
 
     // TAB_INSERT Controls
     makeBtn(TAB_INSERT, L"+ Image / Picture", 12, ribbonY + 8, 120, 44, IDC_BTN_INSERT_IMAGE);
@@ -649,7 +649,7 @@ void CreateRibbonBar(HWND hParent) {
     SendMessageW(g_hComboTrans, CB_SETCURSEL, 1, 0);
     g_ribbonTabControls[TAB_TRANSITIONS].push_back(g_hComboTrans);
 
-    makeBtn(TAB_TRANSITIONS, L"▶ Preview Transition", 192, ribbonY + 10, 145, 38, IDC_BTN_TRANS_PREVIEW, true);
+    makeBtn(TAB_TRANSITIONS, L"Preview Transition", 192, ribbonY + 10, 145, 38, IDC_BTN_TRANS_PREVIEW, true);
     makeBtn(TAB_TRANSITIONS, L"Apply to All Slides", 345, ribbonY + 10, 135, 38, IDC_BTN_TRANS_APPLY_ALL);
 
     // TAB_ANIMATIONS Controls
@@ -664,11 +664,11 @@ void CreateRibbonBar(HWND hParent) {
     SendMessageW(g_hComboAnim, CB_SETCURSEL, 1, 0);
     g_ribbonTabControls[TAB_ANIMATIONS].push_back(g_hComboAnim);
 
-    makeBtn(TAB_ANIMATIONS, L"▶ Preview In-Slide Animation", 202, ribbonY + 10, 185, 38, IDC_BTN_ANIM_PREVIEW, true);
+    makeBtn(TAB_ANIMATIONS, L"Preview In-Slide Animation", 202, ribbonY + 10, 185, 38, IDC_BTN_ANIM_PREVIEW, true);
 
     // TAB_SLIDESHOW Controls
-    makeBtn(TAB_SLIDESHOW, L"▶ From Beginning (F5)", 12, ribbonY + 8, 160, 44, IDC_BTN_PRESENT_F5, true);
-    makeBtn(TAB_SLIDESHOW, L"▶ From Current Slide", 178, ribbonY + 8, 150, 44, IDC_BTN_PRESENT_CURRENT);
+    makeBtn(TAB_SLIDESHOW, L"From Beginning (F5)", 12, ribbonY + 8, 160, 44, IDC_BTN_PRESENT_F5, true);
+    makeBtn(TAB_SLIDESHOW, L"From Current Slide", 178, ribbonY + 8, 150, 44, IDC_BTN_PRESENT_CURRENT);
     makeBtn(TAB_SLIDESHOW, L"Presentation Shortcuts Help", 336, ribbonY + 8, 175, 44, ID_HELP_ABOUT);
 
     // TAB_VIEW Controls
@@ -1428,7 +1428,7 @@ void SyncControlsWithSlide() {
 void UpdateStatusBar() {
     if (!g_hStatusBar) return;
     std::wstring part1 = L"Slide " + std::to_wstring(g_currentSlide + 1) + L" of " + std::to_wstring(g_slides.size());
-    std::wstring part2 = L"Theme: PowerPoint Modern • 16:9 Widescreen";
+    std::wstring part2 = L"Theme: PowerPoint Modern 16:9 Widescreen";
     std::wstring part3 = L"100% Sovereign Offline Engine";
     std::wstring part4 = L"English (United States)";
     std::wstring part5 = L"[F5] Slide Show";
@@ -1680,7 +1680,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             Slide s;
             s.title = L"New Slide";
             s.subtitle = L"Click below to add bullet points or subtitle";
-            s.body = L"• First strategic discussion item\n• High-impact deliverable milestone\n• Next steps and accountability schedule";
+            s.body = L"First strategic discussion item\nHigh-impact deliverable milestone\nNext steps and accountability schedule";
             s.layout = LAYOUT_TITLE_CONTENT;
             s.bgColor = RGB(255, 255, 255);
             s.textColor = RGB(15, 23, 42);
@@ -1748,7 +1748,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (g_currentSlide < (int)g_slides.size()) {
                 g_slides[g_currentSlide].layout = LAYOUT_TWO_COLUMN;
                 if (g_slides[g_currentSlide].rightColText.empty()) {
-                    g_slides[g_currentSlide].rightColText = L"Secondary Column Notes:\n• Quantitative proof point A\n• Verification vector B";
+                    g_slides[g_currentSlide].rightColText = L"Secondary Column Notes:\nQuantitative proof point A\nVerification vector B";
                 }
                 InvalidateRect(g_hCanvasWnd, NULL, FALSE);
                 InvalidateRect(g_hThumbRailWnd, NULL, FALSE);
@@ -1809,7 +1809,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (g_currentSlide < (int)g_slides.size()) {
                 g_slides[g_currentSlide].title = L"गिरि ऑर्बिट प्रेजेंटेशन";
                 g_slides[g_currentSlide].subtitle = L"संपूर्ण स्वायत्त ऑफिस सुइट एवं प्रेजेंटेशन स्टूडियो";
-                g_slides[g_currentSlide].body = L"• १००% सुरक्षित एवं ऑफलाइन आर्किटेक्चर\n• तेज एवं बिना किसी रुकावट के प्रस्तुति\n• अभिनव गिरि द्वारा निर्मित";
+                g_slides[g_currentSlide].body = L"१००% सुरक्षित एवं ऑफलाइन आर्किटेक्चर\nतेज एवं बिना किसी रुकावट के प्रस्तुति\nअभिनव गिरि द्वारा निर्मित";
                 SyncControlsWithSlide();
                 InvalidateRect(g_hCanvasWnd, NULL, FALSE);
                 InvalidateRect(g_hThumbRailWnd, NULL, FALSE);

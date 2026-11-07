@@ -1,0 +1,16 @@
+{
+  "code": "pa_IN",
+  "name": "Punjabi",
+  "native": "ਪੰਜਾਬੀ",
+  "script": "Gurmukhi",
+  "direction": "ltr",
+  "currency": "₹",
+  "vocab": [
+    "ਦਸਤਾਵੇਜ਼",
+    "ਸਪਰੈੱਡਸ਼ੀਟ",
+    "ਪੇਸ਼ਕਾਰੀ",
+    "ਦਫ਼ਤਰ",
+    "ਫ਼ਾਈਲ",
+    "ਸੰਭਾਲੋ"
+  ]
+}

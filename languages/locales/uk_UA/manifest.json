@@ -1,0 +1,30 @@
+{
+  "code": "uk_UA",
+  "name": "Ukrainian",
+  "native": "Українська",
+  "script": "Cyrillic",
+  "direction": "ltr",
+  "currency": "₴",
+  "vocab": [
+    "office",
+    "document",
+    "save",
+    "open",
+    "format",
+    "edit",
+    "table",
+    "chart",
+    "presentation",
+    "system",
+    "sovereign",
+    "secure",
+    "font",
+    "page",
+    "tools",
+    "help",
+    "view",
+    "export",
+    "import",
+    "print"
+  ]
+}

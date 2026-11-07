@@ -1,0 +1,22 @@
+{
+  "code": "zh_CN",
+  "name": "Chinese Simplified",
+  "native": "简体中文",
+  "script": "Han",
+  "direction": "ltr",
+  "currency": "¥",
+  "vocab": [
+    "文档",
+    "电子表格",
+    "演示文稿",
+    "办公套件",
+    "主权",
+    "离线",
+    "文件",
+    "保存",
+    "编辑",
+    "字体",
+    "图表",
+    "汇总"
+  ]
+}

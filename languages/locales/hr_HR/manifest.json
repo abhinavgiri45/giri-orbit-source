@@ -1,0 +1,30 @@
+{
+  "code": "hr_HR",
+  "name": "Croatian",
+  "native": "Hrvatski",
+  "script": "Latin",
+  "direction": "ltr",
+  "currency": "€",
+  "vocab": [
+    "office",
+    "document",
+    "save",
+    "open",
+    "format",
+    "edit",
+    "table",
+    "chart",
+    "presentation",
+    "system",
+    "sovereign",
+    "secure",
+    "font",
+    "page",
+    "tools",
+    "help",
+    "view",
+    "export",
+    "import",
+    "print"
+  ]
+}

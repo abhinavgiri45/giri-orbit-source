@@ -1,0 +1,30 @@
+{
+  "code": "no_NO",
+  "name": "Norwegian",
+  "native": "Norsk",
+  "script": "Latin",
+  "direction": "ltr",
+  "currency": "kr",
+  "vocab": [
+    "office",
+    "document",
+    "save",
+    "open",
+    "format",
+    "edit",
+    "table",
+    "chart",
+    "presentation",
+    "system",
+    "sovereign",
+    "secure",
+    "font",
+    "page",
+    "tools",
+    "help",
+    "view",
+    "export",
+    "import",
+    "print"
+  ]
+}

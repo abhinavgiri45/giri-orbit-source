@@ -1,0 +1,30 @@
+{
+  "code": "sr_RS",
+  "name": "Serbian",
+  "native": "Српски",
+  "script": "Cyrillic",
+  "direction": "ltr",
+  "currency": "дин",
+  "vocab": [
+    "office",
+    "document",
+    "save",
+    "open",
+    "format",
+    "edit",
+    "table",
+    "chart",
+    "presentation",
+    "system",
+    "sovereign",
+    "secure",
+    "font",
+    "page",
+    "tools",
+    "help",
+    "view",
+    "export",
+    "import",
+    "print"
+  ]
+}

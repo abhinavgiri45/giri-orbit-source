@@ -1,0 +1,22 @@
+{
+  "code": "es_ES",
+  "name": "Spanish",
+  "native": "Español",
+  "script": "Latin",
+  "direction": "ltr",
+  "currency": "€",
+  "vocab": [
+    "documento",
+    "hoja",
+    "presentacion",
+    "soberano",
+    "oficina",
+    "archivo",
+    "guardar",
+    "editar",
+    "formato",
+    "tabla",
+    "grafico",
+    "idioma"
+  ]
+}

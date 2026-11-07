@@ -1,0 +1,30 @@
+{
+  "code": "am_ET",
+  "name": "Amharic",
+  "native": "አማርኛ",
+  "script": "Ge'ez",
+  "direction": "ltr",
+  "currency": "Br",
+  "vocab": [
+    "office",
+    "document",
+    "save",
+    "open",
+    "format",
+    "edit",
+    "table",
+    "chart",
+    "presentation",
+    "system",
+    "sovereign",
+    "secure",
+    "font",
+    "page",
+    "tools",
+    "help",
+    "view",
+    "export",
+    "import",
+    "print"
+  ]
+}

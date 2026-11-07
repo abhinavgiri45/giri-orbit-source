@@ -1,0 +1,30 @@
+{
+  "code": "he_IL",
+  "name": "Hebrew",
+  "native": "עברית",
+  "script": "Hebrew",
+  "direction": "rtl",
+  "currency": "₪",
+  "vocab": [
+    "office",
+    "document",
+    "save",
+    "open",
+    "format",
+    "edit",
+    "table",
+    "chart",
+    "presentation",
+    "system",
+    "sovereign",
+    "secure",
+    "font",
+    "page",
+    "tools",
+    "help",
+    "view",
+    "export",
+    "import",
+    "print"
+  ]
+}

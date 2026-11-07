@@ -1,0 +1,30 @@
+{
+  "code": "mk_MK",
+  "name": "Macedonian",
+  "native": "Македонски",
+  "script": "Cyrillic",
+  "direction": "ltr",
+  "currency": "ден",
+  "vocab": [
+    "office",
+    "document",
+    "save",
+    "open",
+    "format",
+    "edit",
+    "table",
+    "chart",
+    "presentation",
+    "system",
+    "sovereign",
+    "secure",
+    "font",
+    "page",
+    "tools",
+    "help",
+    "view",
+    "export",
+    "import",
+    "print"
+  ]
+}

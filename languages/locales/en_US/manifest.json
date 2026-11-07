@@ -1,0 +1,25 @@
+{
+  "code": "en_US",
+  "name": "English (US)",
+  "native": "English (US)",
+  "script": "Latin",
+  "direction": "ltr",
+  "currency": "$",
+  "vocab": [
+    "office",
+    "document",
+    "composer",
+    "spreadsheet",
+    "presentation",
+    "sovereign",
+    "offline",
+    "orbit",
+    "matrix",
+    "studio",
+    "table",
+    "chart",
+    "financial",
+    "executive",
+    "security"
+  ]
+}

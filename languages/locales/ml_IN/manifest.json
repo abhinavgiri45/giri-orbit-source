@@ -1,0 +1,16 @@
+{
+  "code": "ml_IN",
+  "name": "Malayalam",
+  "native": "മലയാളം",
+  "script": "Malayalam",
+  "direction": "ltr",
+  "currency": "₹",
+  "vocab": [
+    "രേഖ",
+    "സ്പ്രഡ്ഷീറ്റ്",
+    "അവതരണം",
+    "കാര്യാലയം",
+    "ഫയൽ",
+    "സൂക്ഷിക്കുക"
+  ]
+}

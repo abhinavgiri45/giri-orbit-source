@@ -1,0 +1,22 @@
+{
+  "code": "en_GB",
+  "name": "English (UK)",
+  "native": "English (UK)",
+  "script": "Latin",
+  "direction": "ltr",
+  "currency": "£",
+  "vocab": [
+    "colour",
+    "centre",
+    "organisation",
+    "document",
+    "spreadsheet",
+    "presentation",
+    "sovereign",
+    "offline",
+    "orbit",
+    "matrix",
+    "studio",
+    "table"
+  ]
+}

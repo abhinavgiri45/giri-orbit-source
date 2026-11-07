@@ -1,0 +1,17 @@
+{
+  "code": "bn_IN",
+  "name": "Bengali",
+  "native": "বাংলা",
+  "script": "Bengali",
+  "direction": "ltr",
+  "currency": "৳",
+  "vocab": [
+    "নথি",
+    "স্প্রেডশিট",
+    "উপস্থাপনা",
+    "অফিস",
+    "সার্বভৌম",
+    "ফাইল",
+    "সংরক্ষণ"
+  ]
+}
