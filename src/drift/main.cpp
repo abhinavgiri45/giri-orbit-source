@@ -156,7 +156,130 @@ bool g_isHindiActive = false;
 
 std::wstring g_currentFilePath = L"";
 std::vector<HWND> g_tabControls[RIBBON_TAB_COUNT];
+void SwitchRibbonTab(int newTab);
 WNDPROC g_oldBtnProc = NULL;
+WNDPROC g_oldToolbarProc = NULL;
+LRESULT CALLBACK ToolbarPanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    switch (uMsg) {
+    case WM_ERASEBKGND: return 1;
+    case WM_PAINT: {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
+        RECT rc;
+        GetClientRect(hwnd, &rc);
+
+        HDC memDC = CreateCompatibleDC(hdc);
+        HBITMAP memBM = CreateCompatibleBitmap(hdc, rc.right, rc.bottom);
+        HBITMAP oldBM = (HBITMAP)SelectObject(memDC, memBM);
+
+        Graphics g(memDC);
+        g.SetSmoothingMode(SmoothingModeAntiAlias);
+        g.SetTextRenderingHint(TextRenderingHintClearTypeGridFit);
+
+        // Ribbon Background
+        SolidBrush bg(Color(255, 255, 255));
+        g.FillRectangle(&bg, 0, 0, rc.right, rc.bottom);
+
+        // Bottom border
+        Pen bPen(Color(226, 232, 240), 1.0f);
+        g.DrawLine(&bPen, 0, rc.bottom - 1, rc.right, rc.bottom - 1);
+
+        // Top Brand & Tabs bar (height 32px)
+        SolidBrush tabStripBg(Color(248, 250, 252));
+        g.FillRectangle(&tabStripBg, 0, 0, rc.right, 32);
+        g.DrawLine(&bPen, 0, 31, rc.right, 31);
+
+        // Brand Pill
+        Font fBrand(L"Segoe UI", 9.0f, FontStyleBold, UnitPoint);
+        SolidBrush brandBrush(Color(30, 58, 138));
+        g.DrawString(L"Giri Drift", -1, &fBrand, PointF(14.0f, 7.0f), &brandBrush);
+
+        // Tabs
+        const wchar_t* tabNames[] = { L"Home", L"Insert", L"Layout", L"Review", L"View" };
+        int tabX = 96;
+        Font fTab(L"Segoe UI", 9.0f, FontStyleRegular, UnitPoint);
+        Font fTabActive(L"Segoe UI", 9.0f, FontStyleBold, UnitPoint);
+
+        for (int i = 0; i < RIBBON_TAB_COUNT; i++) {
+            int tw = 60;
+            bool isActive = (i == g_activeRibbonTab);
+            bool isHover = (i == g_hoverRibbonTab);
+
+            if (isActive) {
+                SolidBrush tabBg(Color(255, 255, 255));
+                g.FillRectangle(&tabBg, tabX, 2, tw, 30);
+                Pen tabBorder(Color(226, 232, 240), 1.0f);
+                g.DrawLine(&tabBorder, tabX, 2, tabX, 31);
+                g.DrawLine(&tabBorder, tabX + tw, 2, tabX + tw, 31);
+
+                // Blue active underline indicator (3px)
+                SolidBrush blueBar(Color(37, 99, 235));
+                g.FillRectangle(&blueBar, tabX + 6, 29, tw - 12, 3);
+
+                SolidBrush activeText(Color(30, 58, 138));
+                StringFormat sf;
+                sf.SetAlignment(StringAlignmentCenter);
+                sf.SetLineAlignment(StringAlignmentCenter);
+                g.DrawString(tabNames[i], -1, &fTabActive, PointF((float)tabX + tw / 2.0f, 15.0f), &sf, &activeText);
+            } else {
+                if (isHover) {
+                    SolidBrush hBg(Color(241, 245, 249));
+                    g.FillRectangle(&hBg, tabX, 4, tw, 26);
+                }
+                SolidBrush mutedText(Color(71, 85, 105));
+                StringFormat sf;
+                sf.SetAlignment(StringAlignmentCenter);
+                sf.SetLineAlignment(StringAlignmentCenter);
+                g.DrawString(tabNames[i], -1, &fTab, PointF((float)tabX + tw / 2.0f, 15.0f), &sf, &mutedText);
+            }
+            tabX += tw + 4;
+        }
+
+        BitBlt(hdc, 0, 0, rc.right, rc.bottom, memDC, 0, 0, SRCCOPY);
+        SelectObject(memDC, oldBM);
+        DeleteObject(memBM);
+        DeleteDC(memDC);
+
+        EndPaint(hwnd, &ps);
+        return 0;
+    }
+    case WM_MOUSEMOVE: {
+        int x = LOWORD(lParam);
+        int y = HIWORD(lParam);
+        int oldHover = g_hoverRibbonTab;
+        g_hoverRibbonTab = -1;
+
+        if (y < 32 && x >= 96) {
+            int idx = (x - 96) / 64;
+            if (idx >= 0 && idx < RIBBON_TAB_COUNT) {
+                g_hoverRibbonTab = idx;
+            }
+        }
+        if (oldHover != g_hoverRibbonTab) InvalidateRect(hwnd, NULL, FALSE);
+        TRACKMOUSEEVENT tme = { sizeof(TRACKMOUSEEVENT), TME_LEAVE, hwnd, 0 };
+        TrackMouseEvent(&tme);
+        break;
+    }
+    case WM_MOUSELEAVE: {
+        g_hoverRibbonTab = -1;
+        InvalidateRect(hwnd, NULL, FALSE);
+        break;
+    }
+    case WM_LBUTTONDOWN: {
+        int x = LOWORD(lParam);
+        int y = HIWORD(lParam);
+        if (y < 32 && x >= 96) {
+            int idx = (x - 96) / 64;
+            if (idx >= 0 && idx < RIBBON_TAB_COUNT) {
+                SwitchRibbonTab(idx);
+            }
+        }
+        break;
+    }
+    }
+    return CallWindowProcW(g_oldToolbarProc, hwnd, uMsg, wParam, lParam);
+}
+
 
 // Forward Declarations
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -315,7 +438,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     g_hInst = hInstance;
 
     // Enable modern per-monitor DPI awareness for high-velocity smoothness
-    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+    typedef BOOL(WINAPI* PFN_SetProcessDpiAwarenessContext)(HANDLE);
+    HMODULE hUser32 = GetModuleHandleW(L"user32.dll");
+    if (hUser32) {
+        PFN_SetProcessDpiAwarenessContext pfn = (PFN_SetProcessDpiAwarenessContext)GetProcAddress(hUser32, "SetProcessDpiAwarenessContext");
+        if (pfn) pfn((HANDLE)-4);
+    }
 
     // Dynamic Fonts
     wchar_t exePath[MAX_PATH] = { 0 };
@@ -359,7 +487,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
     // Create Main Word-Grade Window
     g_hMainWnd = CreateWindowExW(
-        0, L"GiriDriftWindowClass",
+        WS_EX_COMPOSITED | WS_EX_APPWINDOW, L"GiriDriftWindowClass",
         L"Untitled Document — Giri Drift (Executive Sovereign Word Processor)",
         WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
         CW_USEDEFAULT, CW_USEDEFAULT, 1200, 820,
@@ -499,6 +627,8 @@ void CreateRibbonToolbar(HWND hwnd) {
         WS_CHILD | WS_VISIBLE | SS_NOTIFY | WS_CLIPCHILDREN,
         0, 0, 1200, 104, hwnd, (HMENU)IDC_TOOLBAR_PANEL, g_hInst, NULL
     );
+    g_oldToolbarProc = (WNDPROC)GetWindowLongPtrW(g_hToolbarPanel, GWLP_WNDPROC);
+    SetWindowLongPtrW(g_hToolbarPanel, GWLP_WNDPROC, (LONG_PTR)ToolbarPanelProc);
 
     HFONT hFont = CreateFontW(13, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
                               OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,

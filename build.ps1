@@ -27,7 +27,7 @@ g++ -std=c++20 -O3 -s -mwindows -municode "$baseDir\src\axis\main.cpp" "$baseDir
 # 3. Giri Kinetic
 Write-Host "[3/5] Compiling Giri Kinetic (Cinematic Widescreen Show)..." -ForegroundColor Yellow
 windres -i "$baseDir\src\kinetic\resource.rc" -o "$baseDir\src\kinetic\resource.o"
-g++ -std=c++20 -O3 -s -mwindows -municode "$baseDir\src\kinetic\main.cpp" "$baseDir\src\kinetic\resource.o" -o "$baseDir\bin\GiriKinetic.exe" -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lole32 -lmsimg32
+g++ -std=c++20 -O3 -s -mwindows -municode "$baseDir\src\kinetic\main.cpp" "$baseDir\src\kinetic\resource.o" -o "$baseDir\bin\GiriKinetic.exe" -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lole32 -lgdiplus -lmsimg32
 
 # 4. Giri Orbit Hub
 Write-Host "[4/5] Compiling Giri Orbit Hub (Orchestrator)..." -ForegroundColor Yellow

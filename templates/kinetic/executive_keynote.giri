@@ -1,0 +1,29 @@
+GIRI_ORBIT_SOVEREIGN_V1
+TYPE:kinetic
+AUTHOR:Abhinav Giri
+TITLE:Executive Strategic Keynote Deck
+---
+SLIDE_1:
+TITLE:Giri Orbit Sovereign Architecture
+SUBTITLE:Sovereign Desktop Ecosystem & In-Memory Confidential Computing
+BODY:Made by Abhinav Giri (github.com/abhinavgiri45 | @abhinavgiri45)
+• 100% Offline Standalone Native C++
+• Sub-15MB RAM Footprint & Instant Startup
+• Zero Cloud Telemetry & Zero Cloudflare
+THEME:NAVY
+---
+SLIDE_2:
+TITLE:Core Pillar: Absolute Data Sovereignty
+SUBTITLE:Zero Cloud Lock-In & Cryptographic In-Memory Safety
+BODY:• Every keystroke, formula, and slide resides purely in local device RAM.
+• No remote verification servers or bot challenges.
+• Total cryptographic freedom with Universal .giri containers.
+THEME:EMERALD
+---
+SLIDE_3:
+TITLE:Global Presentation Templates
+SUBTITLE:Powered by www.presentationgo.com Integration
+BODY:• High-definition 16:9 widescreen layout standard.
+• Seamless visual motif integration and watermark reference.
+• Fullscreen F5 Presentation Mode with hardware acceleration.
+THEME:SLATE

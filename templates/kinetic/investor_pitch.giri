@@ -1,0 +1,29 @@
+GIRI_ORBIT_SOVEREIGN_V1
+TYPE:kinetic
+AUTHOR:Abhinav Giri
+TITLE:Series A Investor Pitch Deck
+---
+SLIDE_1:
+TITLE:Giri Orbit Enterprise Suite
+SUBTITLE:Series A Investor Pitch Deck
+BODY:Founder & Chief Architect: Abhinav Giri
+Contact: abhinavgiri370@gmail.com
+Sovereign Computing Revolution
+THEME:NAVY
+---
+SLIDE_2:
+TITLE:The Market Problem
+SUBTITLE:Massive Bloat, Cloud Lock-In & Vulnerability
+BODY:• Enterprise office suites have grown to 4GB+ of bloat.
+• Constant background telemetry and cloud syncing exposes confidential data.
+• Web browser wrappers waste gigabytes of RAM.
+THEME:SLATE
+---
+SLIDE_3:
+TITLE:The Sovereign Solution
+SUBTITLE:Lightweight, Ultra-Fast Native C++ Architecture
+BODY:• Giri Drift: Instant executive document composing.
+• Giri Axis: High-speed 1000x52 matrix with formula engine.
+• Giri Kinetic: Cinematic 16:9 presentations.
+• 95% less RAM, 0% cloud dependencies, 100% sovereign.
+THEME:EMERALD

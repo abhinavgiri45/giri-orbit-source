@@ -1,0 +1,11 @@
+GIRI_ORBIT_SOVEREIGN_V1
+TYPE:axis
+AUTHOR:Abhinav Giri
+TITLE:Master Capitalization Table
+---
+Shareholder Class,Shares Owned,Ownership Pct,Invested USD,Implied Value
+Abhinav Giri (Founder),5500000,55.0%,150000,13750000
+Co-Founding Executives,2000000,20.0%,50000,5000000
+Employee ESOP Pool,1000000,10.0%,0,2500000
+Series Seed Syndicate,1500000,15.0%,3000000,3750000
+Total Fully Diluted,10000000,100.0%,3200000,25000000

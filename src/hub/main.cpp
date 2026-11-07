@@ -139,7 +139,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     wcex.hInstance = hInstance;
     wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    wcex.lpszClassName = L"GiriOrbitCopilotHubClass";
+    wcex.lpszClassName = L"GiriOrbitHubClass";
     wcex.hIcon = g_hAppIcon;
     wcex.hIconSm = g_hAppIcon;
 
@@ -150,9 +150,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
     // Create Main Copilot Window (1220 x 800)
     g_hWnd = CreateWindowExW(
-        WS_EX_APPWINDOW,
-        L"GiriOrbitCopilotHubClass",
-        L"Giri Orbit Copilot — Sovereign Office Productivity Suite",
+        WS_EX_COMPOSITED | WS_EX_APPWINDOW,
+        L"GiriOrbitHubClass",
+        L"Giri Orbit — Sovereign Office Productivity Suite",
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_THICKFRAME | WS_CLIPCHILDREN,
         CW_USEDEFAULT, CW_USEDEFAULT, 1220, 800,
         NULL, NULL, hInstance, NULL
@@ -364,15 +364,15 @@ void RenderLeftRail(Graphics& g, int w, int h) {
 
     RailDef railItems[] = {
         { RAIL_HOME, L"Home", Color(79, 70, 229), Color(238, 242, 255) },
-        { RAIL_COPILOT, L"Copilot", Color(124, 58, 237), Color(245, 243, 255) },
+        { RAIL_COPILOT, L"Girionix AI", Color(124, 58, 237), Color(245, 243, 255) },
         { RAIL_CREATE, L"Create", Color(75, 85, 99), Color(243, 244, 246) },
         { RAIL_MYCONTENT, L"My Content", Color(75, 85, 99), Color(243, 244, 246) },
         { RAIL_APPS, L"Apps", Color(75, 85, 99), Color(243, 244, 246) },
         { -1, L"", Color(0,0,0), Color(0,0,0) }, // divider
-        { RAIL_DRIFT, L"Word", Color(37, 99, 235), Color(239, 246, 255) },
-        { RAIL_AXIS, L"Excel", Color(22, 163, 74), Color(240, 253, 244) },
-        { RAIL_KINETIC, L"PowerPoint", Color(234, 88, 12), Color(255, 247, 237) },
-        { RAIL_AEGIS, L"PDF", Color(220, 38, 38), Color(254, 242, 242) }
+        { RAIL_DRIFT, L"Drift", Color(37, 99, 235), Color(239, 246, 255) },
+        { RAIL_AXIS, L"Axis", Color(22, 163, 74), Color(240, 253, 244) },
+        { RAIL_KINETIC, L"Kinetic", Color(234, 88, 12), Color(255, 247, 237) },
+        { RAIL_AEGIS, L"Aegis", Color(220, 38, 38), Color(254, 242, 242) }
     };
 
     int y = 14;
@@ -441,7 +441,7 @@ void RenderLeftRail(Graphics& g, int w, int h) {
             g.FillPath(&b, &p);
             Font f(L"Segoe UI", 8.0f, FontStyleBold, UnitPoint);
             SolidBrush wb(Color(255, 255, 255));
-            g.DrawString(L"W", -1, &f, PointF((float)iconCx, (float)iconCy - 1), &sf, &wb);
+            g.DrawString(L"D", -1, &f, PointF((float)iconCx, (float)iconCy - 1), &sf, &wb);
         } else if (item.id == RAIL_AXIS) {
             // Excel green tile
             GraphicsPath p;
@@ -450,7 +450,7 @@ void RenderLeftRail(Graphics& g, int w, int h) {
             g.FillPath(&b, &p);
             Font f(L"Segoe UI", 8.0f, FontStyleBold, UnitPoint);
             SolidBrush wb(Color(255, 255, 255));
-            g.DrawString(L"X", -1, &f, PointF((float)iconCx, (float)iconCy - 1), &sf, &wb);
+            g.DrawString(L"A", -1, &f, PointF((float)iconCx, (float)iconCy - 1), &sf, &wb);
         } else if (item.id == RAIL_KINETIC) {
             // PowerPoint orange tile
             GraphicsPath p;
@@ -459,7 +459,7 @@ void RenderLeftRail(Graphics& g, int w, int h) {
             g.FillPath(&b, &p);
             Font f(L"Segoe UI", 8.0f, FontStyleBold, UnitPoint);
             SolidBrush wb(Color(255, 255, 255));
-            g.DrawString(L"P", -1, &f, PointF((float)iconCx, (float)iconCy - 1), &sf, &wb);
+            g.DrawString(L"K", -1, &f, PointF((float)iconCx, (float)iconCy - 1), &sf, &wb);
         } else if (item.id == RAIL_AEGIS) {
             // PDF red tile
             GraphicsPath p;
@@ -992,9 +992,10 @@ LRESULT CALLBACK HubWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             if (g_hoverCard == 0) LaunchApp(L"GiriDrift.exe");
             else if (g_hoverCard == 1) LaunchApp(L"GiriKinetic.exe");
             else if (g_hoverCard == 2) LaunchApp(L"GiriAxis.exe");
-            else if (g_hoverCard == 3 || g_hoverCard == 4) LaunchApp(L"GiriDrift.exe");
-            else if (g_hoverCard == 5) LaunchApp(L"GiriAxis.exe");
-            else if (g_hoverCard == 6) LaunchApp(L"GiriKinetic.exe");
+            else if (g_hoverCard == 3) LaunchApp(L"GiriAxis.exe", L"\"" + g_appDir + L"\\templates\\axis\\form_survey_template.giri\"");
+            else if (g_hoverCard == 4) LaunchApp(L"GiriAxis.exe", L"\"" + g_appDir + L"\\templates\\axis\\quiz_assessment_template.giri\"");
+            else if (g_hoverCard == 5) LaunchApp(L"GiriAxis.exe", L"\"" + g_appDir + L"\\templates\\axis\\task_tracker_kanban.giri\"");
+            else if (g_hoverCard == 6) LaunchApp(L"GiriKinetic.exe", L"\"" + g_appDir + L"\\templates\\kinetic\\creative_social_banner.giri\"");
             return 0;
         }
 
@@ -1023,6 +1024,7 @@ LRESULT CALLBACK HubWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         return 0;
     }
 
+    case WM_ERASEBKGND: return 1;
     case WM_PAINT: {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
@@ -1050,14 +1052,14 @@ LRESULT CALLBACK HubWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
         int contentX = LEFT_RAIL_WIDTH + 48;
 
-        // 3. Header: "Welcome to Giri Orbit Copilot"
+        // 3. Header: "Welcome to Giri Orbit"
         Font fTitle(L"Segoe UI", 21.0f, FontStyleBold, UnitPoint);
         SolidBrush titleBrush(Color(31, 41, 55));
         StringFormat sfCenter;
         sfCenter.SetAlignment(StringAlignmentCenter);
 
         int centerHeaderX = contentX + (w - contentX) / 2;
-        g.DrawString(L"Welcome to Giri Orbit Copilot", -1, &fTitle, PointF((float)centerHeaderX, 36.0f), &sfCenter, &titleBrush);
+        g.DrawString(L"Welcome to Giri Orbit", -1, &fTitle, PointF((float)centerHeaderX, 36.0f), &sfCenter, &titleBrush);
 
         // Subtitle Status: Free pill + Offline Sovereign Storage
         int subY = 76;
@@ -1128,7 +1130,7 @@ LRESULT CALLBACK HubWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
         Font fStatus(L"Segoe UI", 8.0f, FontStyleRegular, UnitPoint);
         SolidBrush statusText(Color(107, 114, 128));
-        g.DrawString(L"  Giri Orbit Sovereign Suite Copilot (v12.0) • 100% Offline Standalone Native C++ • Author: Abhinav Giri (abhinavgiri370@gmail.com)",
+        g.DrawString(L"  Giri Orbit Sovereign Suite (v13.4) • 100% Offline Standalone Native C++ • Author: Abhinav Giri (abhinavgiri370@gmail.com)",
                      -1, &fStatus, PointF(8.0f, (float)h - 18.0f), &statusText);
 
         BitBlt(hdc, 0, 0, w, h, memDC, 0, 0, SRCCOPY);

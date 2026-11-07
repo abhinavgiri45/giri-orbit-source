@@ -1,0 +1,25 @@
+GIRI_ORBIT_SOVEREIGN_V1
+TYPE:drift
+AUTHOR:Abhinav Giri
+TITLE:Executive Strategic Charter
+---
+EXECUTIVE STRATEGIC CHARTER (2026-2028)
+Giri Orbit Sovereign Enterprise Architecture
+Authored by: Abhinav Giri (github.com/abhinavgiri45)
+Contact: abhinavgiri370@gmail.com
+
+1. EXECUTIVE SUMMARY & MISSION
+The purpose of this charter is to establish total cryptographic sovereignty, eliminate external cloud dependencies, and deliver ultra-responsive native desktop tools that operate 100% in-memory with zero telemetry.
+
+2. CORE PILLARS OF OPERATION
+• Complete In-Memory Privacy: All user documents, matrices, and presentation slides are processed exclusively in local RAM.
+• Zero Cloud Telemetry: No background pings, no telemetry cookies, and no third-party verification challenges.
+• High-Velocity Native C++ Performance: Millisecond startup time, sub-15MB RAM footprint, and instant file input/output.
+• Universal Office Compatibility (.giri): Seamless two-way data interchange across Drift, Axis, and Kinetic.
+
+3. GOVERNANCE & ARCHITECTURAL STANDARDS
+All subsequent software releases must adhere strictly to sovereign native compilation guidelines using Win32 API, GDI+, and zero web wrappers.
+
+Approved by:
+Abhinav Giri
+Founder & Chief Architect

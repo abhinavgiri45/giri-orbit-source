@@ -1,0 +1,13 @@
+GIRI_ORBIT_SOVEREIGN_V1
+TYPE:axis
+AUTHOR:Abhinav Giri
+TITLE:Annual Corporate Operating Budget
+---
+Category,Q1 Actual,Q2 Proj,Q3 Proj,Q4 Proj,Total FY26
+R&D Engineering,125000,135000,140000,155000,=SUM(B2:E2)
+Cloud & Hardware,45000,48000,52000,55000,=SUM(B3:E3)
+Personnel & Payroll,210000,215000,220000,230000,=SUM(B4:E4)
+Legal & Compliance,32000,30000,28000,35000,=SUM(B5:E5)
+Marketing & Growth,65000,72000,80000,95000,=SUM(B6:E6)
+Total Operating Cost,=SUM(B2:B6),=SUM(C2:C6),=SUM(D2:D6),=SUM(E2:E6),=SUM(F2:F6)
+Quarterly Average,=AVERAGE(B7:E7),,,,

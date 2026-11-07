@@ -1,0 +1,12 @@
+GIRI_ORBIT_SOVEREIGN_V1
+TYPE:axis
+AUTHOR:Abhinav Giri
+TITLE:Certification Assessment & Scored Gradebook
+---
+Candidate ID,Candidate Name,Q1 C++ Win32 (5pts),Q2 Range Calc (5pts),Q3 Sovereignty (5pts),Total Score (15pts),Percentage,Status
+CAND-101,Senior Architect,5,5,5,=SUM(C2:E2),100%,PASSED
+CAND-102,Platform Engineer,5,4,5,=SUM(C3:E3),93%,PASSED
+CAND-103,Security Officer,4,5,5,=SUM(C4:E4),93%,PASSED
+CAND-104,DevOps Specialist,4,3,4,=SUM(C5:E5),73%,PASSED
+Average Score,=AVERAGE(C2:C5),=AVERAGE(D2:D5),=AVERAGE(E2:E5),=AVERAGE(F2:F5),=AVERAGE(G2:G5),
+Highest Score,=MAX(F2:F5),,,,,

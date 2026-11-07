@@ -369,12 +369,15 @@ void ShowPage(WizardPage page) {
     InvalidateRect(g_hMainWnd, NULL, TRUE);
 }
 
-void CreateShortcut(const std::wstring& targetPath, const std::wstring& shortcutPath, const std::wstring& description) {
+void CreateShortcut(const std::wstring& targetPath, const std::wstring& shortcutPath, const std::wstring& description, const std::wstring& iconPath = L"") {
     CoInitialize(NULL);
     IShellLinkW* psl = NULL;
     if (SUCCEEDED(CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLinkW, (LPVOID*)&psl))) {
         psl->SetPath(targetPath.c_str());
         psl->SetDescription(description.c_str());
+        if (!iconPath.empty()) {
+            psl->SetIconLocation(iconPath.c_str(), 0);
+        }
         // Set working directory to target folder
         wchar_t szWork[MAX_PATH] = { 0 };
         wcscpy_s(szWork, targetPath.c_str());

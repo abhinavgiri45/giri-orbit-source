@@ -1,0 +1,13 @@
+GIRI_ORBIT_SOVEREIGN_V1
+TYPE:axis
+AUTHOR:Abhinav Giri
+TITLE:Enterprise Sprint Task Matrix & Kanban Tracker
+---
+Task ID,Work Item Title,Status,Priority,Assignee,Due Date,Progress %
+TSK-001,Deploy Double-Buffered Native Desktop Engine,Completed,Urgent,Abhinav Giri,2026-11-08,100%
+TSK-002,Ship Dedicated Forms Quiz Lists Designer Studios,Completed,Urgent,Abhinav Giri,2026-11-08,100%
+TSK-003,Audit 100% Offline Confidential Memory Security,In Progress,High,Security Team,2026-11-12,75%
+TSK-004,Expand Formula Calculation Engine & Charting,Completed,High,Data Team,2026-11-10,100%
+TSK-005,Deploy Global Multi-Architecture Binaries,Under Review,Medium,DevOps Team,2026-11-18,50%
+Total Tasks,=COUNT(A2:A6),,,,,
+Completed Tasks,=COUNT(G2:G6),,,,,

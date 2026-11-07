@@ -1,0 +1,13 @@
+GIRI_ORBIT_SOVEREIGN_V1
+TYPE:axis
+AUTHOR:Abhinav Giri
+TITLE:SaaS Executive Performance Dashboard
+---
+KPI Metric,Q1 Actual,Q2 Actual,Q3 Target,Q4 Target
+Monthly Recurring Rev (MRR),145000,182000,225000,280000
+Gross Customer Additions,48,62,80,105
+Customer Churn Rate,0.012,0.009,0.008,0.006
+Net Revenue Retention (NRR),1.24,1.28,1.32,1.35
+Customer Acquisition Cost (CAC),2400,2250,2100,1950
+LTV to CAC Ratio,4.8,5.2,5.7,6.1
+Total Pipeline Value,1250000,1650000,2100000,2900000

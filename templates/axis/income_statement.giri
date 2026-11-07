@@ -1,0 +1,13 @@
+GIRI_ORBIT_SOVEREIGN_V1
+TYPE:axis
+AUTHOR:Abhinav Giri
+TITLE:Q4 Income Statement & Profit Analysis
+---
+Metric,October,November,December,Q4 Total
+Gross Client Billings,420000,485000,590000,=SUM(B2:D2)
+Cost of Goods Sold (COGS),84000,97000,118000,=SUM(B3:D3)
+Gross Profit,336000,388000,472000,=SUM(B4:D4)
+Sales & Admin,62000,68000,74000,=SUM(B5:D5)
+Operating Income (EBIT),274000,320000,398000,=SUM(B6:D6)
+Taxes & Provisions (18%),49320,57600,71640,=SUM(B7:D7)
+Net Sovereign Income,224680,262400,326360,=SUM(B8:D8)
