@@ -1,78 +1,110 @@
 /* ============================================================================
- * GIRI ORBIT — SOVEREIGN ENTERPRISE OFFICE SUITE (main.cpp)
+ * GIRI ORBIT — COPILOT SOVEREIGN OFFICE SUITE (main.cpp)
  * Made by Abhinav Giri (GitHub: @abhinavgiri45 | Instagram: @abhinavgiri45)
  * Official Contact: abhinavgiri370@gmail.com
- * 100% Offline Standalone Native C++ Win32 Desktop Application
- * Zero Telemetry • Pure Sovereign Office Hub • Ultra-Modern Fluent Dark UI
+ * Proprietary Commercial Software License (All Rights Reserved)
+ * 100% Offline Standalone Native C++ Win32 & GDI+ Modern Fluent Copilot UI
+ * Zero Browser • Zero Webview • Zero Localhost • Independent C++ Desktop Architecture
  * ============================================================================
  */
 
-#include "../common/sovereign_types.h"
-#include "../common/universal_file.h"
-#include <shlobj.h>
-#include <commdlg.h>
+#ifndef UNICODE
+#define UNICODE
+#endif
+#ifndef _UNICODE
+#define _UNICODE
+#endif
+
+#include <windows.h>
 #include <commctrl.h>
+#include <commdlg.h>
 #include <shellapi.h>
 #include <shlwapi.h>
+#include <gdiplus.h>
 #include <string>
 #include <vector>
+#include <algorithm>
 
+#pragma comment(lib, "gdiplus.lib")
 #pragma comment(lib, "comctl32.lib")
 #pragma comment(lib, "shlwapi.lib")
 #pragma comment(lib, "shell32.lib")
 
-// Control Identifiers
-#define IDC_BTN_NEW_DRIFT         5001
-#define IDC_BTN_OPEN_DRIFT        5002
-#define IDC_BTN_DRIFT_TEMPLATE    5003
+using namespace Gdiplus;
 
-#define IDC_BTN_NEW_AXIS          5004
-#define IDC_BTN_OPEN_AXIS         5005
-#define IDC_BTN_AXIS_TEMPLATE     5006
-
-#define IDC_BTN_NEW_KINETIC       5007
-#define IDC_BTN_OPEN_KINETIC      5008
-#define IDC_BTN_KINETIC_TEMPLATE  5009
-
-#define IDC_BTN_OPEN_UNIVERSAL    5010
-#define IDC_COMBO_SUITE_LANG      5011
-#define IDC_BTN_GITHUB            5012
-
-#define IDC_HUB_STATUSBAR         6001
+// Identifiers
+#define IDC_SEARCH_EDIT 2001
 
 HINSTANCE g_hInst = NULL;
-HWND g_hMainWnd = NULL;
-HWND g_hStatusBar = NULL;
-HWND g_hLangCombo = NULL;
-std::wstring g_appDir = L"";
+HWND g_hWnd = NULL;
+HWND g_hSearchEdit = NULL;
 HICON g_hAppIcon = NULL;
+std::wstring g_appDir = L"";
+ULONG_PTR g_gdiToken = 0;
 
-// Active Suite Language: 0=English, 1=Hindi (Google Writing Style), 2=Spanish, 3=French, 4=German
-int g_currentLangIndex = 0;
+// View dimensions
+const int LEFT_RAIL_WIDTH = 70;
+const int CARD_WIDTH = 120;
+const int CARD_HEIGHT = 150;
+const int CARD_GAP = 14;
 
-struct SuiteLocale {
-    const wchar_t* displayName;
-    const wchar_t* langCode;
-    const wchar_t* defaultFont;
+// Hover & Active States
+enum RailItem {
+    RAIL_HOME = 0,
+    RAIL_COPILOT,
+    RAIL_CREATE,
+    RAIL_MYCONTENT,
+    RAIL_APPS,
+    RAIL_DRIFT,
+    RAIL_AXIS,
+    RAIL_KINETIC,
+    RAIL_AEGIS,
+    RAIL_SETTINGS,
+    RAIL_PROFILE,
+    RAIL_COUNT
 };
 
-const SuiteLocale g_locales[] = {
-    { L"🌐 English (United States)", L"en_US", L"Segoe UI" },
-    { L"🇮🇳 हिन्दी (Hindi - Google Devanagari)", L"hi_IN", L"Noto Sans Devanagari" },
-    { L"🇪🇸 Español (Spanish)", L"es_ES", L"Segoe UI" },
-    { L"🇫🇷 Français (French)", L"fr_FR", L"Segoe UI" },
-    { L"🇩🇪 Deutsch (German)", L"de_DE", L"Segoe UI" },
-    { L"🇯🇵 日本語 (Japanese)", L"ja_JP", L"Meiryo" },
-    { L"🇨🇳 中文 (Simplified Chinese)", L"zh_CN", L"Microsoft YaHei" },
-    { L"🇸🇦 العربية (Arabic)", L"ar_SA", L"Noto Sans Arabic" }
+int g_activeRail = RAIL_HOME;
+int g_hoverRail = -1;
+int g_hoverCard = -1;
+int g_hoverTableRow = -1;
+int g_activeFilterPill = 0; // 0=Recently opened, 1=Shared, 2=Favorites
+int g_hoverFilterPill = -1;
+bool g_hoverUpload = false;
+bool g_isGridView = false;
+std::wstring g_searchQuery = L"";
+
+// Recent Document Struct
+struct RecentDoc {
+    std::wstring name;
+    std::wstring type;      // "drift", "axis", "kinetic", "pdf"
+    std::wstring modified;
+    std::wstring location;
+    std::wstring activity;
+    std::wstring fullPath;
 };
 
-// Forward declarations
+std::vector<RecentDoc> g_recentDocs;
+std::vector<RecentDoc> g_filteredDocs;
+
+// Forward Declarations
 LRESULT CALLBACK HubWndProc(HWND, UINT, WPARAM, LPARAM);
 void LaunchApp(const std::wstring& exeName, const std::wstring& args = L"");
-void OpenUniversalFile(HWND hwnd);
-void SavePreferredLanguage(int index);
-int LoadPreferredLanguage();
+void OpenAnyFileDialog(HWND hwnd);
+void PopulateRecentDocs();
+void FilterDocs(const std::wstring& query);
+
+// Helper for GDI+ Rounded Rectangle
+void AddRoundedRect(GraphicsPath& path, RectF rect, float radius) {
+    float diameter = radius * 2.0f;
+    float right = rect.X + rect.Width;
+    float bottom = rect.Y + rect.Height;
+    path.AddArc(rect.X, rect.Y, diameter, diameter, 180.0f, 90.0f);
+    path.AddArc(right - diameter, rect.Y, diameter, diameter, 270.0f, 90.0f);
+    path.AddArc(right - diameter, bottom - diameter, diameter, diameter, 0.0f, 90.0f);
+    path.AddArc(rect.X, bottom - diameter, diameter, diameter, 90.0f, 90.0f);
+    path.CloseFigure();
+}
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
     g_hInst = hInstance;
@@ -89,144 +121,99 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     if (PathFileExistsW(fontPath1.c_str())) AddFontResourceExW(fontPath1.c_str(), FR_PRIVATE, NULL);
     else if (PathFileExistsW(fontPath2.c_str())) AddFontResourceExW(fontPath2.c_str(), FR_PRIVATE, NULL);
 
-    INITCOMMONCONTROLSEX icex = { sizeof(INITCOMMONCONTROLSEX), ICC_WIN95_CLASSES | ICC_BAR_CLASSES };
+    // Initialize GDI+
+    GdiplusStartupInput gdiInput;
+    GdiplusStartup(&g_gdiToken, &gdiInput, NULL);
+
+    INITCOMMONCONTROLSEX icex = { sizeof(INITCOMMONCONTROLSEX), ICC_WIN95_CLASSES | ICC_STANDARD_CLASSES };
     InitCommonControlsEx(&icex);
 
+    // Load App Icon
     g_hAppIcon = (HICON)LoadImageW(hInstance, MAKEINTRESOURCEW(101), IMAGE_ICON, 256, 256, LR_DEFAULTSIZE);
-    if (!g_hAppIcon) g_hAppIcon = LoadIconW(hInstance, MAKEINTRESOURCEW(101));
+    if (!g_hAppIcon) g_hAppIcon = (HICON)LoadImageW(NULL, (g_appDir + L"\\orbit.ico").c_str(), IMAGE_ICON, 256, 256, LR_LOADFROMFILE);
 
+    // Register Window Class
     WNDCLASSEXW wcex = { sizeof(WNDCLASSEXW) };
     wcex.style = CS_HREDRAW | CS_VREDRAW;
     wcex.lpfnWndProc = HubWndProc;
     wcex.hInstance = hInstance;
     wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground = CreateSolidBrush(RGB(11, 15, 25)); // Ultra-Dark Modern Slate
-    wcex.lpszClassName = L"GiriOrbitMasterHubClass";
+    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.lpszClassName = L"GiriOrbitHubClass";
     wcex.hIcon = g_hAppIcon;
-    wcex.hIconSm = (HICON)LoadImageW(hInstance, MAKEINTRESOURCEW(101), IMAGE_ICON, 16, 16, 0);
+    wcex.hIconSm = g_hAppIcon;
 
     if (!RegisterClassExW(&wcex)) return 0;
 
-    g_currentLangIndex = LoadPreferredLanguage();
+    PopulateRecentDocs();
+    FilterDocs(L"");
 
-    // Create Main Hub Window (1040 x 700)
-    g_hMainWnd = CreateWindowExW(
-        0, L"GiriOrbitMasterHubClass",
+    // Create Main Copilot Window (1220 x 800)
+    g_hWnd = CreateWindowExW(
+        WS_EX_APPWINDOW,
+        L"GiriOrbitHubClass",
         L"Giri Orbit — Sovereign Office Productivity Suite",
-        WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN,
-        CW_USEDEFAULT, CW_USEDEFAULT, 1040, 710,
+        WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_THICKFRAME | WS_CLIPCHILDREN,
+        CW_USEDEFAULT, CW_USEDEFAULT, 1220, 800,
         NULL, NULL, hInstance, NULL
     );
 
-    if (!g_hMainWnd) return 0;
+    if (!g_hWnd) return 0;
 
-    // Header Language Dropdown
-    HFONT hUiFont = CreateFontW(14, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
-                                OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
-                                VARIABLE_PITCH, L"Segoe UI");
+    // Create Search Edit control inside pill
+    HFONT hFontSearch = CreateFontW(17, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                                   OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+                                   VARIABLE_PITCH, L"Segoe UI");
 
-    g_hLangCombo = CreateWindowExW(
-        0, L"COMBOBOX", L"",
-        WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL,
-        710, 24, 275, 240,
-        g_hMainWnd, (HMENU)IDC_COMBO_SUITE_LANG, hInstance, NULL
+    g_hSearchEdit = CreateWindowExW(
+        0, L"EDIT", L"",
+        WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL,
+        370, 117, 470, 24,
+        g_hWnd, (HMENU)IDC_SEARCH_EDIT, hInstance, NULL
     );
-    SendMessageW(g_hLangCombo, WM_SETFONT, (WPARAM)hUiFont, TRUE);
+    SendMessageW(g_hSearchEdit, WM_SETFONT, (WPARAM)hFontSearch, TRUE);
+    SendMessageW(g_hSearchEdit, EM_SETCUEBANNER, TRUE, (LPARAM)L"Search for apps, files, templates and more");
 
-    for (const auto& loc : g_locales) {
-        SendMessageW(g_hLangCombo, CB_ADDSTRING, 0, (LPARAM)loc.displayName);
-    }
-    SendMessageW(g_hLangCombo, CB_SETCURSEL, (WPARAM)g_currentLangIndex, 0);
-
-    // ==========================================
-    // 3 MODERN APP CARDS (Drift, Axis, Kinetic)
-    // Left: 40, Width: 300 each, Gap: 30
-    // Card 1: x = 40
-    // Card 2: x = 370
-    // Card 3: x = 700
-    // ==========================================
-
-    // CARD 1: GIRI DRIFT (Word Processor)
-    HWND bDriftNew = CreateWindowExW(0, L"BUTTON", L"+ Blank Document", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
-                                    60, 360, 260, 38, g_hMainWnd, (HMENU)IDC_BTN_NEW_DRIFT, hInstance, NULL);
-    HWND bDriftTmpl = CreateWindowExW(0, L"BUTTON", L"Strategic Charter Template", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
-                                     60, 408, 260, 34, g_hMainWnd, (HMENU)IDC_BTN_DRIFT_TEMPLATE, hInstance, NULL);
-    HWND bDriftOpen = CreateWindowExW(0, L"BUTTON", L"Open Document (.giri, .docx)...", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
-                                     60, 452, 260, 34, g_hMainWnd, (HMENU)IDC_BTN_OPEN_DRIFT, hInstance, NULL);
-
-    // CARD 2: GIRI AXIS (Spreadsheet Matrix)
-    HWND bAxisNew = CreateWindowExW(0, L"BUTTON", L"+ Blank Spreadsheet", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
-                                   390, 360, 260, 38, g_hMainWnd, (HMENU)IDC_BTN_NEW_AXIS, hInstance, NULL);
-    HWND bAxisTmpl = CreateWindowExW(0, L"BUTTON", L"Annual Budget Template", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
-                                    390, 408, 260, 34, g_hMainWnd, (HMENU)IDC_BTN_AXIS_TEMPLATE, hInstance, NULL);
-    HWND bAxisOpen = CreateWindowExW(0, L"BUTTON", L"Open Spreadsheet (.giri, .xlsx)...", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
-                                    390, 452, 260, 34, g_hMainWnd, (HMENU)IDC_BTN_OPEN_AXIS, hInstance, NULL);
-
-    // CARD 3: GIRI KINETIC (Presentation Studio)
-    HWND bKinNew = CreateWindowExW(0, L"BUTTON", L"+ Blank Presentation", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
-                                  720, 360, 260, 38, g_hMainWnd, (HMENU)IDC_BTN_NEW_KINETIC, hInstance, NULL);
-    HWND bKinTmpl = CreateWindowExW(0, L"BUTTON", L"Keynote Pitch Deck Template", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
-                                   720, 408, 260, 34, g_hMainWnd, (HMENU)IDC_BTN_KINETIC_TEMPLATE, hInstance, NULL);
-    HWND bKinOpen = CreateWindowExW(0, L"BUTTON", L"Open Slide Deck (.giri, .pptx)...", WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
-                                   720, 452, 260, 34, g_hMainWnd, (HMENU)IDC_BTN_OPEN_KINETIC, hInstance, NULL);
-
-    // BOTTOM UNIVERSAL STRIP: OPEN ANY FILE
-    HWND bUniv = CreateWindowExW(0, L"BUTTON", L"📁  Browse & Open Any Sovereign Office File (.giri, .docx, .xlsx, .pptx, .pdf)...",
-                                WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
-                                40, 520, 940, 46, g_hMainWnd, (HMENU)IDC_BTN_OPEN_UNIVERSAL, hInstance, NULL);
-
-    HWND bGit = CreateWindowExW(0, L"BUTTON", L"GitHub: @abhinavgiri45",
-                               WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
-                               40, 580, 200, 32, g_hMainWnd, (HMENU)IDC_BTN_GITHUB, hInstance, NULL);
-
-    // Status Bar
-    g_hStatusBar = CreateWindowExW(
-        0, STATUSCLASSNAMEW, NULL,
-        WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP,
-        0, 0, 0, 0, g_hMainWnd, (HMENU)IDC_HUB_STATUSBAR, hInstance, NULL
-    );
-    int parts[] = { 340, 680, -1 };
-    SendMessageW(g_hStatusBar, SB_SETPARTS, 3, (LPARAM)parts);
-    SendMessageW(g_hStatusBar, SB_SETTEXTW, 0, (LPARAM)L" Giri Orbit v11.8.7 — Native Win32 C++");
-    SendMessageW(g_hStatusBar, SB_SETTEXTW, 1, (LPARAM)L" Author: Abhinav Giri (abhinavgiri370@gmail.com)");
-    SendMessageW(g_hStatusBar, SB_SETTEXTW, 2, (LPARAM)L" 100% Offline • Zero Telemetry");
-
-    ShowWindow(g_hMainWnd, nCmdShow);
-    UpdateWindow(g_hMainWnd);
+    ShowWindow(g_hWnd, nCmdShow);
+    UpdateWindow(g_hWnd);
 
     MSG msg;
     while (GetMessageW(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
     }
+
+    GdiplusShutdown(g_gdiToken);
     return (int)msg.wParam;
 }
 
-void SavePreferredLanguage(int index) {
-    if (index < 0 || index >= sizeof(g_locales)/sizeof(g_locales[0])) return;
-    std::wstring cfgDir = g_appDir;
-    std::wstring cfgPath = cfgDir + L"\\locale.cfg";
-    FILE* f = _wfopen(cfgPath.c_str(), L"w, ccs=UTF-8");
-    if (f) {
-        fwprintf(f, L"%d\n%ls\n", index, g_locales[index].langCode);
-        fclose(f);
-    }
+void PopulateRecentDocs() {
+    g_recentDocs.clear();
+    g_recentDocs.push_back({ L"Annual Strategic Corporate Charter.gdrift", L"drift", L"Just now", L"This PC", L"Opened by you", g_appDir + L"\\templates\\drift\\corporate_charter.giri" });
+    g_recentDocs.push_back({ L"Q4 Financial Matrix & Projections.xlsx", L"axis", L"2 hours ago", L"This PC", L"Modified", g_appDir + L"\\templates\\axis\\annual_budget.giri" });
+    g_recentDocs.push_back({ L"Executive Keynote Pitch Deck.giri", L"kinetic", L"Yesterday", L"This PC", L"Presented", g_appDir + L"\\templates\\kinetic\\investor_pitch.giri" });
+    g_recentDocs.push_back({ L"Mutual Enterprise NDA Agreement.docx", L"drift", L"3 days ago", L"This PC", L"Created", g_appDir + L"\\templates\\drift\\executive_nda.giri" });
+    g_recentDocs.push_back({ L"SaaS Unit Economics & Cap Table.giri", L"axis", L"Oct 28", L"This PC", L"Shared", g_appDir + L"\\templates\\axis\\cap_table.giri" });
+    g_recentDocs.push_back({ L"हिन्दी दस्तावेज़ (Google Devanagari).gdrift", L"drift", L"Oct 26", L"This PC", L"Hindi Ready", g_appDir + L"\\templates\\drift\\business_proposal.giri" });
+    g_recentDocs.push_back({ L"Corporate Legal Seal & Identity.pdf", L"pdf", L"Oct 22", L"This PC", L"Signed", g_appDir + L"\\README.md" });
 }
 
-int LoadPreferredLanguage() {
-    std::wstring cfgPath = g_appDir + L"\\locale.cfg";
-    FILE* f = _wfopen(cfgPath.c_str(), L"r, ccs=UTF-8");
-    if (f) {
-        int idx = 0;
-        if (fwscanf(f, L"%d", &idx) == 1) {
-            fclose(f);
-            if (idx >= 0 && idx < sizeof(g_locales)/sizeof(g_locales[0])) {
-                return idx;
+void FilterDocs(const std::wstring& query) {
+    g_filteredDocs.clear();
+    std::wstring qLower = query;
+    std::transform(qLower.begin(), qLower.end(), qLower.begin(), ::towlower);
+
+    for (const auto& doc : g_recentDocs) {
+        if (qLower.empty()) {
+            g_filteredDocs.push_back(doc);
+        } else {
+            std::wstring nLower = doc.name;
+            std::transform(nLower.begin(), nLower.end(), nLower.begin(), ::towlower);
+            if (nLower.find(qLower) != std::wstring::npos) {
+                g_filteredDocs.push_back(doc);
             }
         }
-        fclose(f);
     }
-    return 0; // Default English
 }
 
 void LaunchApp(const std::wstring& exeName, const std::wstring& args) {
@@ -243,388 +230,810 @@ void LaunchApp(const std::wstring& exeName, const std::wstring& args) {
         }
     }
 
-    // Append active language flag if Hindi or non-English selected
-    std::wstring launchArgs = args;
-    if (g_currentLangIndex > 0) {
-        if (!launchArgs.empty()) launchArgs += L" ";
-        launchArgs += L"-lang:" + std::wstring(g_locales[g_currentLangIndex].langCode);
-    }
-
-    HINSTANCE hRes = ShellExecuteW(NULL, L"open", fullPath.c_str(), launchArgs.empty() ? NULL : launchArgs.c_str(), g_appDir.c_str(), SW_SHOWNORMAL);
-    if ((INT_PTR)hRes <= 32) {
-        std::wstring err = L"Could not locate " + exeName + L".\nExpected path: " + fullPath;
-        MessageBoxW(g_hMainWnd, err.c_str(), L"Application Launch Error", MB_OK | MB_ICONERROR);
-    }
+    ShellExecuteW(NULL, L"open", fullPath.c_str(), args.empty() ? NULL : args.c_str(), g_appDir.c_str(), SW_SHOWNORMAL);
 }
 
-void OpenUniversalFile(HWND hwnd) {
+void OpenAnyFileDialog(HWND hwnd) {
     wchar_t szFile[MAX_PATH] = { 0 };
     OPENFILENAMEW ofn = { sizeof(OPENFILENAMEW) };
     ofn.hwndOwner = hwnd;
-    ofn.lpstrFilter = L"All Supported Sovereign Office Files (*.giri;*.docx;*.xlsx;*.pptx;*.txt;*.csv)\0*.giri;*.docx;*.xlsx;*.pptx;*.txt;*.csv\0Sovereign Office (.giri)\0*.giri\0Word Documents (.docx)\0*.docx\0Excel Sheets (.xlsx)\0*.xlsx\0PowerPoint Presentations (.pptx)\0*.pptx\0All Files (*.*)\0*.*\0";
+    ofn.lpstrFilter = L"All Giri Sovereign Files (*.giri;*.gdrift;*.docx;*.xlsx;*.pptx)\0*.giri;*.gdrift;*.docx;*.xlsx;*.pptx\0All Files (*.*)\0*.*\0";
     ofn.lpstrFile = szFile;
     ofn.nMaxFile = MAX_PATH;
     ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
 
     if (GetOpenFileNameW(&ofn)) {
-        std::wstring ext = PathFindExtensionW(szFile);
-        std::wstring sExt = ext;
-        for (auto& c : sExt) c = towlower(c);
+        std::wstring path = szFile;
+        std::wstring ext = PathFindExtensionW(path.c_str());
+        std::transform(ext.begin(), ext.end(), ext.begin(), ::towlower);
 
-        std::wstring quoted = L"\"" + std::wstring(szFile) + L"\"";
-
-        if (sExt == L".docx" || sExt == L".doc" || sExt == L".txt") {
-            LaunchApp(L"GiriDrift.exe", quoted);
-        } else if (sExt == L".xlsx" || sExt == L".xls" || sExt == L".csv") {
-            LaunchApp(L"GiriAxis.exe", quoted);
-        } else if (sExt == L".pptx" || sExt == L".ppt") {
-            LaunchApp(L"GiriKinetic.exe", quoted);
-        } else if (sExt == L".giri") {
-            // Inspect universal file type
-            std::string content, toolType;
-            if (LoadUniversalGiriFile(szFile, content, toolType)) {
-                if (toolType == "axis") LaunchApp(L"GiriAxis.exe", quoted);
-                else if (toolType == "kinetic") LaunchApp(L"GiriKinetic.exe", quoted);
-                else LaunchApp(L"GiriDrift.exe", quoted);
-            } else {
-                LaunchApp(L"GiriDrift.exe", quoted);
-            }
+        if (ext == L".xlsx" || ext == L".csv") {
+            LaunchApp(L"GiriAxis.exe", L"\"" + path + L"\"");
+        } else if (ext == L".pptx") {
+            LaunchApp(L"GiriKinetic.exe", L"\"" + path + L"\"");
         } else {
-            LaunchApp(L"GiriDrift.exe", quoted);
+            LaunchApp(L"GiriDrift.exe", L"\"" + path + L"\"");
         }
     }
 }
 
-LRESULT CALLBACK HubWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    switch (msg) {
-    case WM_COMMAND: {
-        int wmId = LOWORD(wParam);
-        int wmEvent = HIWORD(wParam);
+// Render Left Navigation Rail
+void RenderLeftRail(Graphics& g, int w, int h) {
+    // Background
+    SolidBrush railBg(Color(255, 255, 255));
+    g.FillRectangle(&railBg, 0, 0, LEFT_RAIL_WIDTH, h);
 
-        if (wmId == IDC_COMBO_SUITE_LANG && wmEvent == CBN_SELCHANGE) {
-            int sel = (int)SendMessageW(g_hLangCombo, CB_GETCURSEL, 0, 0);
-            if (sel >= 0) {
-                g_currentLangIndex = sel;
-                SavePreferredLanguage(sel);
-                InvalidateRect(hwnd, NULL, TRUE);
+    // Right border line
+    Pen borderPen(Color(229, 231, 235), 1.0f);
+    g.DrawLine(&borderPen, LEFT_RAIL_WIDTH - 1, 0, LEFT_RAIL_WIDTH - 1, h);
+
+    Font fontLabel(L"Segoe UI", 8.0f, FontStyleRegular, UnitPoint);
+    Font fontProfile(L"Segoe UI", 10.0f, FontStyleBold, UnitPoint);
+    StringFormat sf;
+    sf.SetAlignment(StringAlignmentCenter);
+    sf.SetLineAlignment(StringAlignmentCenter);
+
+    // Navigation Items
+    struct RailDef {
+        int id;
+        const wchar_t* label;
+        Color activeColor;
+        Color iconBg;
+    };
+
+    RailDef railItems[] = {
+        { RAIL_HOME, L"Home", Color(79, 70, 229), Color(238, 242, 255) },
+        { RAIL_COPILOT, L"Girionix AI", Color(124, 58, 237), Color(245, 243, 255) },
+        { RAIL_CREATE, L"Create", Color(75, 85, 99), Color(243, 244, 246) },
+        { RAIL_MYCONTENT, L"My Content", Color(75, 85, 99), Color(243, 244, 246) },
+        { RAIL_APPS, L"Apps", Color(75, 85, 99), Color(243, 244, 246) },
+        { -1, L"", Color(0,0,0), Color(0,0,0) }, // divider
+        { RAIL_DRIFT, L"Drift", Color(37, 99, 235), Color(239, 246, 255) },
+        { RAIL_AXIS, L"Axis", Color(22, 163, 74), Color(240, 253, 244) },
+        { RAIL_KINETIC, L"Kinetic", Color(234, 88, 12), Color(255, 247, 237) },
+        { RAIL_AEGIS, L"Aegis", Color(220, 38, 38), Color(254, 242, 242) }
+    };
+
+    int y = 14;
+    for (const auto& item : railItems) {
+        if (item.id == -1) {
+            // Divider
+            Pen divPen(Color(229, 231, 235), 1.0f);
+            g.DrawLine(&divPen, 16, y + 6, LEFT_RAIL_WIDTH - 16, y + 6);
+            y += 16;
+            continue;
+        }
+
+        bool isActive = (g_activeRail == item.id);
+        bool isHover = (g_hoverRail == item.id);
+
+        RectF itemRect(8.0f, (float)y, (float)LEFT_RAIL_WIDTH - 16.0f, 48.0f);
+
+        if (isActive) {
+            GraphicsPath path;
+            AddRoundedRect(path, itemRect, 8.0f);
+            SolidBrush activeBrush(Color(238, 242, 255));
+            g.FillPath(&activeBrush, &path);
+            Pen activeBorder(Color(199, 210, 254), 1.0f);
+            g.DrawPath(&activeBorder, &path);
+        } else if (isHover) {
+            GraphicsPath path;
+            AddRoundedRect(path, itemRect, 8.0f);
+            SolidBrush hoverBrush(Color(248, 250, 252));
+            g.FillPath(&hoverBrush, &path);
+        }
+
+        // Draw Icon representation
+        int iconCx = LEFT_RAIL_WIDTH / 2;
+        int iconCy = y + 16;
+
+        if (item.id == RAIL_HOME) {
+            SolidBrush b(isActive ? Color(79, 70, 229) : Color(107, 114, 128));
+            Point pts[3] = { Point(iconCx, iconCy - 9), Point(iconCx - 9, iconCy), Point(iconCx + 9, iconCy) };
+            g.FillPolygon(&b, pts, 3);
+            g.FillRectangle(&b, iconCx - 6, iconCy, 12, 8);
+        } else if (item.id == RAIL_COPILOT) {
+            SolidBrush b(Color(124, 58, 237));
+            Point pts[4] = { Point(iconCx, iconCy - 10), Point(iconCx + 4, iconCy), Point(iconCx, iconCy + 10), Point(iconCx - 4, iconCy) };
+            g.FillPolygon(&b, pts, 4);
+            Point pts2[4] = { Point(iconCx - 10, iconCy), Point(iconCx, iconCy + 4), Point(iconCx + 10, iconCy), Point(iconCx, iconCy - 4) };
+            g.FillPolygon(&b, pts2, 4);
+        } else if (item.id == RAIL_CREATE) {
+            Pen p(Color(107, 114, 128), 2.0f);
+            g.DrawLine(&p, iconCx - 7, iconCy, iconCx + 7, iconCy);
+            g.DrawLine(&p, iconCx, iconCy - 7, iconCx, iconCy + 7);
+        } else if (item.id == RAIL_MYCONTENT) {
+            SolidBrush b(Color(107, 114, 128));
+            g.FillRectangle(&b, iconCx - 8, iconCy - 5, 16, 12);
+            g.FillRectangle(&b, iconCx - 8, iconCy - 8, 8, 4);
+        } else if (item.id == RAIL_APPS) {
+            SolidBrush b(Color(107, 114, 128));
+            g.FillRectangle(&b, iconCx - 7, iconCy - 7, 5, 5);
+            g.FillRectangle(&b, iconCx + 2, iconCy - 7, 5, 5);
+            g.FillRectangle(&b, iconCx - 7, iconCy + 2, 5, 5);
+            g.FillRectangle(&b, iconCx + 2, iconCy + 2, 5, 5);
+        } else if (item.id == RAIL_DRIFT) {
+            // Word blue tile
+            GraphicsPath p;
+            AddRoundedRect(p, RectF((float)iconCx - 9, (float)iconCy - 9, 18, 18), 3.0f);
+            SolidBrush b(Color(37, 99, 235));
+            g.FillPath(&b, &p);
+            Font f(L"Segoe UI", 8.0f, FontStyleBold, UnitPoint);
+            SolidBrush wb(Color(255, 255, 255));
+            g.DrawString(L"D", -1, &f, PointF((float)iconCx, (float)iconCy - 1), &sf, &wb);
+        } else if (item.id == RAIL_AXIS) {
+            // Excel green tile
+            GraphicsPath p;
+            AddRoundedRect(p, RectF((float)iconCx - 9, (float)iconCy - 9, 18, 18), 3.0f);
+            SolidBrush b(Color(22, 163, 74));
+            g.FillPath(&b, &p);
+            Font f(L"Segoe UI", 8.0f, FontStyleBold, UnitPoint);
+            SolidBrush wb(Color(255, 255, 255));
+            g.DrawString(L"A", -1, &f, PointF((float)iconCx, (float)iconCy - 1), &sf, &wb);
+        } else if (item.id == RAIL_KINETIC) {
+            // PowerPoint orange tile
+            GraphicsPath p;
+            AddRoundedRect(p, RectF((float)iconCx - 9, (float)iconCy - 9, 18, 18), 3.0f);
+            SolidBrush b(Color(234, 88, 12));
+            g.FillPath(&b, &p);
+            Font f(L"Segoe UI", 8.0f, FontStyleBold, UnitPoint);
+            SolidBrush wb(Color(255, 255, 255));
+            g.DrawString(L"K", -1, &f, PointF((float)iconCx, (float)iconCy - 1), &sf, &wb);
+        } else if (item.id == RAIL_AEGIS) {
+            // PDF red tile
+            GraphicsPath p;
+            AddRoundedRect(p, RectF((float)iconCx - 9, (float)iconCy - 9, 18, 18), 3.0f);
+            SolidBrush b(Color(220, 38, 38));
+            g.FillPath(&b, &p);
+            Font f(L"Segoe UI", 7.5f, FontStyleBold, UnitPoint);
+            SolidBrush wb(Color(255, 255, 255));
+            g.DrawString(L"PDF", -1, &f, PointF((float)iconCx, (float)iconCy - 1), &sf, &wb);
+        }
+
+        // Label
+        SolidBrush textBrush(isActive ? item.activeColor : Color(107, 114, 128));
+        RectF textRect(0.0f, (float)y + 30.0f, (float)LEFT_RAIL_WIDTH, 14.0f);
+        g.DrawString(item.label, -1, &fontLabel, textRect, &sf, &textBrush);
+
+        y += 54;
+    }
+
+    // Bottom Items: Settings & Profile Avatar
+    int bottomY = h - 100;
+    // Settings
+    int sCx = LEFT_RAIL_WIDTH / 2;
+    int sCy = bottomY + 12;
+    Pen sp(Color(107, 114, 128), 1.8f);
+    g.DrawEllipse(&sp, sCx - 7, sCy - 7, 14, 14);
+    SolidBrush sb(Color(107, 114, 128));
+    g.FillEllipse(&sb, sCx - 3, sCy - 3, 6, 6);
+    RectF stTextRect(0.0f, (float)bottomY + 22.0f, (float)LEFT_RAIL_WIDTH, 14.0f);
+    g.DrawString(L"Settings", -1, &fontLabel, stTextRect, &sf, &sb);
+
+    // Profile Avatar (AG)
+    int pCy = bottomY + 54;
+    SolidBrush profBg(Color(37, 99, 235));
+    g.FillEllipse(&profBg, sCx - 16, pCy - 16, 32, 32);
+    SolidBrush profText(Color(255, 255, 255));
+    g.DrawString(L"AG", -1, &fontProfile, PointF((float)sCx, (float)pCy), &sf, &profText);
+}
+
+// Render "Create New" Card
+void RenderCreateCard(Graphics& g, int x, int y, int index, bool isHover) {
+    float fx = (float)x;
+    float fy = (float)(isHover ? y - 3 : y);
+    RectF cardRect(fx, fy, (float)CARD_WIDTH, (float)CARD_HEIGHT);
+
+    // Drop shadow on hover
+    if (isHover) {
+        GraphicsPath shPath;
+        AddRoundedRect(shPath, RectF(fx, fy + 4, (float)CARD_WIDTH, (float)CARD_HEIGHT), 10.0f);
+        SolidBrush shBrush(Color(25, 0, 0, 0));
+        g.FillPath(&shBrush, &shPath);
+    }
+
+    // Card background
+    GraphicsPath cardPath;
+    AddRoundedRect(cardPath, cardRect, 10.0f);
+    SolidBrush cardBg(Color(255, 255, 255));
+    g.FillPath(&cardBg, &cardPath);
+
+    Pen borderPen(isHover ? Color(99, 102, 241) : Color(229, 231, 235), isHover ? 1.5f : 1.0f);
+    g.DrawPath(&borderPen, &cardPath);
+
+    // Card Interior Preview Illustration
+    float previewW = (float)CARD_WIDTH - 24.0f;
+    float previewH = 76.0f;
+    float px = fx + 12.0f;
+    float py = fy + 12.0f;
+
+    // Background preview plate
+    GraphicsPath prevPlate;
+    AddRoundedRect(prevPlate, RectF(px, py, previewW, previewH), 6.0f);
+    SolidBrush plateBg(Color(248, 250, 252));
+    g.FillPath(&plateBg, &prevPlate);
+
+    // Card Types
+    struct CardMeta {
+        const wchar_t* title;
+        const wchar_t* sub;
+        Color badgeColor;
+        const wchar_t* badgeChar;
+    };
+
+    CardMeta metas[] = {
+        { L"Document", L"Drift", Color(37, 99, 235), L"D" },
+        { L"Presentation", L"Kinetic", Color(234, 88, 12), L"K" },
+        { L"Workbook", L"Axis", Color(22, 163, 74), L"A" },
+        { L"Form", L"Forms", Color(13, 148, 136), L"F" },
+        { L"Quiz", L"Quiz", Color(8, 145, 178), L"Q" },
+        { L"List", L"Lists", Color(124, 58, 237), L"L" },
+        { L"Design", L"Designer", Color(219, 39, 119), L"G" }
+    };
+
+    if (index >= 0 && index < 7) {
+        const auto& m = metas[index];
+
+        if (index == 0) {
+            // Document (Drift) preview
+            GraphicsPath docSheet;
+            AddRoundedRect(docSheet, RectF(px + 18, py + 8, previewW - 36, previewH - 16), 3.0f);
+            SolidBrush whiteBrush(Color(255, 255, 255));
+            g.FillPath(&whiteBrush, &docSheet);
+            Pen shBorder(Color(226, 232, 240), 1.0f);
+            g.DrawPath(&shBorder, &docSheet);
+
+            // Blue header block on sheet
+            SolidBrush bHeader(Color(37, 99, 235));
+            g.FillRectangle(&bHeader, px + 24, py + 14, previewW - 48, 6.0f);
+
+            // Gray text lines
+            SolidBrush bLines(Color(203, 213, 225));
+            g.FillRectangle(&bLines, px + 24, py + 24, previewW - 48, 3.0f);
+            g.FillRectangle(&bLines, px + 24, py + 30, previewW - 48, 3.0f);
+            g.FillRectangle(&bLines, px + 24, py + 36, previewW - 60, 3.0f);
+        } else if (index == 1) {
+            // Presentation (Kinetic) preview
+            GraphicsPath slideBox;
+            AddRoundedRect(slideBox, RectF(px + 12, py + 12, previewW - 24, previewH - 24), 3.0f);
+            SolidBrush sBg(Color(255, 255, 255));
+            g.FillPath(&sBg, &slideBox);
+
+            SolidBrush corHeader(Color(254, 215, 170));
+            g.FillRectangle(&corHeader, px + 16, py + 16, previewW - 32, 6.0f);
+
+            SolidBrush corCol1(Color(254, 243, 199));
+            g.FillRectangle(&corCol1, px + 16, py + 26, (previewW - 36) / 2, 18.0f);
+            SolidBrush corCol2(Color(255, 237, 213));
+            g.FillRectangle(&corCol2, px + 18 + (previewW - 36) / 2, py + 26, (previewW - 36) / 2, 18.0f);
+        } else if (index == 2) {
+            // Workbook (Axis) preview
+            GraphicsPath sheetBox;
+            AddRoundedRect(sheetBox, RectF(px + 14, py + 10, previewW - 28, previewH - 20), 3.0f);
+            SolidBrush sBg(Color(255, 255, 255));
+            g.FillPath(&sBg, &sheetBox);
+
+            SolidBrush gHead(Color(187, 247, 208));
+            g.FillRectangle(&gHead, px + 16, py + 12, previewW - 32, 6.0f);
+
+            Pen gGrid(Color(226, 232, 240), 1.0f);
+            for (int r = 0; r < 4; r++) {
+                float gy = py + 22.0f + r * 7.0f;
+                g.DrawLine(&gGrid, px + 16, gy, px + previewW - 16, gy);
             }
-            return 0;
+            g.DrawLine(&gGrid, px + 16 + (previewW - 32) * 0.33f, py + 18, px + 16 + (previewW - 32) * 0.33f, py + 48);
+            g.DrawLine(&gGrid, px + 16 + (previewW - 32) * 0.66f, py + 18, px + 16 + (previewW - 32) * 0.66f, py + 48);
+        } else if (index == 3 || index == 4) {
+            // Form / Quiz preview
+            SolidBrush fHead(index == 3 ? Color(13, 148, 136) : Color(8, 145, 178));
+            g.FillRectangle(&fHead, px + 18, py + 14, previewW - 36, 6.0f);
+
+            SolidBrush dotCol(Color(203, 213, 225));
+            g.FillEllipse(&dotCol, px + 18, py + 26, 6.0f, 6.0f);
+            g.FillRectangle(&dotCol, px + 28, py + 27, previewW - 50, 4.0f);
+
+            g.FillEllipse(&dotCol, px + 18, py + 36, 6.0f, 6.0f);
+            g.FillRectangle(&dotCol, px + 28, py + 37, previewW - 50, 4.0f);
+        } else if (index == 5) {
+            // List preview
+            SolidBrush lHead(Color(124, 58, 237));
+            g.FillRectangle(&lHead, px + 18, py + 14, previewW - 36, 6.0f);
+            SolidBrush lRow1(Color(243, 232, 255));
+            g.FillRectangle(&lRow1, px + 18, py + 24, previewW - 36, 6.0f);
+            SolidBrush lRow2(Color(248, 250, 252));
+            g.FillRectangle(&lRow2, px + 18, py + 32, previewW - 36, 6.0f);
+        } else {
+            // Design preview (Abstract shapes)
+            SolidBrush dCir(Color(244, 114, 182));
+            g.FillEllipse(&dCir, px + 18, py + 14, 22.0f, 22.0f);
+            SolidBrush dRect(Color(192, 132, 252));
+            g.FillRectangle(&dRect, px + 44, py + 18, 18.0f, 18.0f);
         }
 
-        switch (wmId) {
-        case IDC_BTN_NEW_DRIFT:
-            LaunchApp(L"GiriDrift.exe");
-            break;
-        case IDC_BTN_OPEN_DRIFT: {
-            wchar_t szFile[MAX_PATH] = { 0 };
-            OPENFILENAMEW ofn = { sizeof(OPENFILENAMEW) };
-            ofn.hwndOwner = hwnd;
-            ofn.lpstrFilter = L"Word & Drift Documents (*.giri;*.docx;*.txt)\0*.giri;*.docx;*.txt\0All Files (*.*)\0*.*\0";
-            ofn.lpstrFile = szFile;
-            ofn.nMaxFile = MAX_PATH;
-            ofn.Flags = OFN_FILEMUSTEXIST;
-            if (GetOpenFileNameW(&ofn)) LaunchApp(L"GiriDrift.exe", L"\"" + std::wstring(szFile) + L"\"");
-            break;
+        // App badge inside preview
+        GraphicsPath bPath;
+        AddRoundedRect(bPath, RectF(px + 4, py + previewH - 18, 16, 16), 3.0f);
+        SolidBrush bBrush(m.badgeColor);
+        g.FillPath(&bBrush, &bPath);
+        Font bFont(L"Segoe UI", 7.0f, FontStyleBold, UnitPoint);
+        SolidBrush wb(Color(255, 255, 255));
+        StringFormat bSf;
+        bSf.SetAlignment(StringAlignmentCenter);
+        bSf.SetLineAlignment(StringAlignmentCenter);
+        g.DrawString(m.badgeChar, -1, &bFont, PointF(px + 12, py + previewH - 10), &bSf, &wb);
+
+        // Text Labels below preview
+        Font fTitle(L"Segoe UI", 9.5f, FontStyleBold, UnitPoint);
+        Font fSub(L"Segoe UI", 8.0f, FontStyleRegular, UnitPoint);
+        SolidBrush titleBrush(Color(31, 41, 55));
+        SolidBrush subBrush(Color(107, 114, 128));
+
+        g.DrawString(m.title, -1, &fTitle, PointF(fx + 12.0f, fy + previewH + 20.0f), &titleBrush);
+        g.DrawString(m.sub, -1, &fSub, PointF(fx + 12.0f, fy + previewH + 36.0f), &subBrush);
+    }
+}
+
+// Render Quick Access Table
+void RenderQuickAccess(Graphics& g, int contentX, int startY, int w) {
+    Font fSection(L"Segoe UI", 12.5f, FontStyleBold, UnitPoint);
+    Font fPill(L"Segoe UI", 9.0f, FontStyleRegular, UnitPoint);
+    Font fTh(L"Segoe UI", 8.5f, FontStyleBold, UnitPoint);
+    Font fTd(L"Segoe UI", 9.5f, FontStyleRegular, UnitPoint);
+    Font fTdBold(L"Segoe UI", 9.5f, FontStyleBold, UnitPoint);
+    Font fTdSub(L"Segoe UI", 8.5f, FontStyleRegular, UnitPoint);
+
+    SolidBrush textDark(Color(31, 41, 55));
+    SolidBrush textMuted(Color(107, 114, 128));
+
+    // Section Title
+    g.DrawString(L"Quick access", -1, &fSection, PointF((float)contentX, (float)startY), &textDark);
+
+    // Filter Pills Bar
+    int pillY = startY + 34;
+    int pillX = contentX;
+
+    const wchar_t* pills[] = { L"🕒 Recently opened", L"👥 Shared", L"★ Favorites" };
+    for (int i = 0; i < 3; i++) {
+        bool isActive = (g_activeFilterPill == i);
+        bool isHover = (g_hoverFilterPill == i);
+
+        int pillW = (i == 0) ? 140 : (i == 1 ? 84 : 96);
+        RectF pRect((float)pillX, (float)pillY, (float)pillW, 30.0f);
+
+        GraphicsPath pPath;
+        AddRoundedRect(pPath, pRect, 15.0f);
+
+        if (isActive) {
+            SolidBrush darkBg(Color(15, 23, 42));
+            g.FillPath(&darkBg, &pPath);
+            SolidBrush wt(Color(255, 255, 255));
+            StringFormat sf;
+            sf.SetAlignment(StringAlignmentCenter);
+            sf.SetLineAlignment(StringAlignmentCenter);
+            g.DrawString(pills[i], -1, &fPill, PointF((float)pillX + pillW / 2.0f, (float)pillY + 15.0f), &sf, &wt);
+        } else {
+            SolidBrush pBg(isHover ? Color(241, 245, 249) : Color(255, 255, 255));
+            g.FillPath(&pBg, &pPath);
+            Pen bPen(Color(226, 232, 240), 1.0f);
+            g.DrawPath(&bPen, &pPath);
+
+            SolidBrush gt(Color(71, 85, 105));
+            StringFormat sf;
+            sf.SetAlignment(StringAlignmentCenter);
+            sf.SetLineAlignment(StringAlignmentCenter);
+            g.DrawString(pills[i], -1, &fPill, PointF((float)pillX + pillW / 2.0f, (float)pillY + 15.0f), &sf, &gt);
         }
-        case IDC_BTN_DRIFT_TEMPLATE:
-            LaunchApp(L"GiriDrift.exe", L"-template:charter");
-            break;
 
-        case IDC_BTN_NEW_AXIS:
-            LaunchApp(L"GiriAxis.exe");
-            break;
-        case IDC_BTN_OPEN_AXIS: {
-            wchar_t szFile[MAX_PATH] = { 0 };
-            OPENFILENAMEW ofn = { sizeof(OPENFILENAMEW) };
-            ofn.hwndOwner = hwnd;
-            ofn.lpstrFilter = L"Excel & Axis Spreadsheets (*.giri;*.xlsx;*.csv)\0*.giri;*.xlsx;*.csv\0All Files (*.*)\0*.*\0";
-            ofn.lpstrFile = szFile;
-            ofn.nMaxFile = MAX_PATH;
-            ofn.Flags = OFN_FILEMUSTEXIST;
-            if (GetOpenFileNameW(&ofn)) LaunchApp(L"GiriAxis.exe", L"\"" + std::wstring(szFile) + L"\"");
-            break;
+        pillX += pillW + 10;
+    }
+
+    // Right Controls: Upload Button & View Toggles
+    int rightControlsX = w - 160;
+    RectF upRect((float)rightControlsX, (float)pillY, 86.0f, 30.0f);
+    GraphicsPath upPath;
+    AddRoundedRect(upPath, upRect, 6.0f);
+    SolidBrush upBg(g_hoverUpload ? Color(241, 245, 249) : Color(255, 255, 255));
+    g.FillPath(&upBg, &upPath);
+    Pen upPen(Color(209, 213, 219), 1.0f);
+    g.DrawPath(&upPen, &upPath);
+
+    StringFormat upSf;
+    upSf.SetAlignment(StringAlignmentCenter);
+    upSf.SetLineAlignment(StringAlignmentCenter);
+    SolidBrush upText(Color(31, 41, 55));
+    g.DrawString(L"↑ Upload", -1, &fPill, PointF((float)rightControlsX + 43.0f, (float)pillY + 15.0f), &upSf, &upText);
+
+    // List & Grid icons
+    int iconX = rightControlsX + 98;
+    Pen vPen(Color(107, 114, 128), 1.5f);
+    // List icon
+    g.DrawLine(&vPen, iconX, pillY + 8, iconX + 14, pillY + 8);
+    g.DrawLine(&vPen, iconX, pillY + 14, iconX + 14, pillY + 14);
+    g.DrawLine(&vPen, iconX, pillY + 20, iconX + 14, pillY + 20);
+
+    // Grid icon
+    int gX = iconX + 22;
+    g.DrawRectangle(&vPen, gX, pillY + 8, 5, 5);
+    g.DrawRectangle(&vPen, gX + 8, pillY + 8, 5, 5);
+    g.DrawRectangle(&vPen, gX, pillY + 16, 5, 5);
+    g.DrawRectangle(&vPen, gX + 8, pillY + 16, 5, 5);
+
+    // Table Header
+    int tableY = pillY + 44;
+    int tableW = w - contentX - 40;
+
+    g.DrawString(L"Name", -1, &fTh, PointF((float)contentX + 36.0f, (float)tableY), &textMuted);
+    g.DrawString(L"Date modified", -1, &fTh, PointF((float)contentX + tableW * 0.52f, (float)tableY), &textMuted);
+    g.DrawString(L"Location", -1, &fTh, PointF((float)contentX + tableW * 0.72f, (float)tableY), &textMuted);
+    g.DrawString(L"Activity", -1, &fTh, PointF((float)contentX + tableW * 0.86f, (float)tableY), &textMuted);
+
+    Pen thDivPen(Color(241, 245, 249), 1.0f);
+    g.DrawLine(&thDivPen, contentX, tableY + 20, contentX + tableW, tableY + 20);
+
+    // Table Rows
+    int rowY = tableY + 24;
+    int rowH = 40;
+
+    for (size_t i = 0; i < g_filteredDocs.size(); i++) {
+        const auto& doc = g_filteredDocs[i];
+        bool isHover = ((int)i == g_hoverTableRow);
+
+        if (isHover) {
+            GraphicsPath rowPath;
+            AddRoundedRect(rowPath, RectF((float)contentX, (float)rowY, (float)tableW, (float)rowH), 6.0f);
+            SolidBrush rowHoverBg(Color(248, 250, 252));
+            g.FillPath(&rowHoverBg, &rowPath);
         }
-        case IDC_BTN_AXIS_TEMPLATE:
-            LaunchApp(L"GiriAxis.exe", L"-template:budget");
-            break;
 
-        case IDC_BTN_NEW_KINETIC:
-            LaunchApp(L"GiriKinetic.exe");
-            break;
-        case IDC_BTN_OPEN_KINETIC: {
-            wchar_t szFile[MAX_PATH] = { 0 };
-            OPENFILENAMEW ofn = { sizeof(OPENFILENAMEW) };
-            ofn.hwndOwner = hwnd;
-            ofn.lpstrFilter = L"PowerPoint & Kinetic Slide Decks (*.giri;*.pptx)\0*.giri;*.pptx\0All Files (*.*)\0*.*\0";
-            ofn.lpstrFile = szFile;
-            ofn.nMaxFile = MAX_PATH;
-            ofn.Flags = OFN_FILEMUSTEXIST;
-            if (GetOpenFileNameW(&ofn)) LaunchApp(L"GiriKinetic.exe", L"\"" + std::wstring(szFile) + L"\"");
-            break;
-        }
-        case IDC_BTN_KINETIC_TEMPLATE:
-            LaunchApp(L"GiriKinetic.exe", L"-template:pitch");
-            break;
+        // App file icon
+        int icX = contentX + 8;
+        int icY = rowY + 10;
+        GraphicsPath ip;
+        AddRoundedRect(ip, RectF((float)icX, (float)icY, 20.0f, 20.0f), 3.0f);
 
-        case IDC_BTN_OPEN_UNIVERSAL:
-            OpenUniversalFile(hwnd);
-            break;
+        Color bColor = Color(37, 99, 235);
+        const wchar_t* ch = L"D";
+        if (doc.type == L"axis") { bColor = Color(22, 163, 74); ch = L"A"; }
+        else if (doc.type == L"kinetic") { bColor = Color(234, 88, 12); ch = L"K"; }
+        else if (doc.type == L"pdf") { bColor = Color(220, 38, 38); ch = L"P"; }
 
-        case IDC_BTN_GITHUB:
-            ShellExecuteW(NULL, L"open", L"https://github.com/abhinavgiri45", NULL, NULL, SW_SHOWNORMAL);
-            break;
+        SolidBrush ib(bColor);
+        g.FillPath(&ib, &ip);
+        Font fSmall(L"Segoe UI", 7.5f, FontStyleBold, UnitPoint);
+        SolidBrush wb(Color(255, 255, 255));
+        StringFormat sf;
+        sf.SetAlignment(StringAlignmentCenter);
+        sf.SetLineAlignment(StringAlignmentCenter);
+        g.DrawString(ch, -1, &fSmall, PointF((float)icX + 10.0f, (float)icY + 10.0f), &sf, &wb);
+
+        // Document Name
+        g.DrawString(doc.name.c_str(), -1, &fTdBold, PointF((float)contentX + 38.0f, (float)rowY + 10.0f), &textDark);
+
+        // Date modified
+        g.DrawString(doc.modified.c_str(), -1, &fTd, PointF((float)contentX + tableW * 0.52f, (float)rowY + 10.0f), &textMuted);
+
+        // Location
+        g.DrawString(doc.location.c_str(), -1, &fTd, PointF((float)contentX + tableW * 0.72f, (float)rowY + 10.0f), &textMuted);
+
+        // Activity
+        g.DrawString(doc.activity.c_str(), -1, &fTdSub, PointF((float)contentX + tableW * 0.86f, (float)rowY + 10.0f), &textMuted);
+
+        // Subtle row bottom divider
+        Pen rowDiv(Color(248, 250, 252), 1.0f);
+        g.DrawLine(&rowDiv, contentX + 38, rowY + rowH, contentX + tableW, rowY + rowH);
+
+        rowY += rowH;
+    }
+}
+
+// Window Procedure
+LRESULT CALLBACK HubWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    switch (uMsg) {
+    case WM_CREATE: {
+        SetTimer(hwnd, 1, 50, NULL);
+        return 0;
+    }
+
+    case WM_COMMAND: {
+        if (LOWORD(wParam) == IDC_SEARCH_EDIT && HIWORD(wParam) == EN_CHANGE) {
+            wchar_t buf[256] = { 0 };
+            GetWindowTextW(g_hSearchEdit, buf, 256);
+            g_searchQuery = buf;
+            FilterDocs(g_searchQuery);
+            InvalidateRect(hwnd, NULL, FALSE);
         }
         return 0;
     }
 
-    case WM_DRAWITEM: {
-        LPDRAWITEMSTRUCT pDis = (LPDRAWITEMSTRUCT)lParam;
-        if (!pDis) return FALSE;
+    case WM_SIZE: {
+        int w = LOWORD(lParam);
+        int h = HIWORD(lParam);
 
-        HDC hdc = pDis->hDC;
-        RECT rc = pDis->rcItem;
-        UINT id = pDis->CtlID;
-        bool isDown = (pDis->itemState & ODS_SELECTED) != 0;
+        // Reposition search input inside pill
+        int contentX = LEFT_RAIL_WIDTH + 48;
+        int searchW = (w - contentX - 48);
+        if (searchW > 640) searchW = 640;
+        int searchX = contentX + ((w - contentX) - searchW) / 2 - 20;
 
-        // Custom Modern Fluent Owner-Drawn Buttons
-        HBRUSH hBg = NULL;
-        HPEN hPen = NULL;
-        COLORREF textColor = RGB(255, 255, 255);
+        if (g_hSearchEdit) {
+            SetWindowPos(g_hSearchEdit, NULL, searchX + 38, 118, searchW - 54, 24, SWP_NOZORDER);
+        }
+        InvalidateRect(hwnd, NULL, FALSE);
+        return 0;
+    }
 
-        if (id == IDC_BTN_NEW_DRIFT) {
-            hBg = CreateSolidBrush(isDown ? RGB(29, 78, 216) : RGB(37, 99, 235)); // Primary Royal Blue
-            hPen = CreatePen(PS_SOLID, 1, RGB(59, 130, 246));
-        } else if (id == IDC_BTN_NEW_AXIS) {
-            hBg = CreateSolidBrush(isDown ? RGB(5, 150, 105) : RGB(16, 185, 129)); // Primary Emerald Green
-            hPen = CreatePen(PS_SOLID, 1, RGB(52, 211, 153));
-        } else if (id == IDC_BTN_NEW_KINETIC) {
-            hBg = CreateSolidBrush(isDown ? RGB(217, 119, 6) : RGB(245, 158, 11)); // Primary Amber Orange
-            hPen = CreatePen(PS_SOLID, 1, RGB(251, 191, 36));
-        } else if (id == IDC_BTN_OPEN_UNIVERSAL) {
-            hBg = CreateSolidBrush(isDown ? RGB(30, 41, 59) : RGB(15, 23, 42));
-            hPen = CreatePen(PS_SOLID, 2, RGB(59, 130, 246));
-            textColor = RGB(147, 197, 253);
-        } else {
-            // Secondary buttons
-            hBg = CreateSolidBrush(isDown ? RGB(30, 41, 59) : RGB(24, 32, 47));
-            hPen = CreatePen(PS_SOLID, 1, RGB(51, 65, 85));
-            textColor = RGB(203, 213, 225);
+    case WM_MOUSEMOVE: {
+        int x = LOWORD(lParam);
+        int y = HIWORD(lParam);
+
+        int oldHoverRail = g_hoverRail;
+        int oldHoverCard = g_hoverCard;
+        int oldHoverRow = g_hoverTableRow;
+        int oldHoverPill = g_hoverFilterPill;
+        bool oldUpload = g_hoverUpload;
+
+        g_hoverRail = -1;
+        g_hoverCard = -1;
+        g_hoverTableRow = -1;
+        g_hoverFilterPill = -1;
+        g_hoverUpload = false;
+
+        // Check Rail hover
+        if (x < LEFT_RAIL_WIDTH) {
+            int ry = 14;
+            int ids[] = { RAIL_HOME, RAIL_COPILOT, RAIL_CREATE, RAIL_MYCONTENT, RAIL_APPS, -1, RAIL_DRIFT, RAIL_AXIS, RAIL_KINETIC, RAIL_AEGIS };
+            for (int id : ids) {
+                if (id == -1) { ry += 16; continue; }
+                if (y >= ry && y < ry + 48) {
+                    g_hoverRail = id;
+                    break;
+                }
+                ry += 54;
+            }
         }
 
-        HGDIOBJ oldBrush = SelectObject(hdc, hBg);
-        HGDIOBJ oldPen = SelectObject(hdc, hPen);
+        // Check Cards hover
+        int cardStartY = 176;
+        int contentX = LEFT_RAIL_WIDTH + 48;
+        if (y >= cardStartY && y <= cardStartY + CARD_HEIGHT) {
+            for (int i = 0; i < 7; i++) {
+                int cx = contentX + i * (CARD_WIDTH + CARD_GAP);
+                if (x >= cx && x <= cx + CARD_WIDTH) {
+                    g_hoverCard = i;
+                    break;
+                }
+            }
+        }
 
-        RoundRect(hdc, rc.left, rc.top, rc.right, rc.bottom, 8, 8);
+        // Check Quick Access Row hover
+        int tableStartY = 390 + 34 + 44 + 24;
+        int rowH = 40;
+        if (y >= tableStartY && x >= contentX) {
+            int rowIdx = (y - tableStartY) / rowH;
+            if (rowIdx >= 0 && rowIdx < (int)g_filteredDocs.size()) {
+                g_hoverTableRow = rowIdx;
+            }
+        }
 
-        // Get Button text
-        wchar_t text[256] = { 0 };
-        GetWindowTextW(pDis->hwndItem, text, 256);
+        // Check Filter Pill hover
+        int pillY = 390 + 34;
+        if (y >= pillY && y <= pillY + 30) {
+            int px = contentX;
+            int widths[] = { 140, 84, 96 };
+            for (int i = 0; i < 3; i++) {
+                if (x >= px && x <= px + widths[i]) {
+                    g_hoverFilterPill = i;
+                    break;
+                }
+                px += widths[i] + 10;
+            }
 
-        HFONT hFont = CreateFontW(13, 0, 0, 0, (id == IDC_BTN_NEW_DRIFT || id == IDC_BTN_NEW_AXIS || id == IDC_BTN_NEW_KINETIC || id == IDC_BTN_OPEN_UNIVERSAL) ? FW_BOLD : FW_SEMIBOLD,
-                                  FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
-                                  CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, L"Segoe UI");
-        HGDIOBJ oldFont = SelectObject(hdc, hFont);
+            RECT rc;
+            GetClientRect(hwnd, &rc);
+            int upX = rc.right - 160;
+            if (x >= upX && x <= upX + 86) {
+                g_hoverUpload = true;
+            }
+        }
 
-        SetBkMode(hdc, TRANSPARENT);
-        SetTextColor(hdc, textColor);
-        DrawTextW(hdc, text, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+        if (oldHoverRail != g_hoverRail || oldHoverCard != g_hoverCard ||
+            oldHoverRow != g_hoverTableRow || oldHoverPill != g_hoverFilterPill ||
+            oldUpload != g_hoverUpload) {
+            InvalidateRect(hwnd, NULL, FALSE);
+        }
 
-        SelectObject(hdc, oldFont);
-        DeleteObject(hFont);
-        SelectObject(hdc, oldBrush);
-        SelectObject(hdc, oldPen);
-        DeleteObject(hBg);
-        DeleteObject(hPen);
-        return TRUE;
+        // Hand Cursor for clickable items
+        if (g_hoverRail != -1 || g_hoverCard != -1 || g_hoverTableRow != -1 ||
+            g_hoverFilterPill != -1 || g_hoverUpload) {
+            SetCursor(LoadCursor(NULL, IDC_HAND));
+        } else {
+            SetCursor(LoadCursor(NULL, IDC_ARROW));
+        }
+        return 0;
+    }
+
+    case WM_LBUTTONDOWN: {
+        int x = LOWORD(lParam);
+        int y = HIWORD(lParam);
+
+        // Click Rail Items
+        if (x < LEFT_RAIL_WIDTH) {
+            if (g_hoverRail == RAIL_HOME) { g_activeRail = RAIL_HOME; InvalidateRect(hwnd, NULL, FALSE); }
+            else if (g_hoverRail == RAIL_DRIFT) { LaunchApp(L"GiriDrift.exe"); }
+            else if (g_hoverRail == RAIL_AXIS) { LaunchApp(L"GiriAxis.exe"); }
+            else if (g_hoverRail == RAIL_KINETIC) { LaunchApp(L"GiriKinetic.exe"); }
+            else if (g_hoverRail == RAIL_AEGIS) { OpenAnyFileDialog(hwnd); }
+            else if (g_hoverRail == RAIL_CREATE) { LaunchApp(L"GiriDrift.exe"); }
+            else if (g_hoverRail == RAIL_MYCONTENT) { OpenAnyFileDialog(hwnd); }
+            return 0;
+        }
+
+        // Click Create Cards
+        if (g_hoverCard != -1) {
+            if (g_hoverCard == 0) LaunchApp(L"GiriDrift.exe");
+            else if (g_hoverCard == 1) LaunchApp(L"GiriKinetic.exe");
+            else if (g_hoverCard == 2) LaunchApp(L"GiriAxis.exe");
+            else if (g_hoverCard == 3 || g_hoverCard == 4) LaunchApp(L"GiriDrift.exe");
+            else if (g_hoverCard == 5) LaunchApp(L"GiriAxis.exe");
+            else if (g_hoverCard == 6) LaunchApp(L"GiriKinetic.exe");
+            return 0;
+        }
+
+        // Click Filter Pills
+        if (g_hoverFilterPill != -1) {
+            g_activeFilterPill = g_hoverFilterPill;
+            InvalidateRect(hwnd, NULL, FALSE);
+            return 0;
+        }
+
+        // Click Upload
+        if (g_hoverUpload) {
+            OpenAnyFileDialog(hwnd);
+            return 0;
+        }
+
+        // Click Table Rows
+        if (g_hoverTableRow != -1 && g_hoverTableRow < (int)g_filteredDocs.size()) {
+            const auto& doc = g_filteredDocs[g_hoverTableRow];
+            if (doc.type == L"drift") LaunchApp(L"GiriDrift.exe", L"\"" + doc.fullPath + L"\"");
+            else if (doc.type == L"axis") LaunchApp(L"GiriAxis.exe", L"\"" + doc.fullPath + L"\"");
+            else if (doc.type == L"kinetic") LaunchApp(L"GiriKinetic.exe", L"\"" + doc.fullPath + L"\"");
+            else OpenAnyFileDialog(hwnd);
+            return 0;
+        }
+        return 0;
     }
 
     case WM_PAINT: {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
-        RECT client;
-        GetClientRect(hwnd, &client);
 
-        SetBkMode(hdc, TRANSPARENT);
+        RECT rc;
+        GetClientRect(hwnd, &rc);
+        int w = rc.right;
+        int h = rc.bottom;
 
-        // Typography
-        HFONT hFontHeaderTitle = CreateFontW(24, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
-                                            OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
-                                            VARIABLE_PITCH, L"Segoe UI");
-        HFONT hFontHeroTitle = CreateFontW(22, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
-                                          OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
-                                          VARIABLE_PITCH, L"Segoe UI");
-        HFONT hFontSub = CreateFontW(13, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
-                                    OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
-                                    VARIABLE_PITCH, L"Segoe UI");
-        HFONT hFontCardTitle = CreateFontW(18, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
-                                          OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
-                                          VARIABLE_PITCH, L"Segoe UI");
-        HFONT hFontCardSub = CreateFontW(13, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
-                                        OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
-                                        VARIABLE_PITCH, L"Segoe UI");
-        HFONT hFontCardDesc = CreateFontW(12, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
-                                         OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
-                                         VARIABLE_PITCH, L"Segoe UI");
+        // Double Buffering with Memory Bitmap
+        HDC memDC = CreateCompatibleDC(hdc);
+        HBITMAP memBM = CreateCompatibleBitmap(hdc, w, h);
+        HBITMAP oldBM = (HBITMAP)SelectObject(memDC, memBM);
 
-        // 1. TOP HEADER (y: 18 - 60)
-        // Draw Suite Icon (36x36)
-        if (g_hAppIcon) {
-            DrawIconEx(hdc, 40, 20, g_hAppIcon, 36, 36, 0, NULL, DI_NORMAL);
+        Graphics g(memDC);
+        g.SetSmoothingMode(SmoothingModeAntiAlias);
+        g.SetTextRenderingHint(TextRenderingHintClearTypeGridFit);
+
+        // 1. Viewport Background
+        SolidBrush bgBrush(Color(255, 255, 255));
+        g.FillRectangle(&bgBrush, 0, 0, w, h);
+
+        // 2. Left Navigation Rail
+        RenderLeftRail(g, w, h);
+
+        int contentX = LEFT_RAIL_WIDTH + 48;
+
+        // 3. Header: "Welcome to Giri Orbit"
+        Font fTitle(L"Segoe UI", 21.0f, FontStyleBold, UnitPoint);
+        SolidBrush titleBrush(Color(31, 41, 55));
+        StringFormat sfCenter;
+        sfCenter.SetAlignment(StringAlignmentCenter);
+
+        int centerHeaderX = contentX + (w - contentX) / 2;
+        g.DrawString(L"Welcome to Giri Orbit", -1, &fTitle, PointF((float)centerHeaderX, 36.0f), &sfCenter, &titleBrush);
+
+        // Subtitle Status: Free pill + Offline Sovereign Storage
+        int subY = 76;
+        GraphicsPath freePill;
+        AddRoundedRect(freePill, RectF((float)centerHeaderX - 145.0f, (float)subY, 44.0f, 20.0f), 10.0f);
+        SolidBrush freeBg(Color(241, 245, 249));
+        g.FillPath(&freeBg, &freePill);
+        Pen freeBorder(Color(226, 232, 240), 1.0f);
+        g.DrawPath(&freeBorder, &freePill);
+
+        Font fFree(L"Segoe UI", 8.0f, FontStyleBold, UnitPoint);
+        SolidBrush freeText(Color(71, 85, 105));
+        StringFormat sfFree;
+        sfFree.SetAlignment(StringAlignmentCenter);
+        sfFree.SetLineAlignment(StringAlignmentCenter);
+        g.DrawString(L"Free", -1, &fFree, PointF((float)centerHeaderX - 123.0f, (float)subY + 10.0f), &sfFree, &freeText);
+
+        Font fSub(L"Segoe UI", 8.5f, FontStyleRegular, UnitPoint);
+        SolidBrush subText(Color(107, 114, 128));
+        g.DrawString(L"🛡️ 0 MB used of Sovereign Storage (100% Offline Standalone)", -1, &fSub, PointF((float)centerHeaderX - 90.0f, (float)subY + 2.0f), &subText);
+
+        // 4. Centered Search Pill
+        int searchW = (w - contentX - 48);
+        if (searchW > 640) searchW = 640;
+        int searchX = contentX + ((w - contentX) - searchW) / 2 - 20;
+        int searchY = 110;
+
+        GraphicsPath searchPill;
+        AddRoundedRect(searchPill, RectF((float)searchX, (float)searchY, (float)searchW, 40.0f), 20.0f);
+        SolidBrush spBg(Color(255, 255, 255));
+        g.FillPath(&spBg, &searchPill);
+        Pen spBorder(Color(209, 213, 219), 1.0f);
+        g.DrawPath(&spBorder, &searchPill);
+
+        // Search Magnifying Glass Icon
+        Pen searchIconPen(Color(156, 163, 175), 1.8f);
+        g.DrawEllipse(&searchIconPen, searchX + 16, searchY + 13, 10, 10);
+        g.DrawLine(&searchIconPen, searchX + 24, searchY + 21, searchX + 28, searchY + 25);
+
+        // 5. "Create New" Section
+        int createY = 176;
+        Font fSection(L"Segoe UI", 12.0f, FontStyleBold, UnitPoint);
+        g.DrawString(L"Create New", -1, &fSection, PointF((float)contentX, (float)createY - 26.0f), &titleBrush);
+
+        // Right "See more in Create ->"
+        int cardsRight = contentX + 7 * (CARD_WIDTH + CARD_GAP) - CARD_GAP;
+        Font fLink(L"Segoe UI", 8.5f, FontStyleBold, UnitPoint);
+        SolidBrush linkBrush(Color(37, 99, 235));
+        StringFormat sfRight;
+        sfRight.SetAlignment(StringAlignmentFar);
+        g.DrawString(L"See more in Create →", -1, &fLink, PointF((float)cardsRight, (float)createY - 24.0f), &sfRight, &linkBrush);
+
+        for (int i = 0; i < 7; i++) {
+            int cx = contentX + i * (CARD_WIDTH + CARD_GAP);
+            RenderCreateCard(g, cx, createY, i, (g_hoverCard == i));
         }
 
-        HGDIOBJ oldFont = SelectObject(hdc, hFontHeaderTitle);
-        SetTextColor(hdc, RGB(255, 255, 255));
-        RECT rTitle = { 88, 22, 450, 56 };
-        DrawTextW(hdc, L"GIRI ORBIT", -1, &rTitle, DT_LEFT | DT_SINGLELINE);
+        // 6. Quick Access Section
+        int qaStartY = createY + CARD_HEIGHT + 36;
+        RenderQuickAccess(g, contentX, qaStartY, w);
 
-        SelectObject(hdc, hFontSub);
-        SetTextColor(hdc, RGB(56, 189, 248)); // Sky Blue
-        RECT rBadge = { 228, 28, 550, 54 };
-        DrawTextW(hdc, L"SOVEREIGN PRODUCTIVITY SUITE", -1, &rBadge, DT_LEFT | DT_SINGLELINE);
+        // 7. Status Bar at Bottom
+        RectF statusRect(0.0f, (float)h - 24.0f, (float)w, 24.0f);
+        SolidBrush statusBg(Color(248, 250, 252));
+        g.FillRectangle(&statusBg, statusRect);
+        Pen statusDiv(Color(226, 232, 240), 1.0f);
+        g.DrawLine(&statusDiv, 0, h - 24, w, h - 24);
 
-        // Divider Line under Header
-        HPEN hSepPen = CreatePen(PS_SOLID, 1, RGB(30, 41, 59));
-        SelectObject(hdc, hSepPen);
-        MoveToEx(hdc, 40, 72, NULL);
-        LineTo(hdc, client.right - 40, 72);
+        Font fStatus(L"Segoe UI", 8.0f, FontStyleRegular, UnitPoint);
+        SolidBrush statusText(Color(107, 114, 128));
+        g.DrawString(L"  Giri Orbit Sovereign Suite Copilot (v12.0) • 100% Offline Standalone Native C++ • Author: Abhinav Giri (abhinavgiri370@gmail.com)",
+                     -1, &fStatus, PointF(8.0f, (float)h - 18.0f), &statusText);
 
-        // 2. HERO WELCOME SECTION (y: 84 - 130)
-        SelectObject(hdc, hFontHeroTitle);
-        SetTextColor(hdc, RGB(241, 245, 249)); // Slate-100
-        RECT rHero = { 40, 84, client.right - 40, 112 };
-
-        if (g_currentLangIndex == 1) {
-            DrawTextW(hdc, L"नमस्ते, गिरि ऑर्बिट में आपका स्वागत है", -1, &rHero, DT_LEFT | DT_SINGLELINE);
-        } else {
-            DrawTextW(hdc, L"Welcome to Giri Orbit Sovereign Suite", -1, &rHero, DT_LEFT | DT_SINGLELINE);
-        }
-
-        SelectObject(hdc, hFontSub);
-        SetTextColor(hdc, RGB(148, 163, 184)); // Slate-400
-        RECT rHeroSub = { 40, 114, client.right - 40, 136 };
-        DrawTextW(hdc, L"100% Offline Standalone • Zero Telemetry • Sovereign Document, Spreadsheet & Presentation Engine", -1, &rHeroSub, DT_LEFT | DT_SINGLELINE);
-
-        // 3. THREE PRIMARY SUITE CARDS (y: 150 to 500)
-        // Width: 300 each, Heights: 350
-        // Card 1: x = 40
-        // Card 2: x = 370
-        // Card 3: x = 700
-
-        HBRUSH hCardBg = CreateSolidBrush(RGB(17, 24, 39)); // Slate-900 Card
-        HPEN hBorderDrift = CreatePen(PS_SOLID, 1, RGB(37, 99, 235));
-        HPEN hBorderAxis = CreatePen(PS_SOLID, 1, RGB(16, 185, 129));
-        HPEN hBorderKinetic = CreatePen(PS_SOLID, 1, RGB(245, 158, 11));
-
-        // CARD 1: GIRI DRIFT
-        SelectObject(hdc, hBorderDrift);
-        SelectObject(hdc, hCardBg);
-        RoundRect(hdc, 40, 150, 340, 500, 12, 12);
-
-        // Header Accent Stripe
-        HBRUSH hDriftStripe = CreateSolidBrush(RGB(37, 99, 235));
-        RECT rDriftTop = { 41, 151, 339, 158 };
-        FillRect(hdc, &rDriftTop, hDriftStripe);
-        DeleteObject(hDriftStripe);
-
-        SelectObject(hdc, hFontCardTitle);
-        SetTextColor(hdc, RGB(255, 255, 255));
-        RECT rDTitle = { 60, 172, 320, 200 };
-        DrawTextW(hdc, L"Giri Drift", -1, &rDTitle, DT_LEFT | DT_SINGLELINE);
-
-        SelectObject(hdc, hFontCardSub);
-        SetTextColor(hdc, RGB(96, 165, 250)); // Light Blue
-        RECT rDSub = { 60, 202, 320, 224 };
-        DrawTextW(hdc, L"Document Composer", -1, &rDSub, DT_LEFT | DT_SINGLELINE);
-
-        SelectObject(hdc, hFontCardDesc);
-        SetTextColor(hdc, RGB(148, 163, 184));
-        RECT rDDesc = { 60, 232, 320, 340 };
-        DrawTextW(hdc,
-                  L"Professional word processing, full typography, styled tables, and universal PDF export with integrated Google Hindi (Noto Sans Devanagari) writing style.",
-                  -1, &rDDesc, DT_LEFT | DT_WORDBREAK);
-
-        // CARD 2: GIRI AXIS
-        SelectObject(hdc, hBorderAxis);
-        RoundRect(hdc, 370, 150, 670, 500, 12, 12);
-
-        HBRUSH hAxisStripe = CreateSolidBrush(RGB(16, 185, 129));
-        RECT rAxisTop = { 371, 151, 669, 158 };
-        FillRect(hdc, &rAxisTop, hAxisStripe);
-        DeleteObject(hAxisStripe);
-
-        SelectObject(hdc, hFontCardTitle);
-        SetTextColor(hdc, RGB(255, 255, 255));
-        RECT rATitle = { 390, 172, 650, 200 };
-        DrawTextW(hdc, L"Giri Axis", -1, &rATitle, DT_LEFT | DT_SINGLELINE);
-
-        SelectObject(hdc, hFontCardSub);
-        SetTextColor(hdc, RGB(52, 211, 153)); // Light Green
-        RECT rASub = { 390, 202, 650, 224 };
-        DrawTextW(hdc, L"Financial Matrix & Grid", -1, &rASub, DT_LEFT | DT_SINGLELINE);
-
-        SelectObject(hdc, hFontCardDesc);
-        SetTextColor(hdc, RGB(148, 163, 184));
-        RECT rADDesc = { 390, 232, 650, 340 };
-        DrawTextW(hdc,
-                  L"High-velocity spreadsheet engine with real-time formulas (=SUM, AVG), Indian lakh/crore currency formatting (₹ INR), and interactive column charts.",
-                  -1, &rADDesc, DT_LEFT | DT_WORDBREAK);
-
-        // CARD 3: GIRI KINETIC
-        SelectObject(hdc, hBorderKinetic);
-        RoundRect(hdc, 700, 150, 1000, 500, 12, 12);
-
-        HBRUSH hKinStripe = CreateSolidBrush(RGB(245, 158, 11));
-        RECT rKinTop = { 701, 151, 999, 158 };
-        FillRect(hdc, &rKinTop, hKinStripe);
-        DeleteObject(hKinStripe);
-
-        SelectObject(hdc, hFontCardTitle);
-        SetTextColor(hdc, RGB(255, 255, 255));
-        RECT rKTitle = { 720, 172, 980, 200 };
-        DrawTextW(hdc, L"Giri Kinetic", -1, &rKTitle, DT_LEFT | DT_SINGLELINE);
-
-        SelectObject(hdc, hFontCardSub);
-        SetTextColor(hdc, RGB(251, 191, 36)); // Light Amber
-        RECT rKSub = { 720, 202, 980, 224 };
-        DrawTextW(hdc, L"Presentation Studio", -1, &rKSub, DT_LEFT | DT_SINGLELINE);
-
-        SelectObject(hdc, hFontCardDesc);
-        SetTextColor(hdc, RGB(148, 163, 184));
-        RECT rKDesc = { 720, 232, 980, 340 };
-        DrawTextW(hdc,
-                  L"16:9 widescreen presentation studio with smooth 60 FPS hardware slide transitions, step-by-step element animations, and interactive laser pointer show.",
-                  -1, &rKDesc, DT_LEFT | DT_WORDBREAK);
-
-        // Clean Up GDI
-        DeleteObject(hCardBg);
-        DeleteObject(hBorderDrift);
-        DeleteObject(hBorderAxis);
-        DeleteObject(hBorderKinetic);
-        DeleteObject(hSepPen);
-
-        SelectObject(hdc, oldFont);
-        DeleteObject(hFontHeaderTitle);
-        DeleteObject(hFontHeroTitle);
-        DeleteObject(hFontSub);
-        DeleteObject(hFontCardTitle);
-        DeleteObject(hFontCardSub);
-        DeleteObject(hFontCardDesc);
+        BitBlt(hdc, 0, 0, w, h, memDC, 0, 0, SRCCOPY);
+        SelectObject(memDC, oldBM);
+        DeleteObject(memBM);
+        DeleteDC(memDC);
 
         EndPaint(hwnd, &ps);
         return 0;
     }
 
-    case WM_CTLCOLORSTATIC: {
-        HDC hdcStatic = (HDC)wParam;
-        SetTextColor(hdcStatic, RGB(241, 245, 249));
-        SetBkColor(hdcStatic, RGB(11, 15, 25));
-        static HBRUSH hBackBrush = CreateSolidBrush(RGB(11, 15, 25));
-        return (INT_PTR)hBackBrush;
+    case WM_CTLCOLOREDIT: {
+        HDC hdcEdit = (HDC)wParam;
+        SetTextColor(hdcEdit, RGB(31, 41, 55));
+        SetBkColor(hdcEdit, RGB(255, 255, 255));
+        return (LRESULT)GetStockObject(WHITE_BRUSH);
     }
 
-    case WM_DESTROY:
+    case WM_DESTROY: {
         PostQuitMessage(0);
         return 0;
     }
-    return DefWindowProcW(hwnd, msg, wParam, lParam);
+
+    default:
+        return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+    }
 }

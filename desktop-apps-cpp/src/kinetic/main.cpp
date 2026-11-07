@@ -193,6 +193,90 @@ int CountSlideAnimationSteps(const Slide& s) {
     return (int)lines.size() + 1; // 0 = Title, 1..N = bullet lines
 }
 
+
+static WNDPROC g_oldKinBtnProc = NULL;
+LRESULT CALLBACK KinBtnSubclass(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    switch (uMsg) {
+    case WM_PAINT: {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
+        RECT rc;
+        GetClientRect(hwnd, &rc);
+
+        wchar_t text[64] = { 0 };
+        GetWindowTextW(hwnd, text, 64);
+        int id = GetDlgCtrlID(hwnd);
+
+        POINT pt;
+        GetCursorPos(&pt);
+        ScreenToClient(hwnd, &pt);
+        bool isHover = PtInRect(&rc, pt);
+        bool isPressed = (GetKeyState(VK_LBUTTON) < 0) && isHover;
+
+        COLORREF bgCol = RGB(255, 255, 255);
+        COLORREF borderCol = RGB(226, 232, 240);
+        COLORREF textCol = RGB(31, 41, 55);
+
+        if (id == IDC_BTN_PRESENT) {
+            bgCol = isHover ? RGB(234, 88, 12) : RGB(196, 62, 28);
+            borderCol = RGB(154, 52, 18);
+            textCol = RGB(255, 255, 255);
+        } else if (id == IDC_BTN_PREVIEW_TRANS) {
+            bgCol = isHover ? RGB(255, 237, 213) : RGB(255, 247, 237);
+            borderCol = RGB(251, 146, 60);
+            textCol = RGB(194, 65, 12);
+        } else if (isPressed) {
+            bgCol = RGB(255, 237, 213);
+            borderCol = RGB(234, 88, 12);
+            textCol = RGB(194, 65, 12);
+        } else if (isHover) {
+            bgCol = RGB(248, 250, 252);
+            borderCol = RGB(253, 186, 116);
+            textCol = RGB(15, 23, 42);
+        }
+
+        HBRUSH hBg = CreateSolidBrush(bgCol);
+        HPEN hPen = CreatePen(PS_SOLID, 1, borderCol);
+        HBRUSH oldB = (HBRUSH)SelectObject(hdc, hBg);
+        HPEN oldP = (HPEN)SelectObject(hdc, hPen);
+
+        RoundRect(hdc, rc.left, rc.top, rc.right, rc.bottom, 6, 6);
+
+        SelectObject(hdc, oldB);
+        SelectObject(hdc, oldP);
+        DeleteObject(hBg);
+        DeleteObject(hPen);
+
+        SetBkMode(hdc, TRANSPARENT);
+        SetTextColor(hdc, textCol);
+        HFONT hFont = (HFONT)SendMessageW(hwnd, WM_GETFONT, 0, 0);
+        HFONT oldF = (HFONT)SelectObject(hdc, hFont);
+
+        DrawTextW(hdc, text, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+        SelectObject(hdc, oldF);
+        EndPaint(hwnd, &ps);
+        return 0;
+    }
+    case WM_MOUSEMOVE:
+    case WM_MOUSELEAVE: {
+        InvalidateRect(hwnd, NULL, FALSE);
+        TRACKMOUSEEVENT tme = { sizeof(TRACKMOUSEEVENT), TME_LEAVE, hwnd, 0 };
+        TrackMouseEvent(&tme);
+        break;
+    }
+    }
+    return CallWindowProcW(g_oldKinBtnProc, hwnd, uMsg, wParam, lParam);
+}
+
+void StyleKinBtn(HWND btn) {
+    if (!g_oldKinBtnProc) {
+        g_oldKinBtnProc = (WNDPROC)GetWindowLongPtrW(btn, GWLP_WNDPROC);
+    }
+    SetWindowLongPtrW(btn, GWLP_WNDPROC, (LONG_PTR)KinBtnSubclass);
+}
+
+
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
     g_hInst = hInstance;
 
@@ -336,7 +420,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     g_hBtnPresent = CreateWindowExW(0, L"BUTTON", L"▶ Start Show (F5)", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 876, tbY, 130, 26, g_hMainWnd, (HMENU)IDC_BTN_PRESENT, hInstance, NULL);
 
     // Center 16:9 Canvas Viewport
-    g_hCanvasWnd = CreateWindowExW(
+        StyleKinBtn(g_hBtnPreview);
+    StyleKinBtn(g_hBtnApplyAll);
+    StyleKinBtn(g_hBtnPresent);
+
+g_hCanvasWnd = CreateWindowExW(
         WS_EX_CLIENTEDGE, L"GiriKineticCanvasClass", L"",
         WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN,
         226, 40, 930, 500, g_hMainWnd, (HMENU)IDC_CANVAS_PANE, hInstance, NULL
@@ -1292,6 +1380,13 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
         SetWindowPos(g_hEditBody, NULL, 310, h - 130, w - 320, 94, SWP_NOZORDER);
         SendMessageW(g_hStatusBar, WM_SIZE, wParam, lParam);
         return 0;
+    }
+    case WM_CTLCOLORSTATIC: {
+        HDC hdcStatic = (HDC)wParam;
+        SetBkColor(hdcStatic, RGB(241, 245, 249));
+        SetTextColor(hdcStatic, RGB(15, 23, 42));
+        static HBRUSH hKinBg = CreateSolidBrush(RGB(241, 245, 249));
+        return (INT_PTR)hKinBg;
     }
     case WM_COMMAND: {
         WORD id = LOWORD(wParam);

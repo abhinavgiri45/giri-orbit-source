@@ -147,7 +147,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
     // Create Native RichEdit Editor
     g_hRichEdit = CreateWindowExW(
-        WS_EX_CLIENTEDGE, richClass, L"",
+        0, richClass, L"",
         WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN | ES_NOHIDESEL,
         0, 40, 1060, 620,
         g_hMainWnd, (HMENU)IDC_RICH_EDIT, hInstance, NULL
@@ -307,28 +307,117 @@ void CreateMainMenu(HWND hwnd) {
     SetMenu(hwnd, hMenuBar);
 }
 
+
+#define IDC_BTN_HINDI_TOGGLE 3035
+
+static WNDPROC g_oldBtnProc = NULL;
+LRESULT CALLBACK RibbonBtnSubclass(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    switch (uMsg) {
+    case WM_CTLCOLORSTATIC: {
+            HDC hdcStatic = (HDC)wParam;
+            SetBkColor(hdcStatic, RGB(255, 255, 255));
+            SetTextColor(hdcStatic, RGB(15, 23, 42));
+            return (INT_PTR)GetStockObject(WHITE_BRUSH);
+        }
+        case WM_PAINT: {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
+        RECT rc;
+        GetClientRect(hwnd, &rc);
+
+        wchar_t text[64] = { 0 };
+        GetWindowTextW(hwnd, text, 64);
+        int id = GetDlgCtrlID(hwnd);
+
+        POINT pt;
+        GetCursorPos(&pt);
+        ScreenToClient(hwnd, &pt);
+        bool isHover = PtInRect(&rc, pt);
+        bool isPressed = (GetKeyState(VK_LBUTTON) < 0) && isHover;
+
+        COLORREF bgCol = RGB(255, 255, 255);
+        COLORREF borderCol = RGB(226, 232, 240);
+        COLORREF textCol = RGB(31, 41, 55);
+
+        if (id == IDC_BTN_HINDI_TOGGLE) {
+            bgCol = isHover ? RGB(254, 243, 199) : RGB(255, 251, 235);
+            borderCol = RGB(245, 158, 11);
+            textCol = RGB(180, 83, 9);
+        } else if (isPressed) {
+            bgCol = RGB(219, 234, 254);
+            borderCol = RGB(59, 130, 246);
+            textCol = RGB(29, 78, 216);
+        } else if (isHover) {
+            bgCol = RGB(241, 245, 249);
+            borderCol = RGB(147, 197, 253);
+            textCol = RGB(15, 23, 42);
+        }
+
+        HBRUSH hBg = CreateSolidBrush(bgCol);
+        HPEN hPen = CreatePen(PS_SOLID, 1, borderCol);
+        HBRUSH oldB = (HBRUSH)SelectObject(hdc, hBg);
+        HPEN oldP = (HPEN)SelectObject(hdc, hPen);
+
+        RoundRect(hdc, rc.left, rc.top, rc.right, rc.bottom, 6, 6);
+
+        SelectObject(hdc, oldB);
+        SelectObject(hdc, oldP);
+        DeleteObject(hBg);
+        DeleteObject(hPen);
+
+        SetBkMode(hdc, TRANSPARENT);
+        SetTextColor(hdc, textCol);
+        HFONT hFont = (HFONT)SendMessageW(hwnd, WM_GETFONT, 0, 0);
+        HFONT oldF = (HFONT)SelectObject(hdc, hFont);
+
+        DrawTextW(hdc, text, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+        SelectObject(hdc, oldF);
+        EndPaint(hwnd, &ps);
+        return 0;
+    }
+    case WM_MOUSEMOVE:
+    case WM_MOUSELEAVE: {
+        InvalidateRect(hwnd, NULL, FALSE);
+        TRACKMOUSEEVENT tme = { sizeof(TRACKMOUSEEVENT), TME_LEAVE, hwnd, 0 };
+        TrackMouseEvent(&tme);
+        break;
+    }
+    }
+    return CallWindowProcW(g_oldBtnProc, hwnd, uMsg, wParam, lParam);
+}
+
+void StyleRibbonBtn(HWND btn) {
+    if (!g_oldBtnProc) {
+        g_oldBtnProc = (WNDPROC)GetWindowLongPtrW(btn, GWLP_WNDPROC);
+    }
+    SetWindowLongPtrW(btn, GWLP_WNDPROC, (LONG_PTR)RibbonBtnSubclass);
+}
+
 void CreateRibbonToolbar(HWND hwnd) {
-    // Container panel across top
+    // Elegant Fluent Ribbon panel across top (height 76px)
     g_hToolbarPanel = CreateWindowExW(
         0, L"STATIC", L"",
         WS_CHILD | WS_VISIBLE | SS_LEFT | WS_CLIPCHILDREN,
-        0, 0, 1080, 38, hwnd, (HMENU)IDC_TOOLBAR_PANEL, g_hInst, NULL
+        0, 0, 1280, 76, hwnd, (HMENU)IDC_TOOLBAR_PANEL, g_hInst, NULL
     );
 
-    HFONT hFont = CreateFontW(14, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+    HFONT hFont = CreateFontW(14, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
                               OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
                               VARIABLE_PITCH, L"Segoe UI");
+    HFONT hFontBold = CreateFontW(15, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                                  OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+                                  VARIABLE_PITCH, L"Segoe UI");
 
     // 1. Font Family Dropdown
     g_hFontCombo = CreateWindowExW(
         0, L"COMBOBOX", L"",
         WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL,
-        4, 5, 140, 260, g_hToolbarPanel, (HMENU)IDC_COMBO_FONT, g_hInst, NULL
+        14, 8, 150, 260, g_hToolbarPanel, (HMENU)IDC_COMBO_FONT, g_hInst, NULL
     );
     const wchar_t* fonts[] = {
-        L"Segoe UI", L"Noto Sans Devanagari", L"Mangal", L"Nirmala UI", L"Calibri", L"Arial",
-        L"Times New Roman", L"Georgia", L"Verdana", L"Trebuchet MS", L"Consolas", L"Courier New", L"Tahoma",
-        L"Noto Sans Arabic", L"Microsoft YaHei", L"Meiryo"
+        L"Segoe UI", L"Noto Sans Devanagari", L"Calibri", L"Arial",
+        L"Times New Roman", L"Georgia", L"Verdana", L"Trebuchet MS", L"Consolas", L"Courier New", L"Mangal"
     };
     for (const wchar_t* f : fonts) {
         SendMessageW(g_hFontCombo, CB_ADDSTRING, 0, (LPARAM)f);
@@ -340,45 +429,52 @@ void CreateRibbonToolbar(HWND hwnd) {
     g_hSizeCombo = CreateWindowExW(
         0, L"COMBOBOX", L"",
         WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL,
-        148, 5, 52, 260, g_hToolbarPanel, (HMENU)IDC_COMBO_SIZE, g_hInst, NULL
+        170, 8, 52, 260, g_hToolbarPanel, (HMENU)IDC_COMBO_SIZE, g_hInst, NULL
     );
     const wchar_t* sizes[] = { L"9", L"10", L"11", L"12", L"14", L"16", L"18", L"20", L"24", L"28", L"36", L"48", L"72" };
     for (const wchar_t* s : sizes) {
         SendMessageW(g_hSizeCombo, CB_ADDSTRING, 0, (LPARAM)s);
     }
-    SendMessageW(g_hSizeCombo, CB_SETCURSEL, 3, 0); // 12pt default
+    SendMessageW(g_hSizeCombo, CB_SETCURSEL, 3, 0);
     SendMessageW(g_hSizeCombo, WM_SETFONT, (WPARAM)hFont, TRUE);
 
-    // Formatting Buttons Helper
-    auto makeBtn = [hFont](const wchar_t* text, int x, int w, int id) {
+    auto makeBtn = [hFont, hFontBold](const wchar_t* text, int x, int y, int w, int h, int id, bool bold = false) {
         HWND btn = CreateWindowExW(
             0, L"BUTTON", text,
             WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-            x, 5, w, 27, g_hToolbarPanel, (HMENU)(INT_PTR)id, g_hInst, NULL
+            x, y, w, h, g_hToolbarPanel, (HMENU)(INT_PTR)id, g_hInst, NULL
         );
-        SendMessageW(btn, WM_SETFONT, (WPARAM)hFont, TRUE);
+        SendMessageW(btn, WM_SETFONT, (WPARAM)(bold ? hFontBold : hFont), TRUE);
+        StyleRibbonBtn(btn);
         return btn;
     };
 
-    makeBtn(L"B", 204, 26, IDC_BTN_BOLD);
-    makeBtn(L"I", 232, 26, IDC_BTN_ITALIC);
-    makeBtn(L"U", 260, 26, IDC_BTN_UNDERLINE);
-    makeBtn(L"S", 288, 26, IDC_BTN_STRIKE);
+    // Row 2: Formatting Buttons
+    makeBtn(L"B", 14, 40, 26, 26, IDC_BTN_BOLD, true);
+    makeBtn(L"I", 44, 40, 26, 26, IDC_BTN_ITALIC);
+    makeBtn(L"U", 74, 40, 26, 26, IDC_BTN_UNDERLINE);
+    makeBtn(L"S", 104, 40, 26, 26, IDC_BTN_STRIKE);
+    makeBtn(L"🎨 Color", 134, 40, 78, 26, IDC_BTN_COLOR);
 
-    makeBtn(L"🎨 Color", 318, 62, IDC_BTN_COLOR);
+    // Dedicated Hindi Toggle Button
+    makeBtn(L"🇮🇳 [अ हिन्दी]", 228, 8, 110, 26, IDC_BTN_HINDI_TOGGLE, true);
 
-    makeBtn(L"L", 384, 25, IDC_BTN_ALIGN_L);
-    makeBtn(L"C", 411, 25, IDC_BTN_ALIGN_C);
-    makeBtn(L"R", 438, 25, IDC_BTN_ALIGN_R);
-    makeBtn(L"J", 465, 25, IDC_BTN_JUSTIFY);
+    // Alignment
+    makeBtn(L"L", 228, 40, 25, 26, IDC_BTN_ALIGN_L);
+    makeBtn(L"C", 256, 40, 25, 26, IDC_BTN_ALIGN_C);
+    makeBtn(L"R", 284, 40, 25, 26, IDC_BTN_ALIGN_R);
+    makeBtn(L"J", 312, 40, 25, 26, IDC_BTN_JUSTIFY);
 
-    makeBtn(L"• List", 494, 48, IDC_BTN_BULLETS);
-    makeBtn(L"1. Num", 544, 52, IDC_BTN_NUMBERS);
+    // Lists
+    makeBtn(L"• List", 348, 8, 64, 26, IDC_BTN_BULLETS);
+    makeBtn(L"1. Num", 418, 8, 66, 26, IDC_BTN_NUMBERS);
 
-    makeBtn(L"⊞ Table", 600, 62, IDC_BTN_TABLE);
-    makeBtn(L"📂 Templates ▼", 666, 105, IDC_BTN_TEMPLATES);
-    makeBtn(L"📊 Stats", 775, 58, IDC_BTN_STATS);
+    // Table, Templates, Word Count
+    makeBtn(L"⊞ Table", 348, 40, 64, 26, IDC_BTN_TABLE);
+    makeBtn(L"📑 Templates ▼", 418, 40, 114, 26, IDC_BTN_TEMPLATES);
+    makeBtn(L"📊 Stats", 538, 40, 68, 26, IDC_BTN_STATS);
 }
+
 
 void UpdateStatusBar(HWND hwnd) {
     if (!g_hStatusBar || !g_hRichEdit) return;
@@ -661,11 +757,14 @@ void DoWordCount(HWND hwnd) {
     MessageBoxW(hwnd, report, L"Word Count Statistics", MB_OK | MB_ICONINFORMATION);
 }
 
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_SIZE: {
             RECT rcClient;
             GetClientRect(hwnd, &rcClient);
+            int w = rcClient.right;
+            int h = rcClient.bottom;
 
             // Resize status bar
             SendMessageW(g_hStatusBar, WM_SIZE, wParam, lParam);
@@ -673,13 +772,98 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             GetWindowRect(g_hStatusBar, &rcStatus);
             int statusHeight = rcStatus.bottom - rcStatus.top;
 
-            int toolHeight = 38;
-            MoveWindow(g_hToolbarPanel, 0, 0, rcClient.right, toolHeight, TRUE);
+            int toolHeight = 76;
+            MoveWindow(g_hToolbarPanel, 0, 0, w, toolHeight, TRUE);
 
-            int editTop = toolHeight;
-            int editHeight = rcClient.bottom - toolHeight - statusHeight;
-            MoveWindow(g_hRichEdit, 0, editTop, rcClient.right, editHeight, TRUE);
-            break;
+            // Center A4 Paper Sheet (816px width standard)
+            int canvasH = h - toolHeight - statusHeight;
+            int paperW = 816;
+            if (paperW > w - 40) paperW = w - 40;
+            if (paperW < 360) paperW = 360;
+
+            int paperX = (w - paperW) / 2;
+            int paperY = toolHeight + 16;
+            int paperH = canvasH - 32;
+            if (paperH < 200) paperH = 200;
+
+            // Move RichEdit inside the centered A4 paper
+            MoveWindow(g_hRichEdit, paperX + 36, paperY + 28, paperW - 72, paperH - 56, TRUE);
+            InvalidateRect(hwnd, NULL, FALSE);
+            return 0;
+        }
+
+        case WM_CTLCOLORSTATIC: {
+            HDC hdcStatic = (HDC)wParam;
+            SetBkColor(hdcStatic, RGB(255, 255, 255));
+            SetTextColor(hdcStatic, RGB(15, 23, 42));
+            return (INT_PTR)GetStockObject(WHITE_BRUSH);
+        }
+        case WM_PAINT: {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hwnd, &ps);
+
+            RECT rc;
+            GetClientRect(hwnd, &rc);
+            int w = rc.right;
+            int h = rc.bottom;
+
+            int toolHeight = 76;
+            RECT rcStatus;
+            GetWindowRect(g_hStatusBar, &rcStatus);
+            int statusHeight = rcStatus.bottom - rcStatus.top;
+
+            // 1. Fill workspace with Microsoft Word Slate Gray (#edebe9)
+            HBRUSH hSlate = CreateSolidBrush(RGB(237, 235, 233));
+            RECT rcCanvas = { 0, toolHeight, w, h - statusHeight };
+            FillRect(hdc, &rcCanvas, hSlate);
+            DeleteObject(hSlate);
+
+            // Toolbar bottom divider
+            HPEN hDivPen = CreatePen(PS_SOLID, 1, RGB(226, 232, 240));
+            HPEN oldPen = (HPEN)SelectObject(hdc, hDivPen);
+            MoveToEx(hdc, 0, toolHeight - 1, NULL);
+            LineTo(hdc, w, toolHeight - 1);
+            SelectObject(hdc, oldPen);
+            DeleteObject(hDivPen);
+
+            // 2. Calculate A4 Paper Dimensions
+            int canvasH = h - toolHeight - statusHeight;
+            int paperW = 816;
+            if (paperW > w - 40) paperW = w - 40;
+            if (paperW < 360) paperW = 360;
+
+            int paperX = (w - paperW) / 2;
+            int paperY = toolHeight + 16;
+            int paperH = canvasH - 32;
+            if (paperH < 200) paperH = 200;
+
+            // Subtle paper drop shadows
+            HBRUSH hSh1 = CreateSolidBrush(RGB(212, 212, 216));
+            RECT rcSh1 = { paperX - 2, paperY - 1, paperX + paperW + 4, paperY + paperH + 5 };
+            FillRect(hdc, &rcSh1, hSh1);
+            DeleteObject(hSh1);
+
+            HBRUSH hSh2 = CreateSolidBrush(RGB(228, 228, 231));
+            RECT rcSh2 = { paperX - 4, paperY - 2, paperX + paperW + 6, paperY + paperH + 7 };
+            FillRect(hdc, &rcSh2, hSh2);
+            DeleteObject(hSh2);
+
+            // Pure White A4 Paper Sheet
+            HBRUSH hWhite = (HBRUSH)GetStockObject(WHITE_BRUSH);
+            RECT rcPaper = { paperX, paperY, paperX + paperW, paperY + paperH };
+            FillRect(hdc, &rcPaper, hWhite);
+
+            // Crisp paper border
+            HPEN hBorderPen = CreatePen(PS_SOLID, 1, RGB(214, 217, 222));
+            HPEN oldP = (HPEN)SelectObject(hdc, hBorderPen);
+            HBRUSH oldB = (HBRUSH)SelectObject(hdc, GetStockObject(NULL_BRUSH));
+            Rectangle(hdc, paperX, paperY, paperX + paperW, paperY + paperH);
+            SelectObject(hdc, oldP);
+            SelectObject(hdc, oldB);
+            DeleteObject(hBorderPen);
+
+            EndPaint(hwnd, &ps);
+            return 0;
         }
 
         case WM_COMMAND: {

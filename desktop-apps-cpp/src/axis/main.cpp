@@ -837,14 +837,97 @@ void DoShowChartDialog(HWND hwndOwner) {
     );
 }
 
+
+static WNDPROC g_oldAxisBtnProc = NULL;
+LRESULT CALLBACK AxisBtnSubclass(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    switch (uMsg) {
+    case WM_PAINT: {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
+        RECT rc;
+        GetClientRect(hwnd, &rc);
+
+        wchar_t text[64] = { 0 };
+        GetWindowTextW(hwnd, text, 64);
+        int id = GetDlgCtrlID(hwnd);
+
+        POINT pt;
+        GetCursorPos(&pt);
+        ScreenToClient(hwnd, &pt);
+        bool isHover = PtInRect(&rc, pt);
+        bool isPressed = (GetKeyState(VK_LBUTTON) < 0) && isHover;
+
+        COLORREF bgCol = RGB(255, 255, 255);
+        COLORREF borderCol = RGB(226, 232, 240);
+        COLORREF textCol = RGB(31, 41, 55);
+
+        if (id == IDC_BTN_AUTOSUM || id == IDC_BTN_CHART) {
+            bgCol = isHover ? RGB(220, 252, 231) : RGB(240, 253, 244);
+            borderCol = RGB(34, 197, 94);
+            textCol = RGB(21, 128, 61);
+        } else if (id == IDC_BTN_CURRENCY) {
+            bgCol = isHover ? RGB(254, 243, 199) : RGB(255, 251, 235);
+            borderCol = RGB(245, 158, 11);
+            textCol = RGB(180, 83, 9);
+        } else if (isPressed) {
+            bgCol = RGB(220, 252, 231);
+            borderCol = RGB(22, 163, 74);
+            textCol = RGB(21, 128, 61);
+        } else if (isHover) {
+            bgCol = RGB(248, 250, 252);
+            borderCol = RGB(134, 239, 172);
+            textCol = RGB(15, 23, 42);
+        }
+
+        HBRUSH hBg = CreateSolidBrush(bgCol);
+        HPEN hPen = CreatePen(PS_SOLID, 1, borderCol);
+        HBRUSH oldB = (HBRUSH)SelectObject(hdc, hBg);
+        HPEN oldP = (HPEN)SelectObject(hdc, hPen);
+
+        RoundRect(hdc, rc.left, rc.top, rc.right, rc.bottom, 6, 6);
+
+        SelectObject(hdc, oldB);
+        SelectObject(hdc, oldP);
+        DeleteObject(hBg);
+        DeleteObject(hPen);
+
+        SetBkMode(hdc, TRANSPARENT);
+        SetTextColor(hdc, textCol);
+        HFONT hFont = (HFONT)SendMessageW(hwnd, WM_GETFONT, 0, 0);
+        HFONT oldF = (HFONT)SelectObject(hdc, hFont);
+
+        DrawTextW(hdc, text, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+        SelectObject(hdc, oldF);
+        EndPaint(hwnd, &ps);
+        return 0;
+    }
+    case WM_MOUSEMOVE:
+    case WM_MOUSELEAVE: {
+        InvalidateRect(hwnd, NULL, FALSE);
+        TRACKMOUSEEVENT tme = { sizeof(TRACKMOUSEEVENT), TME_LEAVE, hwnd, 0 };
+        TrackMouseEvent(&tme);
+        break;
+    }
+    }
+    return CallWindowProcW(g_oldAxisBtnProc, hwnd, uMsg, wParam, lParam);
+}
+
+void StyleAxisBtn(HWND btn) {
+    if (!g_oldAxisBtnProc) {
+        g_oldAxisBtnProc = (WNDPROC)GetWindowLongPtrW(btn, GWLP_WNDPROC);
+    }
+    SetWindowLongPtrW(btn, GWLP_WNDPROC, (LONG_PTR)AxisBtnSubclass);
+}
+
 void CreateRibbonToolbar(HWND hwnd) {
     g_hToolbarPanel = CreateWindowExW(
         0, L"STATIC", L"",
         WS_CHILD | WS_VISIBLE | SS_LEFT | WS_CLIPCHILDREN,
-        0, 0, 1100, 36, hwnd, (HMENU)IDC_TOOLBAR_PANEL, g_hInst, NULL
+        0, 0, 1280, 38, hwnd, (HMENU)IDC_TOOLBAR_PANEL, g_hInst, NULL
     );
 
-    HFONT hFont = CreateFontW(14, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+    HFONT hFont = CreateFontW(14, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
                               OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
                               VARIABLE_PITCH, L"Segoe UI");
 
@@ -852,25 +935,27 @@ void CreateRibbonToolbar(HWND hwnd) {
         HWND btn = CreateWindowExW(
             0, L"BUTTON", text,
             WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-            x, 4, w, 28, g_hToolbarPanel, (HMENU)(INT_PTR)id, g_hInst, NULL
+            x, 4, w, 30, g_hToolbarPanel, (HMENU)(INT_PTR)id, g_hInst, NULL
         );
         SendMessageW(btn, WM_SETFONT, (WPARAM)hFont, TRUE);
+        StyleAxisBtn(btn);
         return btn;
     };
 
-    makeBtn(L"Σ AutoSum", 6, 85, IDC_BTN_AUTOSUM);
-    makeBtn(L"Average", 95, 68, IDC_BTN_AVERAGE);
-    makeBtn(L"Count", 167, 56, IDC_BTN_COUNT);
-    makeBtn(L"Max/Min", 227, 68, IDC_BTN_MAXMIN);
-    makeBtn(L"$ Currency", 299, 78, IDC_BTN_CURRENCY);
-    makeBtn(L"% Percent", 381, 72, IDC_BTN_PERCENT);
-    makeBtn(L"Sort A-Z", 457, 68, IDC_BTN_SORT_ASC);
-    makeBtn(L"Sort Z-A", 529, 68, IDC_BTN_SORT_DESC);
-    makeBtn(L"+ Row", 601, 56, IDC_BTN_INS_ROW);
-    makeBtn(L"+ Col", 661, 56, IDC_BTN_INS_COL);
-    makeBtn(L"📊 Chart", 721, 68, IDC_BTN_CHART);
-    makeBtn(L"📂 Templates ▼", 793, 105, IDC_BTN_TEMPLATES);
+    makeBtn(L"Σ AutoSum", 8, 92, IDC_BTN_AUTOSUM);
+    makeBtn(L"Average", 104, 68, IDC_BTN_AVERAGE);
+    makeBtn(L"Count", 176, 56, IDC_BTN_COUNT);
+    makeBtn(L"Max/Min", 236, 68, IDC_BTN_MAXMIN);
+    makeBtn(L"₹ Currency", 308, 86, IDC_BTN_CURRENCY);
+    makeBtn(L"% Percent", 398, 76, IDC_BTN_PERCENT);
+    makeBtn(L"Sort A-Z", 478, 70, IDC_BTN_SORT_ASC);
+    makeBtn(L"Sort Z-A", 552, 70, IDC_BTN_SORT_DESC);
+    makeBtn(L"+ Row", 626, 56, IDC_BTN_INS_ROW);
+    makeBtn(L"+ Col", 686, 56, IDC_BTN_INS_COL);
+    makeBtn(L"📊 Chart", 746, 72, IDC_BTN_CHART);
+    makeBtn(L"📑 Templates ▼", 822, 114, IDC_BTN_TEMPLATES);
 }
+
 
 void ApplyAxisTemplate(int id) {
     Sheet& s = g_sheets[g_activeSheet];
@@ -966,6 +1051,18 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
         SetWindowPos(g_hTabCtrl, NULL, 0, h - 58, w, 32, SWP_NOZORDER);
         SendMessageW(g_hStatusBar, WM_SIZE, wParam, lParam);
         return 0;
+    }
+    case WM_CTLCOLORSTATIC: {
+        HDC hdcStatic = (HDC)wParam;
+        HWND hwndStatic = (HWND)lParam;
+        if (hwndStatic == g_hFxLbl) {
+            SetTextColor(hdcStatic, RGB(22, 163, 74));
+            SetBkColor(hdcStatic, RGB(255, 255, 255));
+            return (INT_PTR)GetStockObject(WHITE_BRUSH);
+        }
+        SetBkColor(hdcStatic, RGB(255, 255, 255));
+        SetTextColor(hdcStatic, RGB(15, 23, 42));
+        return (INT_PTR)GetStockObject(WHITE_BRUSH);
     }
     case WM_COMMAND: {
         WORD id = LOWORD(wParam);
@@ -1192,6 +1289,12 @@ LRESULT CALLBACK GridWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
                     SelectObject(hdc, hSelectPen);
                     SelectObject(hdc, GetStockObject(NULL_BRUSH));
                     Rectangle(hdc, cellRect.left, cellRect.top, cellRect.right, cellRect.bottom);
+
+                    // Authentic Excel Fill Handle square in bottom-right corner
+                    HBRUSH hHandleBrush = CreateSolidBrush(RGB(16, 185, 129));
+                    RECT rcHandle = { cellRect.right - 4, cellRect.bottom - 4, cellRect.right + 2, cellRect.bottom + 2 };
+                    FillRect(hdc, &rcHandle, hHandleBrush);
+                    DeleteObject(hHandleBrush);
                 }
             }
         }
