@@ -1,0 +1,63 @@
+# Giri Orbit Source - Master .gitignore
+# Build Artifacts & Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+*.o
+*.obj
+*.lib
+*.a
+*.pdb
+*.idb
+*.ilk
+*.exp
+
+# Archives & Installers
+*.zip
+*.tar.gz
+*.7z
+*.rar
+*.apk
+*.aab
+*.idsig
+
+# Build Directories
+bin/
+obj/
+dist/
+build/
+output/
+intermediates/
+.gradle/
+captures/
+
+# IDE & Editor Specific
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.iml
+
+# Android SDK Local Configuration & Keystores
+local.properties
+*.jks
+*.keystore
+keystore/
+
+# OS Generated
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# Temporary & Log files
+*.log
+*.tmp
+*.bak
+__pycache__/
+*.pyc

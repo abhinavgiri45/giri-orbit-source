@@ -1,0 +1,928 @@
+/* ==========================================================================
+   GIRI ORBIT DESKTOP UI DESIGN SYSTEM (css/orbitDesktop.css)
+   Pixel-Accurate Sovereign / Breeze Desktop Architecture
+   Supported Tools:
+     - Giri Drift Writer
+     - Giri Axis Spreadsheet
+     - Giri Kinetic Presentation
+     - Giri Aegis PDF Studio
+   ========================================================================== */
+
+/* --- Root & Theme Variables --- */
+:root {
+  --lo-bg-main: #232731;
+  --lo-bg-toolbar: #2c313c;
+  --lo-bg-toolbar-hover: #3b4252;
+  --lo-bg-toolbar-active: #4c566a;
+  --lo-border: #3b4252;
+  --lo-border-light: #434c5e;
+  --lo-text: #eceff4;
+  --lo-text-muted: #d8dee9;
+  --lo-text-subtle: #8892b0;
+  
+  --lo-writer-blue: #1a73e8;
+  --lo-calc-green: #188038;
+  --lo-impress-orange: #e8710a;
+  --lo-draw-red: #d93025;
+  
+  --lo-accent: #38bdf8;
+  --lo-menu-bg: #21252b;
+  --lo-menu-hover: #2c313c;
+  --lo-menu-active: #0969da;
+  
+  --lo-paper-bg: #ffffff;
+  --lo-paper-text: #000000;
+  --lo-statusbar-bg: #1e2229;
+  --lo-ruler-bg: #282c34;
+}
+
+body.light-theme {
+  --lo-bg-main: #f0f1f2;
+  --lo-bg-toolbar: #e4e6e8;
+  --lo-bg-toolbar-hover: #d2d5d9;
+  --lo-bg-toolbar-active: #c1c5cb;
+  --lo-border: #b8bdc4;
+  --lo-border-light: #cdd1d7;
+  --lo-text: #1f2328;
+  --lo-text-muted: #3d434d;
+  --lo-text-subtle: #656d76;
+  
+  --lo-menu-bg: #ffffff;
+  --lo-menu-hover: #e8eaed;
+  --lo-menu-active: #0969da;
+  
+  --lo-paper-bg: #ffffff;
+  --lo-paper-text: #000000;
+  --lo-statusbar-bg: #dcdfe3;
+  --lo-ruler-bg: #e9ebed;
+}
+
+/* --- Top Application Title & Header Bar --- */
+.lo-window-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--lo-bg-main);
+  border-bottom: 1px solid var(--lo-border);
+  padding: 4px 12px;
+  user-select: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Liberation Sans", sans-serif;
+  font-size: 12px;
+  color: var(--lo-text);
+  height: 32px;
+  box-sizing: border-box;
+}
+
+.lo-window-title-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lo-app-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+.lo-app-badge.writer { background: linear-gradient(135deg, #1976d2, #0d47a1); }
+.lo-app-badge.calc   { background: linear-gradient(135deg, #2e7d32, #1b5e20); }
+.lo-app-badge.impress{ background: linear-gradient(135deg, #e65100, #bf360c); }
+.lo-app-badge.draw   { background: linear-gradient(135deg, #c62828, #880e4f); }
+
+.lo-window-title-text {
+  font-weight: 600;
+  color: var(--lo-text);
+}
+.lo-window-doc-name {
+  color: var(--lo-text-muted);
+  font-weight: 400;
+}
+
+.lo-window-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lo-ui-switcher-pill {
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: var(--lo-accent);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s;
+}
+.lo-ui-switcher-pill:hover {
+  background: rgba(56, 189, 248, 0.22);
+}
+
+.lo-header-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--lo-text-muted);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11.5px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s;
+}
+.lo-header-btn:hover {
+  background: var(--lo-bg-toolbar-hover);
+  border-color: var(--lo-border);
+  color: var(--lo-text);
+}
+
+/* --- Classic orbitDesktop Menu Bar --- */
+.lo-menubar {
+  display: flex;
+  align-items: center;
+  background: var(--lo-bg-toolbar);
+  border-bottom: 1px solid var(--lo-border);
+  padding: 1px 6px;
+  user-select: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Liberation Sans", sans-serif;
+  font-size: 12px;
+  position: relative;
+  z-index: 50;
+  box-sizing: border-box;
+}
+
+.lo-menu-item {
+  position: relative;
+  display: inline-block;
+}
+
+.lo-menu-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--lo-text);
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background 0.12s;
+  outline: none;
+}
+.lo-menu-btn:hover,
+.lo-menu-item.open > .lo-menu-btn {
+  background: var(--lo-bg-toolbar-hover);
+  border-color: var(--lo-border-light);
+}
+
+/* Dropdown Menu Window */
+.lo-menu-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: var(--lo-menu-bg);
+  border: 1px solid var(--lo-border-light);
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  min-width: 220px;
+  padding: 4px 0;
+  z-index: 9999;
+  font-size: 12px;
+  color: var(--lo-text);
+}
+.lo-menu-item.open > .lo-menu-dropdown {
+  display: block;
+}
+
+.lo-menu-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 14px 5px 10px;
+  cursor: pointer;
+  color: var(--lo-text);
+  gap: 16px;
+  transition: background 0.1s;
+  white-space: nowrap;
+}
+.lo-menu-entry:hover {
+  background: var(--lo-menu-active);
+  color: #ffffff !important;
+}
+.lo-menu-entry:hover .lo-shortcut-kbd {
+  color: #ffffff !important;
+}
+.lo-menu-entry:hover .lo-menu-icon {
+  filter: brightness(1.2);
+}
+
+.lo-menu-entry-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lo-menu-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.lo-shortcut-kbd {
+  font-size: 10.5px;
+  color: var(--lo-text-subtle);
+  font-family: var(--font-mono, monospace);
+  margin-left: auto;
+}
+.lo-menu-sep {
+  height: 1px;
+  background: var(--lo-border);
+  margin: 4px 6px;
+}
+.lo-menu-entry.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* --- orbitDesktop Dual Toolbars: Standard & Formatting --- */
+.lo-toolbars-wrap {
+  display: flex;
+  flex-direction: column;
+  background: var(--lo-bg-toolbar);
+  border-bottom: 1px solid var(--lo-border);
+}
+
+.lo-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 8px;
+  border-bottom: 1px solid var(--lo-border);
+  overflow-x: auto;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+.lo-toolbar::-webkit-scrollbar {
+  height: 4px;
+}
+.lo-toolbar::-webkit-scrollbar-thumb {
+  background: var(--lo-border);
+}
+
+.lo-tool-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--lo-text);
+  width: 28px;
+  height: 28px;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.12s ease;
+  flex-shrink: 0;
+}
+.lo-tool-btn:hover {
+  background: var(--lo-bg-toolbar-hover);
+  border-color: var(--lo-border-light);
+}
+.lo-tool-btn:active,
+.lo-tool-btn.active {
+  background: var(--lo-bg-toolbar-active);
+  border-color: var(--lo-accent);
+  color: var(--lo-accent);
+}
+.lo-tool-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.lo-tool-dropdown-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--lo-text);
+  height: 28px;
+  padding: 0 6px;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 11.5px;
+  flex-shrink: 0;
+}
+.lo-tool-dropdown-btn:hover {
+  background: var(--lo-bg-toolbar-hover);
+  border-color: var(--lo-border-light);
+}
+
+.lo-tool-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--lo-border);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.lo-select {
+  background: var(--lo-bg-main);
+  border: 1px solid var(--lo-border);
+  color: var(--lo-text);
+  height: 26px;
+  border-radius: 3px;
+  padding: 0 6px;
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+  font-family: inherit;
+}
+.lo-select:focus {
+  border-color: var(--lo-accent);
+}
+
+/* --- orbitDesktop Calc Formula Bar --- */
+.lo-formula-bar {
+  display: flex;
+  align-items: center;
+  background: var(--lo-bg-toolbar);
+  border-bottom: 1px solid var(--lo-border);
+  padding: 3px 8px;
+  gap: 4px;
+  font-size: 12px;
+  font-family: var(--font-mono, monospace);
+  box-sizing: border-box;
+}
+
+.lo-name-box {
+  width: 80px;
+  height: 24px;
+  background: var(--lo-bg-main);
+  border: 1px solid var(--lo-border);
+  color: var(--lo-text);
+  border-radius: 3px;
+  padding: 0 6px;
+  font-size: 12px;
+  font-family: var(--font-mono, monospace);
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+}
+.lo-name-box:focus {
+  border-color: var(--lo-accent);
+}
+
+.lo-formula-btn {
+  background: transparent;
+  border: 1px solid var(--lo-border);
+  color: var(--lo-text);
+  width: 26px;
+  height: 24px;
+  border-radius: 3px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.lo-formula-btn:hover {
+  background: var(--lo-bg-toolbar-hover);
+}
+.lo-formula-btn.fx { color: #38bdf8; }
+.lo-formula-btn.sum{ color: #22c55e; }
+.lo-formula-btn.eq { color: #f59e0b; }
+
+.lo-formula-input {
+  flex: 1;
+  height: 24px;
+  background: var(--lo-bg-main);
+  border: 1px solid var(--lo-border);
+  color: var(--lo-text);
+  border-radius: 3px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-family: var(--font-mono, monospace);
+  outline: none;
+}
+.lo-formula-input:focus {
+  border-color: var(--lo-accent);
+}
+
+/* --- orbitDesktop Writer Horizontal Measurement Ruler --- */
+.lo-ruler-wrap {
+  width: 100%;
+  background: var(--lo-ruler-bg);
+  border-bottom: 1px solid var(--lo-border);
+  height: 20px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  user-select: none;
+  font-family: var(--font-mono, monospace);
+  font-size: 9px;
+  color: var(--lo-text-subtle);
+  overflow: hidden;
+}
+.lo-ruler-ticks {
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+  width: 816px;
+  margin: 0 auto;
+  position: relative;
+  background: var(--lo-bg-toolbar);
+  border-left: 1px solid var(--lo-border);
+  border-right: 1px solid var(--lo-border);
+}
+.lo-ruler-inch {
+  flex: 1;
+  height: 100%;
+  border-right: 1px solid var(--lo-border-light);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 4px;
+  box-sizing: border-box;
+}
+
+/* --- orbitDesktop Impress Slides Sorter Pane --- */
+.lo-slides-pane {
+  width: 190px;
+  background: var(--lo-bg-main);
+  border-right: 1px solid var(--lo-border);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 6px;
+  gap: 8px;
+  user-select: none;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.lo-slides-pane-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 6px 4px;
+  border-bottom: 1px solid var(--lo-border);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--lo-text-muted);
+  text-transform: uppercase;
+}
+
+.lo-slide-thumb-card {
+  background: var(--lo-bg-toolbar);
+  border: 2px solid transparent;
+  border-radius: 6px;
+  padding: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.lo-slide-thumb-card:hover {
+  background: var(--lo-bg-toolbar-hover);
+}
+.lo-slide-thumb-card.active {
+  border-color: var(--lo-impress-orange);
+  background: rgba(232, 113, 10, 0.1);
+}
+
+.lo-slide-preview-box {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #ffffff;
+  color: #000000;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  font-size: 7px;
+  padding: 4px;
+  pointer-events: none;
+}
+
+.lo-slide-thumb-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--lo-text-subtle);
+  padding: 0 2px;
+}
+
+/* --- orbitDesktop Right Sidebar Deck --- */
+.lo-sidebar-deck {
+  width: 280px;
+  background: var(--lo-bg-main);
+  border-left: 1px solid var(--lo-border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  user-select: none;
+  box-sizing: border-box;
+}
+.lo-sidebar-deck.collapsed {
+  width: 38px;
+}
+
+.lo-sidebar-nav-strip {
+  display: flex;
+  border-bottom: 1px solid var(--lo-border);
+  background: var(--lo-bg-toolbar);
+  padding: 2px 4px;
+  gap: 2px;
+}
+.lo-sidebar-tab-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--lo-text-muted);
+  padding: 4px 8px;
+  font-size: 11px;
+  border-radius: 3px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.lo-sidebar-tab-btn:hover {
+  background: var(--lo-bg-toolbar-hover);
+  color: var(--lo-text);
+}
+.lo-sidebar-tab-btn.active {
+  background: var(--lo-bg-main);
+  border-color: var(--lo-border);
+  color: var(--lo-accent);
+  font-weight: 700;
+}
+
+.lo-sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.lo-sidebar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lo-sidebar-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--lo-text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--lo-border);
+  padding-bottom: 4px;
+}
+
+/* --- orbitDesktop Bottom Status Bar --- */
+.lo-statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--lo-statusbar-bg);
+  border-top: 1px solid var(--lo-border);
+  padding: 3px 12px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Liberation Sans", sans-serif;
+  font-size: 11.5px;
+  color: var(--lo-text);
+  user-select: none;
+  height: 26px;
+  box-sizing: border-box;
+}
+
+.lo-status-left,
+.lo-status-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lo-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  cursor: default;
+}
+.lo-status-pill.clickable {
+  cursor: pointer;
+}
+.lo-status-pill.clickable:hover {
+  background: var(--lo-bg-toolbar-hover);
+  border-color: var(--lo-border);
+}
+
+.lo-zoom-ctrls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.lo-zoom-btn {
+  background: transparent;
+  border: none;
+  color: var(--lo-text);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0 4px;
+}
+.lo-zoom-slider {
+  width: 90px;
+  accent-color: var(--lo-accent);
+  cursor: pointer;
+}
+
+/* --- orbitDesktop Dialogs Architecture --- */
+.lo-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(3px);
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Liberation Sans", sans-serif;
+}
+
+.lo-dialog-window {
+  background: var(--lo-menu-bg);
+  border: 1px solid var(--lo-border-light);
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+  width: 500px;
+  max-width: 92vw;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: loDialogPop 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--lo-text);
+}
+
+@keyframes loDialogPop {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.lo-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--lo-bg-toolbar);
+  border-bottom: 1px solid var(--lo-border);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.lo-dialog-close {
+  background: transparent;
+  border: none;
+  color: var(--lo-text-subtle);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.lo-dialog-close:hover {
+  color: #ff5555;
+  background: rgba(255, 85, 85, 0.12);
+}
+
+.lo-dialog-body {
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 75vh;
+  overflow-y: auto;
+  font-size: 12.5px;
+}
+
+.lo-dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--lo-bg-toolbar);
+  border-top: 1px solid var(--lo-border);
+}
+
+.lo-btn-dialog {
+  background: var(--lo-bg-main);
+  border: 1px solid var(--lo-border);
+  color: var(--lo-text);
+  padding: 6px 16px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.lo-btn-dialog:hover {
+  background: var(--lo-bg-toolbar-hover);
+  border-color: var(--lo-border-light);
+}
+.lo-btn-dialog.primary {
+  background: var(--lo-writer-blue);
+  border-color: #1557b0;
+  color: #ffffff;
+}
+.lo-btn-dialog.primary:hover {
+  background: #1557b0;
+}
+
+/* --- orbitDesktop Calc Sheet Tabs at Bottom --- */
+.lo-sheet-tabs-bar {
+  display: flex;
+  align-items: center;
+  background: var(--lo-bg-toolbar);
+  border-top: 1px solid var(--lo-border);
+  height: 28px;
+  padding: 0 4px;
+  gap: 2px;
+  font-size: 12px;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.lo-sheet-nav-btn {
+  background: transparent;
+  border: none;
+  color: var(--lo-text-muted);
+  width: 22px;
+  height: 22px;
+  border-radius: 3px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+}
+.lo-sheet-nav-btn:hover {
+  background: var(--lo-bg-toolbar-hover);
+  color: var(--lo-text);
+}
+
+.lo-sheet-tabs-list {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  overflow-x: auto;
+}
+
+.lo-sheet-tab {
+  background: var(--lo-bg-main);
+  border: 1px solid var(--lo-border);
+  border-bottom: none;
+  color: var(--lo-text-muted);
+  padding: 3px 12px;
+  border-radius: 4px 4px 0 0;
+  font-size: 11.5px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.lo-sheet-tab:hover {
+  color: var(--lo-text);
+  background: var(--lo-bg-toolbar-hover);
+}
+.lo-sheet-tab.active {
+  background: var(--lo-calc-green);
+  border-color: var(--lo-calc-green);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.lo-sheet-add-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--lo-text);
+  width: 22px;
+  height: 22px;
+  border-radius: 3px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+.lo-sheet-add-btn:hover {
+  background: var(--lo-bg-toolbar-hover);
+  border-color: var(--lo-border);
+}
+
+/* --- Impress Full-Screen Slide Show Presenter --- */
+.lo-slideshow-overlay {
+  position: fixed;
+  inset: 0;
+  background: #000000;
+  z-index: 9999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+.lo-slideshow-slide {
+  width: 90vw;
+  max-width: 1600px;
+  aspect-ratio: 16 / 9;
+  background: #ffffff;
+  color: #000000;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 0 50px rgba(255,255,255,0.15);
+  display: flex;
+  flex-direction: column;
+  padding: 40px;
+  box-sizing: border-box;
+  animation: loSlideTransition 0.3s ease-out;
+}
+@keyframes loSlideTransition {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+.lo-slideshow-controls {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 30px;
+  padding: 6px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #ffffff;
+  font-size: 12px;
+}
+
+/* --- UI Layout Modes: Standard orbitDesktop Toolbar vs Tabbed Notebookbar --- */
+.lo-classic-chrome {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  position: relative;
+  z-index: 100;
+  flex-shrink: 0;
+}
+
+.orbit-ui-standard .lo-classic-chrome {
+  display: flex !important;
+}
+.orbit-ui-standard .fluent-ribbon-bar {
+  display: none !important;
+}
+
+.orbit-ui-notebookbar .lo-classic-chrome .lo-menubar,
+.orbit-ui-notebookbar .lo-classic-chrome .lo-toolbars-wrap,
+.orbit-ui-notebookbar .lo-classic-chrome .lo-ruler-wrap {
+  display: none !important;
+}
+.orbit-ui-notebookbar .fluent-ribbon-bar {
+  display: flex !important;
+}
+
+/* Workspace layout container */
+.lo-workspace-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  min-height: 0;
+}
+

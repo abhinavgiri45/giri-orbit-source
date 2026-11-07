@@ -1,0 +1,24 @@
+{
+  "version": "11.8.2",
+  "versionCode": 2,
+  "releaseDate": "2026-11-06",
+  "buildTimestamp": 1794034183269,
+  "changelog": "Enhanced auto-update capabilities for Web, Windows Desktop, and Android Mobile applications with zero-telemetry client data sovereignty.",
+  "assetsBundleUrl": "https://raw.githubusercontent.com/abhinavgiri45/giri-orbit/main/downloads/assets-bundle.zip",
+  "windows": {
+    "version": "11.8.2",
+    "versionCode": 2,
+    "setupUrl": "https://raw.githubusercontent.com/abhinavgiri45/giri-orbit/main/downloads/GiriOrbit-Setup-x64.exe",
+    "setupX86Url": "https://raw.githubusercontent.com/abhinavgiri45/giri-orbit/main/downloads/GiriOrbit-Setup-x86.exe",
+    "setupArm64Url": "https://raw.githubusercontent.com/abhinavgiri45/giri-orbit/main/downloads/GiriOrbit-Setup-arm64.exe",
+    "assetsBundleUrl": "https://raw.githubusercontent.com/abhinavgiri45/giri-orbit/main/downloads/assets-bundle.zip"
+  },
+  "android": {
+    "version": "1.0.2",
+    "versionCode": 2,
+    "apkUrl": "https://raw.githubusercontent.com/abhinavgiri45/giri-orbit/main/downloads/GiriOrbit.apk",
+    "assetsBundleUrl": "https://raw.githubusercontent.com/abhinavgiri45/giri-orbit/main/downloads/assets-bundle.zip"
+  }
+}
+
+

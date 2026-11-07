@@ -1,0 +1,41 @@
+{
+  "version": "11.8.5",
+  "author": "Abhinav Giri",
+  "github": "https://github.com/abhinavgiri45/giri-orbit",
+  "instagram": "https://instagram.com/abhinavgiri45",
+  "suite": "Giri Orbit Sovereign Suite",
+  "architecture": "Native C++ Win32 Standalone x64",
+  "offline": true,
+  "telemetry": false,
+  "tools": {
+    "drift": {
+      "name": "Giri Drift",
+      "type": "Executive Document Composer",
+      "executable": "GiriDrift.exe",
+      "formats": [".giri", ".gdrift", ".rtf", ".txt"]
+    },
+    "axis": {
+      "name": "Giri Axis",
+      "type": "High-Velocity Financial Matrix & Spreadsheets",
+      "executable": "GiriAxis.exe",
+      "formats": [".giri", ".gaxis", ".csv"]
+    },
+    "kinetic": {
+      "name": "Giri Kinetic",
+      "type": "Cinematic Widescreen Presentation Studio",
+      "executable": "GiriKinetic.exe",
+      "formats": [".giri", ".gkinetic"],
+      "partners": ["https://www.presentationgo.com"]
+    },
+    "hub": {
+      "name": "Giri Orbit Hub",
+      "type": "Sovereign Desktop Workspace Orchestrator",
+      "executable": "GiriOrbit.exe"
+    },
+    "installer": {
+      "name": "Giri Orbit Dedicated Setup Wizard",
+      "type": "Native Standalone Setup Wizard",
+      "executable": "Setup.exe"
+    }
+  }
+}

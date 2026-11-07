@@ -1,0 +1,522 @@
+/**
+ * ============================================================================
+ * GIRI ORBIT — PRINT STUDIO STYLES & PRINT ISOLATION ENGINE (print.css)
+ * By GIRI Corporation (A Subsidiary of Giri Group)
+ * ============================================================================
+ */
+
+/* -------------------------------------------------------------------------- */
+/* 1. PRINT STUDIO INTERACTIVE MODAL DIALOG                                    */
+/* -------------------------------------------------------------------------- */
+.print-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 15, 26, 0.78);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.print-modal-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.print-modal-window {
+  width: 960px;
+  max-width: 95vw;
+  height: 680px;
+  max-height: 92vh;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: printModalSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes printModalSlideIn {
+  from { transform: scale(0.96) translateY(12px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.print-modal-header {
+  padding: 16px 24px;
+  background: #0f172a;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #1e293b;
+}
+
+.print-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.print-header-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #38bdf8;
+}
+
+.print-header-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font-display, sans-serif);
+  letter-spacing: -0.01em;
+}
+
+.print-header-subtitle {
+  font-size: 11.5px;
+  color: #94a3b8;
+  display: block;
+}
+
+.print-modal-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 18px;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.print-modal-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.print-modal-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  min-height: 0;
+  background: #f8fafc;
+}
+
+/* Left: Settings */
+.print-settings-pane {
+  padding: 20px 24px;
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.print-setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.print-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.print-select, .print-input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  font-size: 13px;
+  color: #0f172a;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.print-select:focus, .print-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.print-stepper {
+  display: flex;
+  align-items: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  overflow: hidden;
+  width: 130px;
+}
+
+.print-stepper-btn {
+  width: 36px;
+  height: 34px;
+  background: #f1f5f9;
+  border: none;
+  font-size: 16px;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.print-stepper-btn:hover {
+  background: #e2e8f0;
+}
+
+.print-stepper-input {
+  flex: 1;
+  border: none;
+  text-align: center;
+  font-weight: 700;
+  font-size: 13px;
+  color: #0f172a;
+  width: 40px;
+  outline: none;
+}
+
+.print-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #334155;
+}
+
+.print-radio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.print-pill-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.print-pill-btn {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+
+.print-pill-btn.active {
+  background: #eff6ff;
+  border-color: #2563eb;
+  color: #1d4ed8;
+  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.1);
+}
+
+/* Right: Preview */
+.print-preview-pane {
+  display: flex;
+  flex-direction: column;
+  background: #e2e8f0;
+  min-height: 0;
+}
+
+.print-preview-header {
+  padding: 10px 20px;
+  background: #f1f5f9;
+  border-bottom: 1px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.preview-zoom-tag {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.preview-page-stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.preview-step-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.print-preview-stage {
+  flex: 1;
+  overflow: auto;
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.print-paper-sheet {
+  background: #ffffff;
+  border-radius: 2px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.print-paper-sheet.portrait {
+  width: 440px;
+  min-height: 590px;
+  padding: 32px 36px;
+}
+
+.print-paper-sheet.landscape {
+  width: 590px;
+  min-height: 440px;
+  padding: 28px 32px;
+}
+
+.print-paper-content {
+  font-size: 11.5px;
+  color: #0f172a;
+  line-height: 1.6;
+}
+
+/* Footer Actions */
+.print-modal-footer {
+  padding: 14px 24px;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.print-footer-info {
+  display: flex;
+  align-items: center;
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+.print-footer-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.print-btn-secondary {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.print-btn-secondary:hover {
+  background: #f8fafc;
+}
+
+.print-btn-export-pdf {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid #0284c7;
+  background: #eff6ff;
+  color: #0369a1;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+
+.print-btn-export-pdf:hover {
+  background: #e0f2fe;
+}
+
+.print-btn-primary {
+  padding: 8px 20px;
+  border-radius: 6px;
+  border: none;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+  transition: background 0.15s, transform 0.1s;
+}
+
+.print-btn-primary:hover {
+  background: #1d4ed8;
+}
+
+.print-btn-primary:active {
+  transform: translateY(1px);
+}
+
+/* -------------------------------------------------------------------------- */
+/* 2. REAL @MEDIA PRINT ENGINE (PURIFIED DOCUMENT PAGES)                       */
+/* -------------------------------------------------------------------------- */
+@media print {
+  /* Suppress ALL application UI elements, ribbons, headers, modals, sidebars */
+  .tier2-suite-header,
+  .fluent-ribbon-bar,
+  .fluent-ribbon-tabs,
+  .fluent-ribbon-content,
+  .drift-statusbar,
+  .axis-statusbar,
+  .kinetic-statusbar,
+  .pdf-statusbar,
+  .axis-formula-bar,
+  .axis-sheet-tab-bar,
+  .kinetic-slide-rail,
+  .kinetic-presenter-hud,
+  .drift-ruler,
+  .drift-outline-panel,
+  .drift-comments-panel,
+  .print-modal-backdrop,
+  .export-modal-backdrop,
+  .cmd-palette-backdrop,
+  .sovereign-modal-backdrop,
+  .toast-container,
+  .btn-giri-primary,
+  .header-action-pill,
+  .follow-journey-wrap,
+  .zoho-hero-section,
+  .kinetic-nav-hud,
+  .drift-hub-shell,
+  .axis-hub-shell,
+  .kinetic-hub-shell,
+  .pdf-hub-shell,
+  #btn-open-cmd,
+  #universal-file-input {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    width: 0 !important;
+  }
+
+  body, html, .orbit-workspace, .drift-app-shell, .axis-app-shell, .kinetic-app-shell, .pdf-studio-shell {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* DRIFT A4 DOCUMENT */
+  .drift-paper-viewport {
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .drift-paper-sheet {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 auto !important;
+    padding: 20mm !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    page-break-after: always;
+    break-after: page;
+  }
+
+  /* AXIS DATA GRID */
+  .axis-table-viewport {
+    overflow: visible !important;
+    height: auto !important;
+    width: 100% !important;
+    background: #ffffff !important;
+  }
+  .axis-grid-table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+  .axis-cell, .axis-col-header, .axis-row-header {
+    border: 1px solid #94a3b8 !important;
+    color: #000000 !important;
+    background: #ffffff !important;
+  }
+
+  /* KINETIC SLIDES */
+  .kinetic-stage-viewport {
+    background: #ffffff !important;
+    padding: 0 !important;
+  }
+  .kinetic-stage-slide {
+    box-shadow: none !important;
+    border: 1px solid #cbd5e1 !important;
+    page-break-after: always;
+    break-after: page;
+    margin: 15mm auto !important;
+    background: #ffffff !important;
+  }
+
+  /* AEGIS PDF PAGES */
+  .pdf-pages-viewport {
+    background: #ffffff !important;
+    padding: 0 !important;
+  }
+  .pdf-page-sheet {
+    box-shadow: none !important;
+    border: none !important;
+    page-break-after: always;
+    break-after: page;
+    margin: 0 auto 15mm auto !important;
+  }
+}
