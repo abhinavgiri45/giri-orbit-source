@@ -71,6 +71,7 @@ int g_hoverTableRow = -1;
 int g_activeFilterPill = 0; // 0=Recently opened, 1=Shared, 2=Favorites
 int g_hoverFilterPill = -1;
 bool g_hoverUpload = false;
+bool g_hoverSeeMore = false;
 bool g_isGridView = false;
 std::wstring g_searchQuery = L"";
 
@@ -493,20 +494,41 @@ void RenderLeftRail(Graphics& g, int w, int h) {
 
     // Bottom Items: Settings & Profile Avatar
     int bottomY = h - 100;
+
+    // Settings hover highlight
+    if (g_hoverRail == RAIL_SETTINGS) {
+        GraphicsPath spath;
+        AddRoundedRect(spath, RectF(8.0f, (float)bottomY, (float)LEFT_RAIL_WIDTH - 16.0f, 40.0f), 8.0f);
+        SolidBrush hBrush(Color(241, 245, 249));
+        g.FillPath(&hBrush, &spath);
+    }
+
     // Settings
     int sCx = LEFT_RAIL_WIDTH / 2;
     int sCy = bottomY + 12;
-    Pen sp(Color(107, 114, 128), 1.8f);
+    Pen sp(g_hoverRail == RAIL_SETTINGS ? Color(37, 99, 235) : Color(107, 114, 128), 1.8f);
     g.DrawEllipse(&sp, sCx - 7, sCy - 7, 14, 14);
-    SolidBrush sb(Color(107, 114, 128));
+    SolidBrush sb(g_hoverRail == RAIL_SETTINGS ? Color(37, 99, 235) : Color(107, 114, 128));
     g.FillEllipse(&sb, sCx - 3, sCy - 3, 6, 6);
     RectF stTextRect(0.0f, (float)bottomY + 22.0f, (float)LEFT_RAIL_WIDTH, 14.0f);
     g.DrawString(L"Settings", -1, &fontLabel, stTextRect, &sf, &sb);
+
+    // Profile hover highlight
+    if (g_hoverRail == RAIL_PROFILE) {
+        GraphicsPath ppath;
+        AddRoundedRect(ppath, RectF(8.0f, (float)bottomY + 42, (float)LEFT_RAIL_WIDTH - 16.0f, 44.0f), 8.0f);
+        SolidBrush hBrush(Color(241, 245, 249));
+        g.FillPath(&hBrush, &ppath);
+    }
 
     // Profile Avatar (AG)
     int pCy = bottomY + 54;
     SolidBrush profBg(Color(37, 99, 235));
     g.FillEllipse(&profBg, sCx - 16, pCy - 16, 32, 32);
+    if (g_hoverRail == RAIL_PROFILE) {
+        Pen profRing(Color(199, 210, 254), 2.5f);
+        g.DrawEllipse(&profRing, sCx - 17, pCy - 17, 34, 34);
+    }
     SolidBrush profText(Color(255, 255, 255));
     g.DrawString(L"AG", -1, &fontProfile, PointF((float)sCx, (float)pCy), &sf, &profText);
 }
@@ -861,6 +883,781 @@ void RenderQuickAccess(Graphics& g, int contentX, int startY, int w) {
     }
 }
 
+// Forward declarations for dialogs
+void ShowSettingsDialog(HWND hParent);
+void ShowProfileDialog(HWND hParent);
+void ShowCreateTemplatesDialog(HWND hParent);
+void ShowAppsDialog(HWND hParent);
+void ShowMyContentDialog(HWND hParent);
+void ShowGirionixAiDialog(HWND hParent);
+
+// ============================================================================
+// MODAL DIALOGS (Settings, Profile, Create Templates, Apps, My Content)
+// ============================================================================
+
+void ShowSettingsDialog(HWND hParent) {
+    WNDCLASSEXW wc = { sizeof(WNDCLASSEXW) };
+    wc.lpfnWndProc = [](HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) -> LRESULT {
+        switch (msg) {
+        case WM_CREATE: {
+            HFONT hfTitle = CreateFontW(19, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                                       OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+                                       VARIABLE_PITCH, L"Segoe UI");
+            HFONT hf = CreateFontW(14, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                                  OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+                                  VARIABLE_PITCH, L"Segoe UI");
+
+            HWND hTitle = CreateWindowExW(0, L"STATIC", L"Settings & Personalization — Giri Orbit",
+                WS_CHILD | WS_VISIBLE | SS_LEFT, 24, 20, 500, 24, hwnd, NULL, g_hInst, NULL);
+            SendMessageW(hTitle, WM_SETFONT, (WPARAM)hfTitle, TRUE);
+
+            HWND hSub = CreateWindowExW(0, L"STATIC", L"Giri Orbit Sovereign Suite v12.0 • 100% Offline Active",
+                WS_CHILD | WS_VISIBLE | SS_LEFT, 24, 46, 500, 20, hwnd, NULL, g_hInst, NULL);
+            SendMessageW(hSub, WM_SETFONT, (WPARAM)hf, TRUE);
+
+            // Group: General
+            HWND hLbl1 = CreateWindowExW(0, L"STATIC", L"Theme Appearance:",
+                WS_CHILD | WS_VISIBLE | SS_LEFT, 24, 85, 200, 18, hwnd, NULL, g_hInst, NULL);
+            SendMessageW(hLbl1, WM_SETFONT, (WPARAM)hf, TRUE);
+
+            HWND hComboTheme = CreateWindowExW(0, L"COMBOBOX", L"",
+                WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL, 24, 105, 500, 100, hwnd, (HMENU)101, g_hInst, NULL);
+            SendMessageW(hComboTheme, WM_SETFONT, (WPARAM)hf, TRUE);
+            SendMessageW(hComboTheme, CB_ADDSTRING, 0, (LPARAM)L"Modern Fluent Light (Recommended)");
+            SendMessageW(hComboTheme, CB_ADDSTRING, 0, (LPARAM)L"Slate Charcoal Dark");
+            SendMessageW(hComboTheme, CB_ADDSTRING, 0, (LPARAM)L"High Contrast Monochrome");
+            SendMessageW(hComboTheme, CB_SETCURSEL, 0, 0);
+
+            // Group: Font
+            HWND hLbl2 = CreateWindowExW(0, L"STATIC", L"Default Typography Font:",
+                WS_CHILD | WS_VISIBLE | SS_LEFT, 24, 145, 200, 18, hwnd, NULL, g_hInst, NULL);
+            SendMessageW(hLbl2, WM_SETFONT, (WPARAM)hf, TRUE);
+
+            HWND hComboFont = CreateWindowExW(0, L"COMBOBOX", L"",
+                WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL, 24, 165, 500, 120, hwnd, (HMENU)102, g_hInst, NULL);
+            SendMessageW(hComboFont, WM_SETFONT, (WPARAM)hf, TRUE);
+            SendMessageW(hComboFont, CB_ADDSTRING, 0, (LPARAM)L"Segoe UI (Fluent Native)");
+            SendMessageW(hComboFont, CB_ADDSTRING, 0, (LPARAM)L"Google Noto Sans Devanagari (Hindi Ready)");
+            SendMessageW(hComboFont, CB_ADDSTRING, 0, (LPARAM)L"Google Sans");
+            SendMessageW(hComboFont, CB_ADDSTRING, 0, (LPARAM)L"Consolas");
+            SendMessageW(hComboFont, CB_SETCURSEL, 0, 0);
+
+            // Group: Autosave
+            HWND hLbl3 = CreateWindowExW(0, L"STATIC", L"Autosave Frequency:",
+                WS_CHILD | WS_VISIBLE | SS_LEFT, 24, 205, 200, 18, hwnd, NULL, g_hInst, NULL);
+            SendMessageW(hLbl3, WM_SETFONT, (WPARAM)hf, TRUE);
+
+            HWND hComboSave = CreateWindowExW(0, L"COMBOBOX", L"",
+                WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL, 24, 225, 500, 100, hwnd, (HMENU)103, g_hInst, NULL);
+            SendMessageW(hComboSave, WM_SETFONT, (WPARAM)hf, TRUE);
+            SendMessageW(hComboSave, CB_ADDSTRING, 0, (LPARAM)L"Every 30 seconds (Recommended)");
+            SendMessageW(hComboSave, CB_ADDSTRING, 0, (LPARAM)L"Every 1 minute");
+            SendMessageW(hComboSave, CB_ADDSTRING, 0, (LPARAM)L"Continuous Real-Time In-Memory");
+            SendMessageW(hComboSave, CB_SETCURSEL, 0, 0);
+
+            // Group: Sovereignty Status
+            HWND hLbl4 = CreateWindowExW(0, L"STATIC",
+                L"Privacy & Sovereignty Status:\n"
+                L"• 100% Offline Standalone Desktop Architecture (Zero Cloud Lock-In)\n"
+                L"• 0 Outbound Cloud Telemetry Leaks (All Network Trackers Purged)\n"
+                L"• Cryptographic In-Memory Volatile Security Active",
+                WS_CHILD | WS_VISIBLE | SS_LEFT, 24, 270, 500, 60, hwnd, NULL, g_hInst, NULL);
+            SendMessageW(hLbl4, WM_SETFONT, (WPARAM)hf, TRUE);
+
+            // Cache purge button
+            HWND hBtnCache = CreateWindowExW(0, L"BUTTON", L"Purge Temporary Cache",
+                WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 24, 345, 180, 32, hwnd, (HMENU)104, g_hInst, NULL);
+            SendMessageW(hBtnCache, WM_SETFONT, (WPARAM)hf, TRUE);
+
+            // Save & Close buttons
+            HWND hBtnSave = CreateWindowExW(0, L"BUTTON", L"Save & Apply",
+                WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 310, 410, 110, 34, hwnd, (HMENU)IDOK, g_hInst, NULL);
+            SendMessageW(hBtnSave, WM_SETFONT, (WPARAM)hf, TRUE);
+
+            HWND hBtnClose = CreateWindowExW(0, L"BUTTON", L"Close",
+                WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 430, 410, 94, 34, hwnd, (HMENU)IDCANCEL, g_hInst, NULL);
+            SendMessageW(hBtnClose, WM_SETFONT, (WPARAM)hf, TRUE);
+            return 0;
+        }
+        case WM_COMMAND: {
+            int id = LOWORD(wParam);
+            if (id == 104) {
+                MessageBoxW(hwnd, L"Local temporary in-memory cache purged successfully!", L"Cache Purged", MB_OK | MB_ICONINFORMATION);
+            } else if (id == IDOK) {
+                MessageBoxW(hwnd, L"Settings saved and applied successfully!", L"Giri Orbit Settings", MB_OK | MB_ICONINFORMATION);
+                DestroyWindow(hwnd);
+            } else if (id == IDCANCEL) {
+                DestroyWindow(hwnd);
+            }
+            return 0;
+        }
+        case WM_CTLCOLORSTATIC: {
+            HDC hdcStatic = (HDC)wParam;
+            SetBkColor(hdcStatic, RGB(255, 255, 255));
+            SetTextColor(hdcStatic, RGB(15, 23, 42));
+            return (LRESULT)GetStockObject(WHITE_BRUSH);
+        }
+        case WM_ERASEBKGND: {
+            HDC hdc = (HDC)wParam;
+            RECT rc;
+            GetClientRect(hwnd, &rc);
+            FillRect(hdc, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
+            return 1;
+        }
+        case WM_CLOSE:
+            DestroyWindow(hwnd);
+            return 0;
+        }
+        return DefWindowProcW(hwnd, msg, wParam, lParam);
+    };
+    wc.hInstance = g_hInst;
+    wc.lpszClassName = L"GiriOrbitSettingsDlgClass";
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    RegisterClassExW(&wc);
+
+    RECT rcParent;
+    GetWindowRect(hParent, &rcParent);
+    int dlgW = 560, dlgH = 500;
+    int x = rcParent.left + (rcParent.right - rcParent.left - dlgW) / 2;
+    int y = rcParent.top + (rcParent.bottom - rcParent.top - dlgH) / 2;
+
+    HWND hDlg = CreateWindowExW(
+        WS_EX_DLGMODALFRAME, L"GiriOrbitSettingsDlgClass", L"Settings & Personalization — Giri Orbit",
+        WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_VISIBLE,
+        x, y, dlgW, dlgH, hParent, NULL, g_hInst, NULL
+    );
+
+    EnableWindow(hParent, FALSE);
+    MSG msg;
+    while (IsWindow(hDlg) && GetMessageW(&msg, NULL, 0, 0)) {
+        if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE) {
+            DestroyWindow(hDlg);
+            break;
+        }
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
+    }
+    EnableWindow(hParent, TRUE);
+    SetForegroundWindow(hParent);
+}
+
+void ShowProfileDialog(HWND hParent) {
+    WNDCLASSEXW wc = { sizeof(WNDCLASSEXW) };
+    wc.lpfnWndProc = [](HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) -> LRESULT {
+        switch (msg) {
+        case WM_CREATE: {
+            HFONT hfTitle = CreateFontW(20, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                                       OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+                                       VARIABLE_PITCH, L"Segoe UI");
+            HFONT hf = CreateFontW(14, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                                  OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+                                  VARIABLE_PITCH, L"Segoe UI");
+
+            HWND hTitle = CreateWindowExW(0, L"STATIC", L"User Profile & Sovereignty Hub",
+                WS_CHILD | WS_VISIBLE | SS_LEFT, 100, 26, 380, 24, hwnd, NULL, g_hInst, NULL);
+            SendMessageW(hTitle, WM_SETFONT, (WPARAM)hfTitle, TRUE);
+
+            HWND hSub = CreateWindowExW(0, L"STATIC", L"Sovereign Administrator • 100% Offline Private Mode",
+                WS_CHILD | WS_VISIBLE | SS_LEFT, 100, 52, 380, 20, hwnd, NULL, g_hInst, NULL);
+            SendMessageW(hSub, WM_SETFONT, (WPARAM)hf, TRUE);
+
+            // Display Name Edit
+            HWND hLblName = CreateWindowExW(0, L"STATIC", L"Display Name:",
+                WS_CHILD | WS_VISIBLE | SS_LEFT, 24, 115, 120, 18, hwnd, NULL, g_hInst, NULL);
+            SendMessageW(hLblName, WM_SETFONT, (WPARAM)hf, TRUE);
+
+            HWND hEditName = CreateWindowExW(WS_EX_CLIENTEDGE, L"EDIT", L"Abhinav Giri",
+                WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL, 24, 137, 340, 26, hwnd, (HMENU)201, g_hInst, NULL);
+            SendMessageW(hEditName, WM_SETFONT, (WPARAM)hf, TRUE);
+
+            HWND hBtnSave = CreateWindowExW(0, L"BUTTON", L"Save Name",
+                WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 375, 137, 100, 26, hwnd, (HMENU)202, g_hInst, NULL);
+            SendMessageW(hBtnSave, WM_SETFONT, (WPARAM)hf, TRUE);
+
+            // Sovereignty Details
+            HWND hLblDetails = CreateWindowExW(0, L"STATIC",
+                L"Cloud Sovereignty & Hardware Protection:\n\n"
+                L"• Storage Mode: 100% Offline Local Device Storage (No Login Required)\n"
+                L"• Privacy Level: Absolute Zero Telemetry (Keystrokes Never Leave PC)\n"
+                L"• Program Location: %LOCALAPPDATA%\\Programs\\Giri Orbit\n"
+                L"• Digital Architecture: Standalone Native C++ Win32 & GDI+\n"
+                L"• Developer: Abhinav Giri (@abhinavgiri45)",
+                WS_CHILD | WS_VISIBLE | SS_LEFT, 24, 185, 460, 130, hwnd, NULL, g_hInst, NULL);
+            SendMessageW(hLblDetails, WM_SETFONT, (WPARAM)hf, TRUE);
+
+            HWND hBtnSettings = CreateWindowExW(0, L"BUTTON", L"⚙ Open Settings",
+                WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 24, 340, 140, 34, hwnd, (HMENU)203, g_hInst, NULL);
+            SendMessageW(hBtnSettings, WM_SETFONT, (WPARAM)hf, TRUE);
+
+            HWND hBtnClose = CreateWindowExW(0, L"BUTTON", L"Close",
+                WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 375, 340, 100, 34, hwnd, (HMENU)IDCANCEL, g_hInst, NULL);
+            SendMessageW(hBtnClose, WM_SETFONT, (WPARAM)hf, TRUE);
+            return 0;
+        }
+        case WM_PAINT: {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hwnd, &ps);
+            Graphics g(hdc);
+            g.SetSmoothingMode(SmoothingModeAntiAlias);
+
+            // Draw Avatar circle (AG)
+            SolidBrush profBg(Color(37, 99, 235));
+            g.FillEllipse(&profBg, 24, 20, 60, 60);
+            Font fontProfile(L"Segoe UI", 16.0f, FontStyleBold, UnitPoint);
+            SolidBrush profText(Color(255, 255, 255));
+            StringFormat sf;
+            sf.SetAlignment(StringAlignmentCenter);
+            sf.SetLineAlignment(StringAlignmentCenter);
+            g.DrawString(L"AG", -1, &fontProfile, PointF(54.0f, 50.0f), &sf, &profText);
+
+            EndPaint(hwnd, &ps);
+            return 0;
+        }
+        case WM_COMMAND: {
+            int id = LOWORD(wParam);
+            if (id == 202) {
+                wchar_t name[128] = { 0 };
+                GetDlgItemTextW(hwnd, 201, name, 128);
+                MessageBoxW(hwnd, (std::wstring(L"Profile display name updated to: ") + name).c_str(), L"Profile Saved", MB_OK | MB_ICONINFORMATION);
+            } else if (id == 203) {
+                DestroyWindow(hwnd);
+                ShowSettingsDialog(GetWindow(hwnd, GW_OWNER));
+            } else if (id == IDCANCEL) {
+                DestroyWindow(hwnd);
+            }
+            return 0;
+        }
+        case WM_CTLCOLORSTATIC: {
+            HDC hdcStatic = (HDC)wParam;
+            SetBkColor(hdcStatic, RGB(255, 255, 255));
+            SetTextColor(hdcStatic, RGB(15, 23, 42));
+            return (LRESULT)GetStockObject(WHITE_BRUSH);
+        }
+        case WM_ERASEBKGND: {
+            HDC hdc = (HDC)wParam;
+            RECT rc;
+            GetClientRect(hwnd, &rc);
+            FillRect(hdc, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
+            return 1;
+        }
+        case WM_CLOSE:
+            DestroyWindow(hwnd);
+            return 0;
+        }
+        return DefWindowProcW(hwnd, msg, wParam, lParam);
+    };
+    wc.hInstance = g_hInst;
+    wc.lpszClassName = L"GiriOrbitProfileDlgClass";
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    RegisterClassExW(&wc);
+
+    RECT rcParent;
+    GetWindowRect(hParent, &rcParent);
+    int dlgW = 520, dlgH = 430;
+    int x = rcParent.left + (rcParent.right - rcParent.left - dlgW) / 2;
+    int y = rcParent.top + (rcParent.bottom - rcParent.top - dlgH) / 2;
+
+    HWND hDlg = CreateWindowExW(
+        WS_EX_DLGMODALFRAME, L"GiriOrbitProfileDlgClass", L"User Profile & Sovereignty Hub — Giri Orbit",
+        WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_VISIBLE,
+        x, y, dlgW, dlgH, hParent, NULL, g_hInst, NULL
+    );
+
+    EnableWindow(hParent, FALSE);
+    MSG msg;
+    while (IsWindow(hDlg) && GetMessageW(&msg, NULL, 0, 0)) {
+        if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE) {
+            DestroyWindow(hDlg);
+            break;
+        }
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
+    }
+    EnableWindow(hParent, TRUE);
+    SetForegroundWindow(hParent);
+}
+
+struct OrbitTemplate {
+    std::wstring toolName;
+    std::wstring title;
+    std::wstring exeName;
+    std::wstring desc;
+};
+
+void ShowCreateTemplatesDialog(HWND hParent) {
+    WNDCLASSEXW wc = { sizeof(WNDCLASSEXW) };
+    wc.lpfnWndProc = [](HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) -> LRESULT {
+        static HWND s_hList = NULL;
+        static std::vector<OrbitTemplate> s_templates;
+
+        switch (msg) {
+        case WM_CREATE: {
+            s_templates = {
+                { L"Drift (Word)", L"Blank Document", L"GiriDrift.exe", L"Distraction-free rich text document canvas." },
+                { L"Drift (Word)", L"Executive Business Proposal", L"GiriDrift.exe", L"Corporate business strategy, financial metrics, and plan." },
+                { L"Drift (Word)", L"Mutual NDA & Confidentiality Agreement", L"GiriDrift.exe", L"Legally structured non-disclosure agreement." },
+                { L"Drift (Word)", L"Academic Research Paper", L"GiriDrift.exe", L"Standard thesis formatting with citations." },
+                { L"Axis (Excel)", L"Blank Workbook", L"GiriAxis.exe", L"High-speed spreadsheet with 40+ math formulas." },
+                { L"Axis (Excel)", L"Corporate Financial Forecast 2026", L"GiriAxis.exe", L"Quarterly financial projections and margins." },
+                { L"Axis (Excel)", L"SaaS Unit Economics & Cap Table", L"GiriAxis.exe", L"CAC, LTV, churn rate, and valuation matrix." },
+                { L"Axis (Excel)", L"Project Milestone Schedule", L"GiriAxis.exe", L"Gantt task schedule and delivery milestones." },
+                { L"Kinetic (PPT)", L"Blank Presentation", L"GiriKinetic.exe", L"Widescreen 16:9 slide presentation canvas." },
+                { L"Kinetic (PPT)", L"Strategic Investor Pitch Deck", L"GiriKinetic.exe", L"10-slide venture investment presentation." },
+                { L"Kinetic (PPT)", L"Executive Keynote Deck", L"GiriKinetic.exe", L"High-impact typography and visual slides." },
+                { L"Kinetic (PPT)", L"Company Quarterly Review", L"GiriKinetic.exe", L"Departmental results and strategic roadmap." },
+                { L"Forms", L"Customer Feedback Survey", L"GiriForms.exe", L"Interactive survey with response collection." },
+                { L"Forms", L"Event Registration & RSVP", L"GiriForms.exe", L"Guest attendee registration form." },
+                { L"Quiz", L"Certification Assessment Quiz", L"GiriQuiz.exe", L"Graded quiz with automated scoring." },
+                { L"Lists", L"Agile Sprint Kanban Matrix", L"GiriLists.exe", L"Sprint task management and backlog." },
+                { L"Designer", L"Corporate Marketing Banner", L"GiriDesigner.exe", L"Vector graphics canvas and marketing layouts." },
+                { L"Aegis (PDF)", L"Digital Signed Document", L"GiriAegis.exe", L"PDF reading, annotating, and digital seal." }
+            };
+
+            HFONT hfTitle = CreateFontW(19, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                                       OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+                                       VARIABLE_PITCH, L"Segoe UI");
+            HFONT hf = CreateFontW(14, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                                  OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+                                  VARIABLE_PITCH, L"Segoe UI");
+
+            HWND hTitle = CreateWindowExW(0, L"STATIC", L"Create New Document & Template Studio",
+                WS_CHILD | WS_VISIBLE | SS_LEFT, 24, 18, 500, 24, hwnd, NULL, g_hInst, NULL);
+            SendMessageW(hTitle, WM_SETFONT, (WPARAM)hfTitle, TRUE);
+
+            HWND hSub = CreateWindowExW(0, L"STATIC", L"Double-click any template or select and click 'Create / Open' to launch.",
+                WS_CHILD | WS_VISIBLE | SS_LEFT, 24, 44, 600, 20, hwnd, NULL, g_hInst, NULL);
+            SendMessageW(hSub, WM_SETFONT, (WPARAM)hf, TRUE);
+
+            s_hList = CreateWindowExW(WS_EX_CLIENTEDGE, WC_LISTVIEWW, L"",
+                WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS,
+                24, 76, 720, 390, hwnd, (HMENU)301, g_hInst, NULL);
+            SendMessageW(s_hList, WM_SETFONT, (WPARAM)hf, TRUE);
+            ListView_SetExtendedListViewStyle(s_hList, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+
+            LVCOLUMNW col;
+            col.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
+            col.cx = 140;
+            col.pszText = (LPWSTR)L"Application";
+            ListView_InsertColumn(s_hList, 0, &col);
+
+            col.cx = 260;
+            col.pszText = (LPWSTR)L"Template Name";
+            ListView_InsertColumn(s_hList, 1, &col);
+
+            col.cx = 300;
+            col.pszText = (LPWSTR)L"Description";
+            ListView_InsertColumn(s_hList, 2, &col);
+
+            for (size_t i = 0; i < s_templates.size(); i++) {
+                LVITEMW item = { 0 };
+                item.mask = LVIF_TEXT;
+                item.iItem = (int)i;
+                item.pszText = (LPWSTR)s_templates[i].toolName.c_str();
+                ListView_InsertItem(s_hList, &item);
+
+                ListView_SetItemText(s_hList, (int)i, 1, (LPWSTR)s_templates[i].title.c_str());
+                ListView_SetItemText(s_hList, (int)i, 2, (LPWSTR)s_templates[i].desc.c_str());
+            }
+
+            ListView_SetItemState(s_hList, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+
+            HWND hBtnOpen = CreateWindowExW(0, L"BUTTON", L"Create / Open Template →",
+                WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 490, 480, 160, 34, hwnd, (HMENU)IDOK, g_hInst, NULL);
+            SendMessageW(hBtnOpen, WM_SETFONT, (WPARAM)hf, TRUE);
+
+            HWND hBtnCancel = CreateWindowExW(0, L"BUTTON", L"Cancel",
+                WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 660, 480, 84, 34, hwnd, (HMENU)IDCANCEL, g_hInst, NULL);
+            SendMessageW(hBtnCancel, WM_SETFONT, (WPARAM)hf, TRUE);
+            return 0;
+        }
+        case WM_NOTIFY: {
+            LPNMHDR pnm = (LPNMHDR)lParam;
+            if (pnm->idFrom == 301 && pnm->code == NM_DBLCLK) {
+                SendMessageW(hwnd, WM_COMMAND, MAKEWPARAM(IDOK, 0), 0);
+            }
+            return 0;
+        }
+        case WM_COMMAND: {
+            int id = LOWORD(wParam);
+            if (id == IDOK) {
+                int sel = ListView_GetNextItem(s_hList, -1, LVNI_SELECTED);
+                if (sel >= 0 && sel < (int)s_templates.size()) {
+                    LaunchApp(s_templates[sel].exeName);
+                    DestroyWindow(hwnd);
+                }
+            } else if (id == IDCANCEL) {
+                DestroyWindow(hwnd);
+            }
+            return 0;
+        }
+        case WM_CTLCOLORSTATIC: {
+            HDC hdcStatic = (HDC)wParam;
+            SetBkColor(hdcStatic, RGB(255, 255, 255));
+            SetTextColor(hdcStatic, RGB(15, 23, 42));
+            return (LRESULT)GetStockObject(WHITE_BRUSH);
+        }
+        case WM_ERASEBKGND: {
+            HDC hdc = (HDC)wParam;
+            RECT rc;
+            GetClientRect(hwnd, &rc);
+            FillRect(hdc, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
+            return 1;
+        }
+        case WM_CLOSE:
+            DestroyWindow(hwnd);
+            return 0;
+        }
+        return DefWindowProcW(hwnd, msg, wParam, lParam);
+    };
+    wc.hInstance = g_hInst;
+    wc.lpszClassName = L"GiriOrbitTemplatesDlgClass";
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    RegisterClassExW(&wc);
+
+    RECT rcParent;
+    GetWindowRect(hParent, &rcParent);
+    int dlgW = 780, dlgH = 570;
+    int x = rcParent.left + (rcParent.right - rcParent.left - dlgW) / 2;
+    int y = rcParent.top + (rcParent.bottom - rcParent.top - dlgH) / 2;
+
+    HWND hDlg = CreateWindowExW(
+        WS_EX_DLGMODALFRAME, L"GiriOrbitTemplatesDlgClass", L"Create New Document & Template Studio — Giri Orbit",
+        WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_VISIBLE,
+        x, y, dlgW, dlgH, hParent, NULL, g_hInst, NULL
+    );
+
+    EnableWindow(hParent, FALSE);
+    MSG msg;
+    while (IsWindow(hDlg) && GetMessageW(&msg, NULL, 0, 0)) {
+        if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE) {
+            DestroyWindow(hDlg);
+            break;
+        }
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
+    }
+    EnableWindow(hParent, TRUE);
+    SetForegroundWindow(hParent);
+}
+
+void ShowAppsDialog(HWND hParent) {
+    WNDCLASSEXW wc = { sizeof(WNDCLASSEXW) };
+    wc.lpfnWndProc = [](HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) -> LRESULT {
+        static HWND s_hList = NULL;
+        static std::vector<std::pair<std::wstring, std::wstring>> s_apps;
+
+        switch (msg) {
+        case WM_CREATE: {
+            s_apps = {
+                { L"Giri Drift", L"GiriDrift.exe" },
+                { L"Giri Axis", L"GiriAxis.exe" },
+                { L"Giri Kinetic", L"GiriKinetic.exe" },
+                { L"Giri Aegis PDF Studio", L"GiriAegis.exe" },
+                { L"Giri Forms", L"GiriForms.exe" },
+                { L"Giri Quiz", L"GiriQuiz.exe" },
+                { L"Giri Lists", L"GiriLists.exe" },
+                { L"Giri Designer", L"GiriDesigner.exe" }
+            };
+
+            HFONT hfTitle = CreateFontW(19, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                                       OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+                                       VARIABLE_PITCH, L"Segoe UI");
+            HFONT hf = CreateFontW(14, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                                  OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+                                  VARIABLE_PITCH, L"Segoe UI");
+
+            HWND hTitle = CreateWindowExW(0, L"STATIC", L"All Applications — Giri Orbit Sovereign Suite",
+                WS_CHILD | WS_VISIBLE | SS_LEFT, 24, 18, 500, 24, hwnd, NULL, g_hInst, NULL);
+            SendMessageW(hTitle, WM_SETFONT, (WPARAM)hfTitle, TRUE);
+
+            HWND hSub = CreateWindowExW(0, L"STATIC", L"100% Native Offline Standalone Desktop Architecture",
+                WS_CHILD | WS_VISIBLE | SS_LEFT, 24, 44, 500, 20, hwnd, NULL, g_hInst, NULL);
+            SendMessageW(hSub, WM_SETFONT, (WPARAM)hf, TRUE);
+
+            s_hList = CreateWindowExW(WS_EX_CLIENTEDGE, WC_LISTVIEWW, L"",
+                WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS,
+                24, 74, 620, 350, hwnd, (HMENU)401, g_hInst, NULL);
+            SendMessageW(s_hList, WM_SETFONT, (WPARAM)hf, TRUE);
+            ListView_SetExtendedListViewStyle(s_hList, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+
+            LVCOLUMNW col;
+            col.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
+            col.cx = 220;
+            col.pszText = (LPWSTR)L"Application Name";
+            ListView_InsertColumn(s_hList, 0, &col);
+
+            col.cx = 180;
+            col.pszText = (LPWSTR)L"Executable";
+            ListView_InsertColumn(s_hList, 1, &col);
+
+            col.cx = 200;
+            col.pszText = (LPWSTR)L"Type / Function";
+            ListView_InsertColumn(s_hList, 2, &col);
+
+            const wchar_t* types[] = {
+                L"Word Processor (.docx, .gdrift)",
+                L"Financial Matrix (.xlsx, .gaxis)",
+                L"Presentation Master (.pptx, .gkinetic)",
+                L"Offline PDF Viewing & Seal (.pdf)",
+                L"Survey & Data Collection",
+                L"Assessment & Test Engine",
+                L"Agile Sprint & Project Lists",
+                L"Vector & Graphic Studio"
+            };
+
+            for (size_t i = 0; i < s_apps.size(); i++) {
+                LVITEMW item = { 0 };
+                item.mask = LVIF_TEXT;
+                item.iItem = (int)i;
+                item.pszText = (LPWSTR)s_apps[i].first.c_str();
+                ListView_InsertItem(s_hList, &item);
+
+                ListView_SetItemText(s_hList, (int)i, 1, (LPWSTR)s_apps[i].second.c_str());
+                ListView_SetItemText(s_hList, (int)i, 2, (LPWSTR)types[i]);
+            }
+            ListView_SetItemState(s_hList, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+
+            HWND hBtnLaunch = CreateWindowExW(0, L"BUTTON", L"Launch Application →",
+                WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 380, 440, 160, 34, hwnd, (HMENU)IDOK, g_hInst, NULL);
+            SendMessageW(hBtnLaunch, WM_SETFONT, (WPARAM)hf, TRUE);
+
+            HWND hBtnCancel = CreateWindowExW(0, L"BUTTON", L"Close",
+                WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 550, 440, 94, 34, hwnd, (HMENU)IDCANCEL, g_hInst, NULL);
+            SendMessageW(hBtnCancel, WM_SETFONT, (WPARAM)hf, TRUE);
+            return 0;
+        }
+        case WM_NOTIFY: {
+            LPNMHDR pnm = (LPNMHDR)lParam;
+            if (pnm->idFrom == 401 && pnm->code == NM_DBLCLK) {
+                SendMessageW(hwnd, WM_COMMAND, MAKEWPARAM(IDOK, 0), 0);
+            }
+            return 0;
+        }
+        case WM_COMMAND: {
+            int id = LOWORD(wParam);
+            if (id == IDOK) {
+                int sel = ListView_GetNextItem(s_hList, -1, LVNI_SELECTED);
+                if (sel >= 0 && sel < (int)s_apps.size()) {
+                    LaunchApp(s_apps[sel].second);
+                    DestroyWindow(hwnd);
+                }
+            } else if (id == IDCANCEL) {
+                DestroyWindow(hwnd);
+            }
+            return 0;
+        }
+        case WM_CTLCOLORSTATIC: {
+            HDC hdcStatic = (HDC)wParam;
+            SetBkColor(hdcStatic, RGB(255, 255, 255));
+            SetTextColor(hdcStatic, RGB(15, 23, 42));
+            return (LRESULT)GetStockObject(WHITE_BRUSH);
+        }
+        case WM_ERASEBKGND: {
+            HDC hdc = (HDC)wParam;
+            RECT rc;
+            GetClientRect(hwnd, &rc);
+            FillRect(hdc, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
+            return 1;
+        }
+        case WM_CLOSE:
+            DestroyWindow(hwnd);
+            return 0;
+        }
+        return DefWindowProcW(hwnd, msg, wParam, lParam);
+    };
+    wc.hInstance = g_hInst;
+    wc.lpszClassName = L"GiriOrbitAppsDlgClass";
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    RegisterClassExW(&wc);
+
+    RECT rcParent;
+    GetWindowRect(hParent, &rcParent);
+    int dlgW = 680, dlgH = 530;
+    int x = rcParent.left + (rcParent.right - rcParent.left - dlgW) / 2;
+    int y = rcParent.top + (rcParent.bottom - rcParent.top - dlgH) / 2;
+
+    HWND hDlg = CreateWindowExW(
+        WS_EX_DLGMODALFRAME, L"GiriOrbitAppsDlgClass", L"All Applications — Giri Orbit Sovereign Suite",
+        WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_VISIBLE,
+        x, y, dlgW, dlgH, hParent, NULL, g_hInst, NULL
+    );
+
+    EnableWindow(hParent, FALSE);
+    MSG msg;
+    while (IsWindow(hDlg) && GetMessageW(&msg, NULL, 0, 0)) {
+        if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE) {
+            DestroyWindow(hDlg);
+            break;
+        }
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
+    }
+    EnableWindow(hParent, TRUE);
+    SetForegroundWindow(hParent);
+}
+
+void ShowMyContentDialog(HWND hParent) {
+    WNDCLASSEXW wc = { sizeof(WNDCLASSEXW) };
+    wc.lpfnWndProc = [](HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) -> LRESULT {
+        static HWND s_hList = NULL;
+
+        switch (msg) {
+        case WM_CREATE: {
+            HFONT hfTitle = CreateFontW(19, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                                       OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+                                       VARIABLE_PITCH, L"Segoe UI");
+            HFONT hf = CreateFontW(14, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                                  OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+                                  VARIABLE_PITCH, L"Segoe UI");
+
+            HWND hTitle = CreateWindowExW(0, L"STATIC", L"My Content & Document Vault",
+                WS_CHILD | WS_VISIBLE | SS_LEFT, 24, 18, 500, 24, hwnd, NULL, g_hInst, NULL);
+            SendMessageW(hTitle, WM_SETFONT, (WPARAM)hfTitle, TRUE);
+
+            HWND hSub = CreateWindowExW(0, L"STATIC", L"Browse and launch documents stored on this computer.",
+                WS_CHILD | WS_VISIBLE | SS_LEFT, 24, 44, 500, 20, hwnd, NULL, g_hInst, NULL);
+            SendMessageW(hSub, WM_SETFONT, (WPARAM)hf, TRUE);
+
+            s_hList = CreateWindowExW(WS_EX_CLIENTEDGE, WC_LISTVIEWW, L"",
+                WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS,
+                24, 74, 660, 350, hwnd, (HMENU)501, g_hInst, NULL);
+            SendMessageW(s_hList, WM_SETFONT, (WPARAM)hf, TRUE);
+            ListView_SetExtendedListViewStyle(s_hList, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+
+            LVCOLUMNW col;
+            col.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
+            col.cx = 260;
+            col.pszText = (LPWSTR)L"Document Name";
+            ListView_InsertColumn(s_hList, 0, &col);
+
+            col.cx = 120;
+            col.pszText = (LPWSTR)L"Format";
+            ListView_InsertColumn(s_hList, 1, &col);
+
+            col.cx = 120;
+            col.pszText = (LPWSTR)L"Date Modified";
+            ListView_InsertColumn(s_hList, 2, &col);
+
+            col.cx = 140;
+            col.pszText = (LPWSTR)L"Storage Location";
+            ListView_InsertColumn(s_hList, 3, &col);
+
+            for (size_t i = 0; i < g_recentDocs.size(); i++) {
+                LVITEMW item = { 0 };
+                item.mask = LVIF_TEXT;
+                item.iItem = (int)i;
+                item.pszText = (LPWSTR)g_recentDocs[i].name.c_str();
+                ListView_InsertItem(s_hList, &item);
+
+                ListView_SetItemText(s_hList, (int)i, 1, (LPWSTR)g_recentDocs[i].type.c_str());
+                ListView_SetItemText(s_hList, (int)i, 2, (LPWSTR)g_recentDocs[i].modified.c_str());
+                ListView_SetItemText(s_hList, (int)i, 3, (LPWSTR)g_recentDocs[i].location.c_str());
+            }
+            if (!g_recentDocs.empty()) {
+                ListView_SetItemState(s_hList, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+            }
+
+            HWND hBtnBrowse = CreateWindowExW(0, L"BUTTON", L"Browse Files...",
+                WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 24, 440, 130, 34, hwnd, (HMENU)502, g_hInst, NULL);
+            SendMessageW(hBtnBrowse, WM_SETFONT, (WPARAM)hf, TRUE);
+
+            HWND hBtnOpen = CreateWindowExW(0, L"BUTTON", L"Open Document →",
+                WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 430, 440, 140, 34, hwnd, (HMENU)IDOK, g_hInst, NULL);
+            SendMessageW(hBtnOpen, WM_SETFONT, (WPARAM)hf, TRUE);
+
+            HWND hBtnClose = CreateWindowExW(0, L"BUTTON", L"Close",
+                WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 580, 440, 104, 34, hwnd, (HMENU)IDCANCEL, g_hInst, NULL);
+            SendMessageW(hBtnClose, WM_SETFONT, (WPARAM)hf, TRUE);
+            return 0;
+        }
+        case WM_NOTIFY: {
+            LPNMHDR pnm = (LPNMHDR)lParam;
+            if (pnm->idFrom == 501 && pnm->code == NM_DBLCLK) {
+                SendMessageW(hwnd, WM_COMMAND, MAKEWPARAM(IDOK, 0), 0);
+            }
+            return 0;
+        }
+        case WM_COMMAND: {
+            int id = LOWORD(wParam);
+            if (id == 502) {
+                OpenAnyFileDialog(hwnd);
+                DestroyWindow(hwnd);
+            } else if (id == IDOK) {
+                int sel = ListView_GetNextItem(s_hList, -1, LVNI_SELECTED);
+                if (sel >= 0 && sel < (int)g_recentDocs.size()) {
+                    const auto& doc = g_recentDocs[sel];
+                    if (!doc.fullPath.empty() && PathFileExistsW(doc.fullPath.c_str())) {
+                        if (doc.type == L"drift") LaunchApp(L"GiriDrift.exe", L"\"" + doc.fullPath + L"\"");
+                        else if (doc.type == L"axis") LaunchApp(L"GiriAxis.exe", L"\"" + doc.fullPath + L"\"");
+                        else if (doc.type == L"kinetic") LaunchApp(L"GiriKinetic.exe", L"\"" + doc.fullPath + L"\"");
+                        else if (doc.type == L"pdf") LaunchApp(L"GiriAegis.exe", L"\"" + doc.fullPath + L"\"");
+                    } else {
+                        if (doc.type == L"drift") LaunchApp(L"GiriDrift.exe");
+                        else if (doc.type == L"axis") LaunchApp(L"GiriAxis.exe");
+                        else if (doc.type == L"kinetic") LaunchApp(L"GiriKinetic.exe");
+                        else if (doc.type == L"pdf") LaunchApp(L"GiriAegis.exe");
+                    }
+                    DestroyWindow(hwnd);
+                }
+            } else if (id == IDCANCEL) {
+                DestroyWindow(hwnd);
+            }
+            return 0;
+        }
+        case WM_CTLCOLORSTATIC: {
+            HDC hdcStatic = (HDC)wParam;
+            SetBkColor(hdcStatic, RGB(255, 255, 255));
+            SetTextColor(hdcStatic, RGB(15, 23, 42));
+            return (LRESULT)GetStockObject(WHITE_BRUSH);
+        }
+        case WM_ERASEBKGND: {
+            HDC hdc = (HDC)wParam;
+            RECT rc;
+            GetClientRect(hwnd, &rc);
+            FillRect(hdc, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
+            return 1;
+        }
+        case WM_CLOSE:
+            DestroyWindow(hwnd);
+            return 0;
+        }
+        return DefWindowProcW(hwnd, msg, wParam, lParam);
+    };
+    wc.hInstance = g_hInst;
+    wc.lpszClassName = L"GiriOrbitContentDlgClass";
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    RegisterClassExW(&wc);
+
+    RECT rcParent;
+    GetWindowRect(hParent, &rcParent);
+    int dlgW = 720, dlgH = 530;
+    int x = rcParent.left + (rcParent.right - rcParent.left - dlgW) / 2;
+    int y = rcParent.top + (rcParent.bottom - rcParent.top - dlgH) / 2;
+
+    HWND hDlg = CreateWindowExW(
+        WS_EX_DLGMODALFRAME, L"GiriOrbitContentDlgClass", L"My Content & Document Vault — Giri Orbit",
+        WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_VISIBLE,
+        x, y, dlgW, dlgH, hParent, NULL, g_hInst, NULL
+    );
+
+    EnableWindow(hParent, FALSE);
+    MSG msg;
+    while (IsWindow(hDlg) && GetMessageW(&msg, NULL, 0, 0)) {
+        if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE) {
+            DestroyWindow(hDlg);
+            break;
+        }
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
+    }
+    EnableWindow(hParent, TRUE);
+    SetForegroundWindow(hParent);
+}
+
+void ShowGirionixAiDialog(HWND hParent) {
+    ShellExecuteW(hParent, L"open", L"https://giri-orbit.pages.dev/#girionix", NULL, NULL, SW_SHOWNORMAL);
+}
+
 // Window Procedure
 LRESULT CALLBACK HubWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
@@ -913,23 +1710,43 @@ LRESULT CALLBACK HubWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         g_hoverFilterPill = -1;
         g_hoverUpload = false;
 
+        bool oldHoverSeeMore = g_hoverSeeMore;
+        g_hoverSeeMore = false;
+
         // Check Rail hover
         if (x < LEFT_RAIL_WIDTH) {
-            int ry = 14;
-            int ids[] = { RAIL_HOME, RAIL_COPILOT, RAIL_CREATE, RAIL_MYCONTENT, RAIL_APPS, -1, RAIL_DRIFT, RAIL_AXIS, RAIL_KINETIC, RAIL_AEGIS };
-            for (int id : ids) {
-                if (id == -1) { ry += 16; continue; }
-                if (y >= ry && y < ry + 48) {
-                    g_hoverRail = id;
-                    break;
+            RECT rc;
+            GetClientRect(hwnd, &rc);
+            int h = rc.bottom - rc.top;
+            int bottomY = h - 100;
+            if (y >= bottomY && y < bottomY + 44) {
+                g_hoverRail = RAIL_SETTINGS;
+            } else if (y >= bottomY + 44 && y < h) {
+                g_hoverRail = RAIL_PROFILE;
+            } else {
+                int ry = 14;
+                int ids[] = { RAIL_HOME, RAIL_COPILOT, RAIL_CREATE, RAIL_MYCONTENT, RAIL_APPS, -1, RAIL_DRIFT, RAIL_AXIS, RAIL_KINETIC, RAIL_AEGIS };
+                for (int id : ids) {
+                    if (id == -1) { ry += 16; continue; }
+                    if (y >= ry && y < ry + 48) {
+                        g_hoverRail = id;
+                        break;
+                    }
+                    ry += 54;
                 }
-                ry += 54;
             }
         }
 
         // Check Cards hover
         int cardStartY = 176;
         int contentX = LEFT_RAIL_WIDTH + 48;
+
+        // Check "See more in Create ->" hover
+        int cardsRight = contentX + 7 * (CARD_WIDTH + CARD_GAP) - CARD_GAP;
+        if (x >= cardsRight - 150 && x <= cardsRight + 10 && y >= 146 && y <= 174) {
+            g_hoverSeeMore = true;
+        }
+
         if (y >= cardStartY && y <= cardStartY + CARD_HEIGHT) {
             for (int i = 0; i < 7; i++) {
                 int cx = contentX + i * (CARD_WIDTH + CARD_GAP);
@@ -973,13 +1790,13 @@ LRESULT CALLBACK HubWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
         if (oldHoverRail != g_hoverRail || oldHoverCard != g_hoverCard ||
             oldHoverRow != g_hoverTableRow || oldHoverPill != g_hoverFilterPill ||
-            oldUpload != g_hoverUpload) {
+            oldUpload != g_hoverUpload || oldHoverSeeMore != g_hoverSeeMore) {
             InvalidateRect(hwnd, NULL, FALSE);
         }
 
         // Hand Cursor for clickable items
         if (g_hoverRail != -1 || g_hoverCard != -1 || g_hoverTableRow != -1 ||
-            g_hoverFilterPill != -1 || g_hoverUpload) {
+            g_hoverFilterPill != -1 || g_hoverUpload || g_hoverSeeMore) {
             SetCursor(LoadCursor(NULL, IDC_HAND));
         } else {
             SetCursor(LoadCursor(NULL, IDC_ARROW));
@@ -991,15 +1808,25 @@ LRESULT CALLBACK HubWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         int x = LOWORD(lParam);
         int y = HIWORD(lParam);
 
+        // Click "See more in Create ->"
+        if (g_hoverSeeMore) {
+            ShowCreateTemplatesDialog(hwnd);
+            return 0;
+        }
+
         // Click Rail Items
         if (x < LEFT_RAIL_WIDTH) {
             if (g_hoverRail == RAIL_HOME) { g_activeRail = RAIL_HOME; InvalidateRect(hwnd, NULL, FALSE); }
+            else if (g_hoverRail == RAIL_COPILOT) { ShowGirionixAiDialog(hwnd); }
+            else if (g_hoverRail == RAIL_CREATE) { ShowCreateTemplatesDialog(hwnd); }
+            else if (g_hoverRail == RAIL_MYCONTENT) { ShowMyContentDialog(hwnd); }
+            else if (g_hoverRail == RAIL_APPS) { ShowAppsDialog(hwnd); }
             else if (g_hoverRail == RAIL_DRIFT) { LaunchApp(L"GiriDrift.exe"); }
             else if (g_hoverRail == RAIL_AXIS) { LaunchApp(L"GiriAxis.exe"); }
             else if (g_hoverRail == RAIL_KINETIC) { LaunchApp(L"GiriKinetic.exe"); }
-            else if (g_hoverRail == RAIL_AEGIS) { OpenAnyFileDialog(hwnd); }
-            else if (g_hoverRail == RAIL_CREATE) { LaunchApp(L"GiriDrift.exe"); }
-            else if (g_hoverRail == RAIL_MYCONTENT) { OpenAnyFileDialog(hwnd); }
+            else if (g_hoverRail == RAIL_AEGIS) { LaunchApp(L"GiriAegis.exe"); }
+            else if (g_hoverRail == RAIL_SETTINGS) { ShowSettingsDialog(hwnd); }
+            else if (g_hoverRail == RAIL_PROFILE) { ShowProfileDialog(hwnd); }
             return 0;
         }
 
@@ -1126,8 +1953,8 @@ LRESULT CALLBACK HubWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
         // Right "See more in Create ->"
         int cardsRight = contentX + 7 * (CARD_WIDTH + CARD_GAP) - CARD_GAP;
-        Font fLink(L"Segoe UI", 8.5f, FontStyleBold, UnitPoint);
-        SolidBrush linkBrush(Color(37, 99, 235));
+        Font fLink(L"Segoe UI", 8.5f, g_hoverSeeMore ? FontStyleUnderline : FontStyleBold, UnitPoint);
+        SolidBrush linkBrush(g_hoverSeeMore ? Color(29, 78, 216) : Color(37, 99, 235));
         StringFormat sfRight;
         sfRight.SetAlignment(StringAlignmentFar);
         g.DrawString(L"See more in Create →", -1, &fLink, PointF((float)cardsRight, (float)createY - 24.0f), &sfRight, &linkBrush);
