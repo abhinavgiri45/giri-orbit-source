@@ -17,12 +17,12 @@ New-Item -ItemType Directory -Force -Path "$baseDir\bin" | Out-Null
 # 1. Giri Drift
 Write-Host "[1/5] Compiling Giri Drift (Document Composer)..." -ForegroundColor Yellow
 windres -i "$baseDir\src\drift\resource.rc" -o "$baseDir\src\drift\resource.o"
-g++ -std=c++20 -O3 -s -mwindows -municode "$baseDir\src\drift\main.cpp" "$baseDir\src\drift\resource.o" -o "$baseDir\bin\GiriDrift.exe" -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lole32
+g++ -std=c++20 -O3 -s -mwindows -municode "$baseDir\src\drift\main.cpp" "$baseDir\src\drift\resource.o" -o "$baseDir\bin\GiriDrift.exe" -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lole32 -lgdiplus -lmsimg32
 
 # 2. Giri Axis
 Write-Host "[2/5] Compiling Giri Axis (Financial Matrix)..." -ForegroundColor Yellow
 windres -i "$baseDir\src\axis\resource.rc" -o "$baseDir\src\axis\resource.o"
-g++ -std=c++20 -O3 -s -mwindows -municode "$baseDir\src\axis\main.cpp" "$baseDir\src\axis\resource.o" -o "$baseDir\bin\GiriAxis.exe" -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lole32
+g++ -std=c++20 -O3 -s -mwindows -municode "$baseDir\src\axis\main.cpp" "$baseDir\src\axis\resource.o" -o "$baseDir\bin\GiriAxis.exe" -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lole32 -lgdiplus -lmsimg32
 
 # 3. Giri Kinetic
 Write-Host "[3/5] Compiling Giri Kinetic (Cinematic Widescreen Show)..." -ForegroundColor Yellow
