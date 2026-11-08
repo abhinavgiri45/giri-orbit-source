@@ -30,7 +30,7 @@ struct ToolThemeConfig {
     std::wstring toolLetter;    // L"D", L"A", L"K", L"F", L"Q", L"L", L"G"
     std::wstring toolName;      // L"Drift", L"Axis", L"Kinetic", etc.
     std::wstring fullToolName;  // L"Giri Drift", L"Giri Axis", etc.
-    std::wstring headline;      // L"Welcome to Drift for free on the web"
+    std::wstring headline;      // L"Welcome to Giri Drift"
     std::wstring subtitle;      // L"Sovereign in-memory document composer..."
     std::wstring createBtnText; // L"Create blank document"
     std::wstring uploadBtnText; // L"Upload a file"

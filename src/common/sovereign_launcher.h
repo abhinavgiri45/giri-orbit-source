@@ -93,7 +93,7 @@ inline bool TryLaunchSovereignAppMode(const wchar_t* toolName, const wchar_t* lp
         else if (ch == L' ') fileUri += L"%20";
         else fileUri += ch;
     }
-    fileUri += L"#";
+    fileUri += L"?desktop=1#";
     fileUri += (toolName && *toolName) ? toolName : L"hub";
 
     // Prepare isolated DataVault profile directory
