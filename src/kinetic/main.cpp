@@ -15,6 +15,7 @@
 #endif
 
 #include <windows.h>
+#include "../common/sovereign_launcher.h"
 #include <windowsx.h>
 #include <commctrl.h>
 #include <commdlg.h>
@@ -555,6 +556,11 @@ void LoadKineticTemplate(HWND hwnd, int idx) {
 // Entry Point
 // -------------------------------------------------------------
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
+    // Launch Sovereign Edge App Mode for 100% web, LibreOffice & MS Office parity
+    if (GiriOrbit::TryLaunchSovereignAppMode(L"kinetic", lpCmdLine)) {
+        return 0;
+    }
+
     g_hInst = hInstance;
 
     // Modern DPI Awareness

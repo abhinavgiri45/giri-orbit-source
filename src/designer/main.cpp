@@ -16,6 +16,7 @@
 #endif
 
 #include <windows.h>
+#include "../common/sovereign_launcher.h"
 #include <commctrl.h>
 #include <commdlg.h>
 #include <shellapi.h>
@@ -793,6 +794,11 @@ void CreateDesignerToolbar(HWND hwnd) {
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
+    // Launch Sovereign Edge App Mode for 100% web, LibreOffice & MS Office parity
+    if (GiriOrbit::TryLaunchSovereignAppMode(L"designer", lpCmdLine)) {
+        return 0;
+    }
+
     g_hInst = hInstance;
 
     // Modern Per-Monitor V2 DPI awareness for ultra-smooth 60FPS crisp rendering

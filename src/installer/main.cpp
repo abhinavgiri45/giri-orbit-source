@@ -514,6 +514,16 @@ void PerformInstallation(HWND hwnd) {
         } catch (...) {}
     }
 
+    updateStep(87, L"Installing Giri Orbit Sovereign Offline Application Suite (app_data)...");
+    try {
+        std::filesystem::create_directories(g_installDir + L"\\app_data");
+        std::wstring appDataSrc = g_sourceDir + L"\\app_data";
+        if (!PathFileExistsW(appDataSrc.c_str())) appDataSrc = g_sourceDir + L"\\..\\Giri Orbit";
+        if (PathFileExistsW(appDataSrc.c_str())) {
+            std::filesystem::copy(appDataSrc, g_installDir + L"\\app_data", std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing);
+        }
+    } catch (...) {}
+
     if (g_installLang) {
         updateStep(87, L"Installing 100+ Multilingual Satellite Language Packs (~2.5 GB)...");
         try {

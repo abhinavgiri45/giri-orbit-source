@@ -16,6 +16,7 @@
 #endif
 
 #include <windows.h>
+#include "../common/sovereign_launcher.h"
 #include <commctrl.h>
 #include <richedit.h>
 #include <commdlg.h>
@@ -925,6 +926,11 @@ void StyleRibbonBtn(HWND btn, bool isPrimary) {
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
+    // Launch Sovereign Edge App Mode for 100% web, LibreOffice & MS Office parity
+    if (GiriOrbit::TryLaunchSovereignAppMode(L"drift", lpCmdLine)) {
+        return 0;
+    }
+
     g_hInst = hInstance;
 
     // Enable modern per-monitor DPI awareness for high-velocity smoothness
