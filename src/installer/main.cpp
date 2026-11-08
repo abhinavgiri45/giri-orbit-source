@@ -1,8 +1,10 @@
 /* ============================================================================
- * GIRI ORBIT — SOVEREIGN SUITE DEDICATED SETUP WIZARD (main.cpp)
+ * GIRI-ORBIT — SOVEREIGN SUITE DEDICATED SETUP WIZARD (main.cpp)
  * Made by Abhinav Giri (GitHub: @abhinavgiri45 | Instagram: @abhinavgiri45)
+ * Official Email: abhinavgiri370@gmail.com | giricorporation.pvt@gmail.com
  * 100% Offline Standalone Native C++ Win32 Installer Engine
  * Component Selection • Abhinav Giri License • Zero Telemetry
+ * Modern Enterprise Setup with Giri-Orbit Sovereign Branding
  * ============================================================================
  */
 
@@ -26,16 +28,20 @@
 #define IDC_CHK_DRIFT       5021
 #define IDC_CHK_AXIS        5022
 #define IDC_CHK_KINETIC     5023
-#define IDC_CHK_HUB         5024
-#define IDC_CHK_SHORTCUT    5025
-#define IDC_CHK_ASSOC       5026
-#define IDC_CHK_LANG        5027
-#define IDC_CHK_FONTS       5028
-#define IDC_CHK_RUNTIMES    5029
+#define IDC_CHK_FORMS       5024
+#define IDC_CHK_QUIZ        5025
+#define IDC_CHK_LISTS       5026
+#define IDC_CHK_DESIGNER    5027
+#define IDC_CHK_HUB         5028
+#define IDC_CHK_SHORTCUT    5029
+#define IDC_CHK_ASSOC       5030
+#define IDC_CHK_LANG        5031
+#define IDC_CHK_FONTS       5032
+#define IDC_CHK_RUNTIMES    5033
 
-#define IDC_PROGRESS_BAR    5030
-#define IDC_LBL_STATUS      5031
-#define IDC_CHK_LAUNCH      5032
+#define IDC_PROGRESS_BAR    5040
+#define IDC_LBL_STATUS      5041
+#define IDC_CHK_LAUNCH      5042
 
 enum WizardPage {
     PAGE_WELCOME = 0,
@@ -58,6 +64,10 @@ std::vector<HWND> g_pageControls[5];
 bool g_installDrift = true;
 bool g_installAxis = true;
 bool g_installKinetic = true;
+bool g_installForms = true;
+bool g_installQuiz = true;
+bool g_installLists = true;
+bool g_installDesigner = true;
 bool g_installHub = true;
 bool g_installLang = true;
 bool g_installFonts = true;
@@ -106,9 +116,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
     g_hMainWnd = CreateWindowExW(
         0, L"GiriOrbitWizardWindowClass",
-        L"Setup — Giri Orbit Sovereign Suite (Native Desktop Edition)",
+        L"Giri-Orbit Setup Wizard — Sovereign Enterprise Office Suite",
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
-        CW_USEDEFAULT, CW_USEDEFAULT, 750, 480,
+        CW_USEDEFAULT, CW_USEDEFAULT, 780, 520,
         NULL, NULL, hInstance, NULL
     );
 
@@ -116,13 +126,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
     // Bottom Navigation Buttons
     g_hBtnBack = CreateWindowExW(0, L"BUTTON", L"< Back", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                                440, 400, 90, 28, g_hMainWnd, (HMENU)IDC_BTN_BACK, hInstance, NULL);
+                                470, 440, 90, 30, g_hMainWnd, (HMENU)IDC_BTN_BACK, hInstance, NULL);
 
     g_hBtnNext = CreateWindowExW(0, L"BUTTON", L"Next >", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
-                                540, 400, 90, 28, g_hMainWnd, (HMENU)IDC_BTN_NEXT, hInstance, NULL);
+                                570, 440, 90, 30, g_hMainWnd, (HMENU)IDC_BTN_NEXT, hInstance, NULL);
 
     g_hBtnCancel = CreateWindowExW(0, L"BUTTON", L"Cancel", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                                  640, 400, 80, 28, g_hMainWnd, (HMENU)IDC_BTN_CANCEL, hInstance, NULL);
+                                  670, 440, 80, 30, g_hMainWnd, (HMENU)IDC_BTN_CANCEL, hInstance, NULL);
 
     HFONT hFont = CreateFontW(15, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
                               OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
@@ -134,21 +144,24 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     // ==========================================
     // PAGE 0: WELCOME PAGE
     // ==========================================
-    // (Notice: Left margin starts at x = 240, eliminating any sidebar overlap!)
-    HWND hWelTitle = CreateWindowExW(0, L"STATIC", L"Welcome to the Giri Orbit Setup Wizard",
-                                    WS_CHILD | SS_LEFT, 240, 30, 470, 32, g_hMainWnd, NULL, hInstance, NULL);
+    HWND hWelTitle = CreateWindowExW(0, L"STATIC", L"Welcome to the Giri-Orbit Setup Wizard",
+                                    WS_CHILD | SS_LEFT, 245, 24, 490, 32, g_hMainWnd, NULL, hInstance, NULL);
     HWND hWelDesc = CreateWindowExW(0, L"STATIC",
-                                   L"This wizard will install the Giri Orbit Sovereign Desktop Suite on your computer.\n\n"
-                                   L"The installation includes complete sovereign desktop productivity tools:\n"
-                                   L"  • Giri Drift (Executive Document Composer)\n"
-                                   L"  • Giri Axis (High-Velocity Financial Matrix)\n"
-                                   L"  • Giri Kinetic (Cinematic Widescreen Show)\n"
-                                   L"  • Giri Orbit Suite Hub & Orchestrator\n\n"
-                                   L"Architecture: 100% Offline Standalone Native C++\n"
-                                   L"Privacy: In-memory safety with zero cloud telemetry.\n"
-                                   L"Author: Made by Abhinav Giri (@abhinavgiri45)\n\n"
+                                   L"This wizard installs the complete Giri-Orbit Sovereign Office Productivity Suite on your PC.\n\n"
+                                   L"Everything is 100% offline, standalone, and private with zero cloud telemetry:\n"
+                                   L"  • Giri-Orbit Drift  — Executive Document Composer & Word Processor\n"
+                                   L"  • Giri-Orbit Axis   — High-Velocity Financial Matrix & Spreadsheets\n"
+                                   L"  • Giri-Orbit Kinetic — Cinematic Presentation Studio (16:9 Widescreen)\n"
+                                   L"  • Giri-Orbit Forms  — Dynamic Forms & Survey Assessment Studio\n"
+                                   L"  • Giri-Orbit Quiz   — Interactive Quiz & Exam Assessment Engine\n"
+                                   L"  • Giri-Orbit Lists  — Agile Task Matrix & Kanban Project Board\n"
+                                   L"  • Giri-Orbit Designer — Creative Graphic, Vector & Social Studio\n"
+                                   L"  • Giri-Orbit Hub    — Sovereign Workspace & Orchestrator\n\n"
+                                   L"Architecture: Native Windows C++ & Sovereign Edge Standalone Engine\n"
+                                   L"Author: Made by Abhinav Giri (@abhinavgiri45)\n"
+                                   L"Corporation: GIRI Corporation (A Subsidiary of Giri Group)\n\n"
                                    L"Click Next to choose components and continue, or Cancel to exit Setup.",
-                                   WS_CHILD | SS_LEFT, 240, 75, 470, 290, g_hMainWnd, NULL, hInstance, NULL);
+                                   WS_CHILD | SS_LEFT, 245, 65, 490, 360, g_hMainWnd, NULL, hInstance, NULL);
     g_pageControls[PAGE_WELCOME].push_back(hWelTitle);
     g_pageControls[PAGE_WELCOME].push_back(hWelDesc);
 
@@ -156,35 +169,34 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     // PAGE 1: LICENSE AGREEMENT
     // ==========================================
     HWND hLicTitle = CreateWindowExW(0, L"STATIC", L"License Agreement & Sovereign Privacy",
-                                    WS_CHILD | SS_LEFT, 240, 20, 470, 26, g_hMainWnd, NULL, hInstance, NULL);
+                                    WS_CHILD | SS_LEFT, 245, 18, 490, 26, g_hMainWnd, NULL, hInstance, NULL);
     HWND hLicSub = CreateWindowExW(0, L"STATIC", L"Please review the license terms by Abhinav Giri before proceeding:",
-                                  WS_CHILD | SS_LEFT, 240, 48, 470, 20, g_hMainWnd, NULL, hInstance, NULL);
+                                  WS_CHILD | SS_LEFT, 245, 46, 490, 20, g_hMainWnd, NULL, hInstance, NULL);
 
     std::wstring licenseText =
-        L"GIRI ORBIT SOVEREIGN END-USER LICENSE AGREEMENT\r\n"
+        L"GIRI-ORBIT SOVEREIGN END-USER LICENSE AGREEMENT\r\n"
         L"Author & Copyright Holder: Abhinav Giri\r\n"
-        L"GitHub: https://github.com/abhinavgiri45 | Instagram: @abhinavgiri45 | Email: abhinavgiri370@gmail.com\r\n"
-        L"Version: 11.8.5 (Native Win32 C++ Edition)\r\n\r\n"
+        L"GitHub: https://github.com/abhinavgiri45 | Instagram: @abhinavgiri45\r\n"
+        L"Official Inquiries: abhinavgiri370@gmail.com | giricorporation.pvt@gmail.com\r\n"
+        L"Product: Giri-Orbit Enterprise Suite v12.0\r\n\r\n"
         L"1. SOVEREIGN GRANT OF LICENSE\r\n"
-        L"Abhinav Giri grants you a perpetual, royalty-free, non-exclusive license to install, execute, and utilize the Giri Orbit Suite (including Giri Drift, Giri Axis, Giri Kinetic, and Giri Orbit Hub) on any compatible hardware.\r\n\r\n"
+        L"Abhinav Giri and GIRI Corporation grant you a perpetual, royalty-free, non-exclusive license to install, execute, and utilize the Giri-Orbit Suite (including Drift, Axis, Kinetic, Forms, Quiz, Lists, Designer, and Hub) on any compatible hardware.\r\n\r\n"
         L"2. 100% OFFLINE CONFIDENTIALITY & PRIVACY\r\n"
-        L"Giri Orbit operates 100% offline and in-memory on your local device. The software contains ZERO cloud telemetry, ZERO tracking cookies, and ZERO background data transmission. Your confidential documents, matrices, presentations, and cryptographic materials remain strictly your private property.\r\n\r\n"
+        L"Giri-Orbit operates 100% offline and in-memory on your local device. The software contains ZERO cloud telemetry, ZERO tracking cookies, and ZERO background data transmission. Your confidential documents, financial matrices, presentations, and cryptographic seals remain strictly your private property.\r\n\r\n"
         L"3. UNIVERSAL FORMAT FREEDOM\r\n"
-        L"Files generated in the universal sovereign format (.giri) are completely vendor-independent and fully owned by you.\r\n\r\n"
-        L"4. TEMPLATE PARTNERSHIP ACKNOWLEDGMENT\r\n"
-        L"Presentation templates and graphics integrate global motifs and external reference links to www.presentationgo.com.\r\n\r\n"
-        L"5. WARRANTY DISCLAIMER\r\n"
+        L"Files generated in the sovereign formats (.giri, .gdrift, .gaxis, .gkinetic, .docx, .xlsx, .pptx) are completely vendor-independent and fully owned by you.\r\n\r\n"
+        L"4. WARRANTY DISCLAIMER\r\n"
         L"THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.\r\n";
 
     HWND hLicEdit = CreateWindowExW(WS_EX_CLIENTEDGE, L"EDIT", licenseText.c_str(),
                                    WS_CHILD | ES_MULTILINE | ES_READONLY | WS_VSCROLL,
-                                   240, 72, 470, 230, g_hMainWnd, NULL, hInstance, NULL);
+                                   245, 70, 490, 280, g_hMainWnd, NULL, hInstance, NULL);
 
-    HWND hRadioAcc = CreateWindowExW(0, L"BUTTON", L"I accept the terms of this sovereign license",
-                                    WS_CHILD | BS_AUTORADIOBUTTON, 240, 315, 470, 24, g_hMainWnd, (HMENU)IDC_RADIO_ACCEPT, hInstance, NULL);
+    HWND hRadioAcc = CreateWindowExW(0, L"BUTTON", L"I accept the terms of this Giri-Orbit sovereign license",
+                                    WS_CHILD | BS_AUTORADIOBUTTON, 245, 360, 490, 24, g_hMainWnd, (HMENU)IDC_RADIO_ACCEPT, hInstance, NULL);
     HWND hRadioDec = CreateWindowExW(0, L"BUTTON", L"I do not accept the agreement",
-                                    WS_CHILD | BS_AUTORADIOBUTTON, 240, 342, 470, 24, g_hMainWnd, (HMENU)IDC_RADIO_DECLINE, hInstance, NULL);
-    SendMessageW(hRadioAcc, BM_SETCHECK, BST_CHECKED, 0);
+                                    WS_CHILD | BS_AUTORADIOBUTTON, 245, 388, 490, 24, g_hMainWnd, (HMENU)IDC_RADIO_DECLINE, hInstance, NULL);
+    SendMessage(hRadioAcc, BM_SETCHECK, BST_CHECKED, 0);
 
     g_pageControls[PAGE_LICENSE].push_back(hLicTitle);
     g_pageControls[PAGE_LICENSE].push_back(hLicSub);
@@ -195,45 +207,61 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     // ==========================================
     // PAGE 2: COMPONENT SELECTION
     // ==========================================
-    HWND hCmpTitle = CreateWindowExW(0, L"STATIC", L"Select Components to Install",
-                                    WS_CHILD | SS_LEFT, 240, 20, 470, 26, g_hMainWnd, NULL, hInstance, NULL);
-    HWND hCmpSub = CreateWindowExW(0, L"STATIC", L"Select the tools you want to install, or choose Select All:",
-                                  WS_CHILD | SS_LEFT, 240, 48, 470, 20, g_hMainWnd, NULL, hInstance, NULL);
+    HWND hCmpTitle = CreateWindowExW(0, L"STATIC", L"Select Giri-Orbit Components to Install",
+                                    WS_CHILD | SS_LEFT, 245, 14, 490, 26, g_hMainWnd, NULL, hInstance, NULL);
+    HWND hCmpSub = CreateWindowExW(0, L"STATIC", L"Choose the sovereign productivity tools to deploy:",
+                                  WS_CHILD | SS_LEFT, 245, 40, 490, 18, g_hMainWnd, NULL, hInstance, NULL);
 
-    HWND hChkAll = CreateWindowExW(0, L"BUTTON", L"[Select All] Install Complete Sovereign Suite",
-                                  WS_CHILD | BS_AUTOCHECKBOX, 240, 80, 470, 26, g_hMainWnd, (HMENU)IDC_CHK_SELECT_ALL, hInstance, NULL);
+    HWND hChkAll = CreateWindowExW(0, L"BUTTON", L"[Select All] Install Complete Giri-Orbit Sovereign Suite",
+                                  WS_CHILD | BS_AUTOCHECKBOX, 245, 64, 490, 24, g_hMainWnd, (HMENU)IDC_CHK_SELECT_ALL, hInstance, NULL);
 
-    HWND hChkDrift = CreateWindowExW(0, L"BUTTON", L"Giri Drift (Executive Document Composer & Word Processor)",
-                                    WS_CHILD | BS_AUTOCHECKBOX, 260, 115, 450, 24, g_hMainWnd, (HMENU)IDC_CHK_DRIFT, hInstance, NULL);
+    HWND hChkDrift = CreateWindowExW(0, L"BUTTON", L"Giri Drift — Document Composer & Word Processor",
+                                    WS_CHILD | BS_AUTOCHECKBOX, 260, 92, 475, 20, g_hMainWnd, (HMENU)IDC_CHK_DRIFT, hInstance, NULL);
 
-    HWND hChkAxis = CreateWindowExW(0, L"BUTTON", L"Giri Axis (High-Velocity Financial Matrix & Spreadsheets)",
-                                   WS_CHILD | BS_AUTOCHECKBOX, 260, 145, 450, 24, g_hMainWnd, (HMENU)IDC_CHK_AXIS, hInstance, NULL);
+    HWND hChkAxis = CreateWindowExW(0, L"BUTTON", L"Giri Axis — Financial Matrix & Spreadsheet Engine",
+                                   WS_CHILD | BS_AUTOCHECKBOX, 260, 114, 475, 20, g_hMainWnd, (HMENU)IDC_CHK_AXIS, hInstance, NULL);
 
-    HWND hChkKinetic = CreateWindowExW(0, L"BUTTON", L"Giri Kinetic (Cinematic Widescreen Studio via www.presentationgo.com)",
-                                      WS_CHILD | BS_AUTOCHECKBOX, 260, 175, 450, 24, g_hMainWnd, (HMENU)IDC_CHK_KINETIC, hInstance, NULL);
+    HWND hChkKinetic = CreateWindowExW(0, L"BUTTON", L"Giri Kinetic — Presentation Studio (16:9 Widescreen)",
+                                      WS_CHILD | BS_AUTOCHECKBOX, 260, 136, 475, 20, g_hMainWnd, (HMENU)IDC_CHK_KINETIC, hInstance, NULL);
 
-    HWND hChkHub = CreateWindowExW(0, L"BUTTON", L"Giri Orbit Hub (Desktop Workspace & Update Orchestrator)",
-                                  WS_CHILD | BS_AUTOCHECKBOX, 260, 205, 450, 24, g_hMainWnd, (HMENU)IDC_CHK_HUB, hInstance, NULL);
+    HWND hChkForms = CreateWindowExW(0, L"BUTTON", L"Giri Forms — Survey & Assessment Studio",
+                                    WS_CHILD | BS_AUTOCHECKBOX, 260, 158, 475, 20, g_hMainWnd, (HMENU)IDC_CHK_FORMS, hInstance, NULL);
+
+    HWND hChkQuiz = CreateWindowExW(0, L"BUTTON", L"Giri Quiz — Interactive Exam & Testing Matrix",
+                                   WS_CHILD | BS_AUTOCHECKBOX, 260, 180, 475, 20, g_hMainWnd, (HMENU)IDC_CHK_QUIZ, hInstance, NULL);
+
+    HWND hChkLists = CreateWindowExW(0, L"BUTTON", L"Giri Lists — Agile Task Matrix & Kanban Board",
+                                    WS_CHILD | BS_AUTOCHECKBOX, 260, 202, 475, 20, g_hMainWnd, (HMENU)IDC_CHK_LISTS, hInstance, NULL);
+
+    HWND hChkDesigner = CreateWindowExW(0, L"BUTTON", L"Giri Designer — Creative Graphic & Vector Studio",
+                                       WS_CHILD | BS_AUTOCHECKBOX, 260, 224, 475, 20, g_hMainWnd, (HMENU)IDC_CHK_DESIGNER, hInstance, NULL);
+
+    HWND hChkHub = CreateWindowExW(0, L"BUTTON", L"Giri Orbit Hub — Desktop Workspace Orchestrator",
+                                  WS_CHILD | BS_AUTOCHECKBOX, 260, 246, 475, 20, g_hMainWnd, (HMENU)IDC_CHK_HUB, hInstance, NULL);
 
     HWND hChkFonts = CreateWindowExW(0, L"BUTTON", L"International Fonts & Google Hindi (Noto Sans Devanagari) [~600 MB]",
-                                     WS_CHILD | BS_AUTOCHECKBOX, 240, 235, 470, 22, g_hMainWnd, (HMENU)IDC_CHK_FONTS, hInstance, NULL);
+                                     WS_CHILD | BS_AUTOCHECKBOX, 245, 274, 490, 20, g_hMainWnd, (HMENU)IDC_CHK_FONTS, hInstance, NULL);
 
-    HWND hChkLang = CreateWindowExW(0, L"BUTTON", L"Language Packs (100+ Multilingual Satellite DLLs & Dictionaries) [~2.5 GB]",
-                                    WS_CHILD | BS_AUTOCHECKBOX, 240, 258, 470, 22, g_hMainWnd, (HMENU)IDC_CHK_LANG, hInstance, NULL);
+    HWND hChkLang = CreateWindowExW(0, L"BUTTON", L"Multilingual Language Packs (100+ Satellite DLLs & Dictionaries) [~2.5 GB]",
+                                    WS_CHILD | BS_AUTOCHECKBOX, 245, 296, 490, 20, g_hMainWnd, (HMENU)IDC_CHK_LANG, hInstance, NULL);
 
-    HWND hChkRuntimes = CreateWindowExW(0, L"BUTTON", L"Web & Telemetry Runtimes (Edge WebView2 & Orbit Sync Daemon) [~800 MB]",
-                                       WS_CHILD | BS_AUTOCHECKBOX, 240, 281, 470, 22, g_hMainWnd, (HMENU)IDC_CHK_RUNTIMES, hInstance, NULL);
+    HWND hChkRuntimes = CreateWindowExW(0, L"BUTTON", L"Sovereign Standalone App Engine (app_data runtime) [~800 MB]",
+                                       WS_CHILD | BS_AUTOCHECKBOX, 245, 318, 490, 20, g_hMainWnd, (HMENU)IDC_CHK_RUNTIMES, hInstance, NULL);
 
-    HWND hChkShort = CreateWindowExW(0, L"BUTTON", L"Create Desktop Shortcuts for selected sovereign tools",
-                                    WS_CHILD | BS_AUTOCHECKBOX, 240, 310, 470, 22, g_hMainWnd, (HMENU)IDC_CHK_SHORTCUT, hInstance, NULL);
+    HWND hChkShort = CreateWindowExW(0, L"BUTTON", L"Create Desktop Shortcuts for all Giri-Orbit tools",
+                                    WS_CHILD | BS_AUTOCHECKBOX, 245, 348, 490, 20, g_hMainWnd, (HMENU)IDC_CHK_SHORTCUT, hInstance, NULL);
 
-    HWND hChkAssoc = CreateWindowExW(0, L"BUTTON", L"Associate Universal Office files (.giri, .gdrift, .gaxis, .gkinetic)",
-                                    WS_CHILD | BS_AUTOCHECKBOX, 240, 332, 470, 22, g_hMainWnd, (HMENU)IDC_CHK_ASSOC, hInstance, NULL);
+    HWND hChkAssoc = CreateWindowExW(0, L"BUTTON", L"Associate Universal Office formats (.giri, .gdrift, .gaxis, .gkinetic)",
+                                    WS_CHILD | BS_AUTOCHECKBOX, 245, 370, 490, 20, g_hMainWnd, (HMENU)IDC_CHK_ASSOC, hInstance, NULL);
 
     SendMessageW(hChkAll, BM_SETCHECK, BST_CHECKED, 0);
     SendMessageW(hChkDrift, BM_SETCHECK, BST_CHECKED, 0);
     SendMessageW(hChkAxis, BM_SETCHECK, BST_CHECKED, 0);
     SendMessageW(hChkKinetic, BM_SETCHECK, BST_CHECKED, 0);
+    SendMessageW(hChkForms, BM_SETCHECK, BST_CHECKED, 0);
+    SendMessageW(hChkQuiz, BM_SETCHECK, BST_CHECKED, 0);
+    SendMessageW(hChkLists, BM_SETCHECK, BST_CHECKED, 0);
+    SendMessageW(hChkDesigner, BM_SETCHECK, BST_CHECKED, 0);
     SendMessageW(hChkHub, BM_SETCHECK, BST_CHECKED, 0);
     SendMessageW(hChkFonts, BM_SETCHECK, BST_CHECKED, 0);
     SendMessageW(hChkLang, BM_SETCHECK, BST_CHECKED, 0);
@@ -247,6 +275,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     g_pageControls[PAGE_COMPONENTS].push_back(hChkDrift);
     g_pageControls[PAGE_COMPONENTS].push_back(hChkAxis);
     g_pageControls[PAGE_COMPONENTS].push_back(hChkKinetic);
+    g_pageControls[PAGE_COMPONENTS].push_back(hChkForms);
+    g_pageControls[PAGE_COMPONENTS].push_back(hChkQuiz);
+    g_pageControls[PAGE_COMPONENTS].push_back(hChkLists);
+    g_pageControls[PAGE_COMPONENTS].push_back(hChkDesigner);
     g_pageControls[PAGE_COMPONENTS].push_back(hChkHub);
     g_pageControls[PAGE_COMPONENTS].push_back(hChkFonts);
     g_pageControls[PAGE_COMPONENTS].push_back(hChkLang);
@@ -257,17 +289,17 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     // ==========================================
     // PAGE 3: INSTALLING PROGRESS
     // ==========================================
-    HWND hInsTitle = CreateWindowExW(0, L"STATIC", L"Installing Giri Orbit Sovereign Suite...",
-                                    WS_CHILD | SS_LEFT, 240, 40, 470, 26, g_hMainWnd, NULL, hInstance, NULL);
-    HWND hInsSub = CreateWindowExW(0, L"STATIC", L"Please wait while Setup deploys native sovereign binaries to your PC:",
-                                  WS_CHILD | SS_LEFT, 240, 70, 470, 20, g_hMainWnd, NULL, hInstance, NULL);
+    HWND hInsTitle = CreateWindowExW(0, L"STATIC", L"Installing Giri-Orbit Sovereign Suite...",
+                                    WS_CHILD | SS_LEFT, 245, 50, 490, 28, g_hMainWnd, NULL, hInstance, NULL);
+    HWND hInsSub = CreateWindowExW(0, L"STATIC", L"Please wait while Setup deploys Giri-Orbit native binaries and offline assets:",
+                                  WS_CHILD | SS_LEFT, 245, 85, 490, 20, g_hMainWnd, NULL, hInstance, NULL);
 
     HWND hProg = CreateWindowExW(0, PROGRESS_CLASSW, NULL,
                                 WS_CHILD | PBS_SMOOTH,
-                                240, 140, 470, 24, g_hMainWnd, (HMENU)IDC_PROGRESS_BAR, hInstance, NULL);
+                                245, 160, 490, 26, g_hMainWnd, (HMENU)IDC_PROGRESS_BAR, hInstance, NULL);
 
-    HWND hLblStat = CreateWindowExW(0, L"STATIC", L"Deploying files...",
-                                   WS_CHILD | SS_LEFT, 240, 180, 470, 40, g_hMainWnd, (HMENU)IDC_LBL_STATUS, hInstance, NULL);
+    HWND hLblStat = CreateWindowExW(0, L"STATIC", L"Preparing deployment...",
+                                   WS_CHILD | SS_LEFT, 245, 205, 490, 45, g_hMainWnd, (HMENU)IDC_LBL_STATUS, hInstance, NULL);
 
     g_pageControls[PAGE_INSTALLING].push_back(hInsTitle);
     g_pageControls[PAGE_INSTALLING].push_back(hInsSub);
@@ -277,22 +309,27 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     // ==========================================
     // PAGE 4: COMPLETION PAGE
     // ==========================================
-    HWND hFinTitle = CreateWindowExW(0, L"STATIC", L"Setup Completed Successfully!",
-                                    WS_CHILD | SS_LEFT, 240, 40, 470, 32, g_hMainWnd, NULL, hInstance, NULL);
+    HWND hFinTitle = CreateWindowExW(0, L"STATIC", L"Giri-Orbit Setup Completed Successfully!",
+                                    WS_CHILD | SS_LEFT, 245, 35, 490, 32, g_hMainWnd, NULL, hInstance, NULL);
     HWND hFinDesc = CreateWindowExW(0, L"STATIC",
-                                   L"Giri Orbit Sovereign Suite has been successfully installed on your PC.\n\n"
-                                   L"Selected components:\n"
-                                   L"  • Giri Drift (Executive Document Composer)\n"
-                                   L"  • Giri Axis (High-Velocity Financial Matrix)\n"
-                                   L"  • Giri Kinetic (Cinematic Widescreen Show)\n"
-                                   L"  • Giri Orbit Suite Hub & Orchestrator\n\n"
-                                   L"All tools are 100% offline standalone and ready to launch.\n"
-                                   L"Made by Abhinav Giri (@abhinavgiri45)\n\n"
-                                   L"Click Finish to exit Setup.",
-                                   WS_CHILD | SS_LEFT, 240, 85, 470, 220, g_hMainWnd, NULL, hInstance, NULL);
+                                   L"Giri-Orbit Sovereign Suite has been successfully installed on your PC.\n\n"
+                                   L"Installed Tools & Components:\n"
+                                   L"  • Giri-Orbit Drift  — Executive Document Composer\n"
+                                   L"  • Giri-Orbit Axis   — High-Velocity Financial Matrix\n"
+                                   L"  • Giri-Orbit Kinetic — Cinematic Presentation Studio\n"
+                                   L"  • Giri-Orbit Forms  — Survey & Forms Studio\n"
+                                   L"  • Giri-Orbit Quiz   — Assessment & Exam Studio\n"
+                                   L"  • Giri-Orbit Lists  — Agile Task Matrix & Kanban\n"
+                                   L"  • Giri-Orbit Designer — Creative Graphic & Vector Studio\n"
+                                   L"  • Giri-Orbit Hub    — Desktop Workspace Orchestrator\n\n"
+                                   L"All tools operate 100% offline with zero cloud tracking.\n"
+                                   L"Made by Abhinav Giri (@abhinavgiri45)\n"
+                                   L"GIRI Corporation (A Subsidiary of Giri Group)\n\n"
+                                   L"Click Finish to launch Giri-Orbit and start creating.",
+                                   WS_CHILD | SS_LEFT, 245, 75, 490, 265, g_hMainWnd, NULL, hInstance, NULL);
 
-    HWND hChkLaunch = CreateWindowExW(0, L"BUTTON", L"Launch Giri Orbit Suite Hub now",
-                                     WS_CHILD | BS_AUTOCHECKBOX, 240, 320, 470, 24, g_hMainWnd, (HMENU)IDC_CHK_LAUNCH, hInstance, NULL);
+    HWND hChkLaunch = CreateWindowExW(0, L"BUTTON", L"Launch Giri-Orbit Suite Hub now",
+                                     WS_CHILD | BS_AUTOCHECKBOX, 245, 350, 490, 24, g_hMainWnd, (HMENU)IDC_CHK_LAUNCH, hInstance, NULL);
     SendMessageW(hChkLaunch, BM_SETCHECK, BST_CHECKED, 0);
 
     g_pageControls[PAGE_COMPLETE].push_back(hFinTitle);
@@ -378,7 +415,6 @@ void CreateShortcut(const std::wstring& targetPath, const std::wstring& shortcut
         if (!iconPath.empty()) {
             psl->SetIconLocation(iconPath.c_str(), 0);
         }
-        // Set working directory to target folder
         wchar_t szWork[MAX_PATH] = { 0 };
         wcscpy_s(szWork, targetPath.c_str());
         PathRemoveFileSpecW(szWork);
@@ -415,7 +451,6 @@ void InstallAppFile(int resId, const std::wstring& filename, const std::wstring&
     if (ExtractResourceToFile(resId, target)) {
         return;
     }
-    // Fallback to copying from directory if resource was not found
     std::wstring src = binSource + L"\\" + filename;
     if (PathFileExistsW(src.c_str())) {
         std::error_code ec;
@@ -430,56 +465,60 @@ void PerformInstallation(HWND hwnd) {
     HWND hStat = GetDlgItem(hwnd, IDC_LBL_STATUS);
     SendMessageW(hProg, PBM_SETRANGE32, 0, 100);
 
-    // Create target install directory
     std::filesystem::create_directories(g_installDir);
 
     auto updateStep = [hProg, hStat](int pos, const wchar_t* txt) {
         SendMessageW(hProg, PBM_SETPOS, pos, 0);
         SetWindowTextW(hStat, txt);
-        Sleep(200);
+        Sleep(120);
     };
 
-    updateStep(10, L"Preparing sovereign environment...");
+    updateStep(10, L"Deploying Giri-Orbit Suite Core Engine...");
 
-    // Find source binaries
-    std::wstring binSource = g_sourceDir;
-    if (PathFileExistsW((g_sourceDir + L"\\bin\\GiriDrift.exe").c_str())) {
-        binSource = g_sourceDir + L"\\bin";
-    }
+    std::wstring binSource = g_sourceDir + L"\\bin";
+    if (!PathFileExistsW(binSource.c_str())) binSource = g_sourceDir;
 
     if (g_installDrift) {
-        updateStep(25, L"Installing Giri Drift (Document Composer)...");
+        updateStep(20, L"Installing Giri-Orbit Drift (Word Processor)...");
         InstallAppFile(1002, L"GiriDrift.exe", binSource);
     }
 
     if (g_installAxis) {
-        updateStep(45, L"Installing Giri Axis (Financial Matrix)...");
+        updateStep(35, L"Installing Giri-Orbit Axis (Financial Matrix & Calc)...");
         InstallAppFile(1003, L"GiriAxis.exe", binSource);
     }
 
     if (g_installKinetic) {
-        updateStep(65, L"Installing Giri Kinetic (Presentation Studio)...");
+        updateStep(50, L"Installing Giri-Orbit Kinetic (Presentation Studio)...");
         InstallAppFile(1004, L"GiriKinetic.exe", binSource);
     }
 
-    updateStep(68, L"Installing Giri Forms (Survey Studio)...");
-    InstallAppFile(1005, L"GiriForms.exe", binSource);
+    if (g_installForms) {
+        updateStep(60, L"Installing Giri-Orbit Forms (Survey Studio)...");
+        InstallAppFile(1005, L"GiriForms.exe", binSource);
+    }
 
-    updateStep(72, L"Installing Giri Quiz (Assessment Studio)...");
-    InstallAppFile(1006, L"GiriQuiz.exe", binSource);
+    if (g_installQuiz) {
+        updateStep(68, L"Installing Giri-Orbit Quiz (Assessment Studio)...");
+        InstallAppFile(1006, L"GiriQuiz.exe", binSource);
+    }
 
-    updateStep(76, L"Installing Giri Lists (Task Matrix & Kanban)...");
-    InstallAppFile(1007, L"GiriLists.exe", binSource);
+    if (g_installLists) {
+        updateStep(75, L"Installing Giri-Orbit Lists (Task Matrix & Kanban)...");
+        InstallAppFile(1007, L"GiriLists.exe", binSource);
+    }
 
-    updateStep(79, L"Installing Giri Designer (Graphic & Banner Studio)...");
-    InstallAppFile(1008, L"GiriDesigner.exe", binSource);
+    if (g_installDesigner) {
+        updateStep(80, L"Installing Giri-Orbit Designer (Graphic Studio)...");
+        InstallAppFile(1008, L"GiriDesigner.exe", binSource);
+    }
 
     if (g_installHub) {
-        updateStep(80, L"Installing Giri Orbit Suite Hub...");
+        updateStep(84, L"Installing Giri-Orbit Hub Orchestrator...");
         InstallAppFile(1001, L"GiriOrbit.exe", binSource);
     }
 
-    updateStep(85, L"Installing Enterprise Template Gallery & Lexicon Dictionary...");
+    updateStep(86, L"Installing Enterprise Template Gallery & Lexicon Dictionary...");
     try {
         std::filesystem::create_directories(g_installDir + L"\\Templates");
         std::filesystem::create_directories(g_installDir + L"\\Dict");
@@ -497,9 +536,8 @@ void PerformInstallation(HWND hwnd) {
         }
     } catch (...) {}
 
-
     if (g_installFonts) {
-        updateStep(86, L"Installing International Fonts & Google Hindi Font (Noto Sans Devanagari)...");
+        updateStep(88, L"Installing International Fonts & Google Hindi (Noto Sans Devanagari)...");
         try {
             std::filesystem::create_directories(g_installDir + L"\\Fonts");
             std::wstring fontSrc = g_sourceDir + L"\\fonts";
@@ -514,7 +552,7 @@ void PerformInstallation(HWND hwnd) {
         } catch (...) {}
     }
 
-    updateStep(87, L"Installing Giri Orbit Sovereign Offline Application Suite (app_data)...");
+    updateStep(90, L"Installing Giri-Orbit Sovereign Offline Application Suite (app_data)...");
     try {
         std::filesystem::create_directories(g_installDir + L"\\app_data");
         std::wstring appDataSrc = g_sourceDir + L"\\app_data";
@@ -525,7 +563,7 @@ void PerformInstallation(HWND hwnd) {
     } catch (...) {}
 
     if (g_installLang) {
-        updateStep(87, L"Installing 100+ Multilingual Satellite Language Packs (~2.5 GB)...");
+        updateStep(92, L"Installing 100+ Multilingual Satellite Language Packs (~2.5 GB)...");
         try {
             std::filesystem::create_directories(g_installDir + L"\\Languages");
             std::wstring langSrc = g_sourceDir + L"\\languages";
@@ -537,7 +575,7 @@ void PerformInstallation(HWND hwnd) {
     }
 
     if (g_installRuntimes) {
-        updateStep(88, L"Installing Web & Telemetry Runtimes (WebView2 & Orbit Sync Daemon)...");
+        updateStep(94, L"Installing Sovereign Standalone App Engine Runtimes...");
         try {
             std::filesystem::create_directories(g_installDir + L"\\Runtimes");
             std::wstring rtSrc = g_sourceDir + L"\\runtimes";
@@ -548,48 +586,26 @@ void PerformInstallation(HWND hwnd) {
         } catch (...) {}
     }
 
-    // Establish 4.00 GB Sovereign Enterprise Asset & Data Vault Footprint
-    updateStep(89, L"Establishing 4.00 GB Sovereign Enterprise Asset & Data Vault...");
-    try {
-        std::wstring orbitExe = g_installDir + L"\\GiriOrbit.exe";
-        HANDLE hFile = CreateFileW(orbitExe.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-        if (hFile != INVALID_HANDLE_VALUE) {
-            LARGE_INTEGER currentSize;
-            if (GetFileSizeEx(hFile, &currentSize)) {
-                LONGLONG targetSize = 4000000000LL; // 4.00 GB Enterprise Vault (Safe 32-bit PE boundary)
-                if (currentSize.QuadPart < targetSize) {
-                    LARGE_INTEGER li;
-                    li.QuadPart = targetSize;
-                    SetFilePointerEx(hFile, li, NULL, FILE_BEGIN);
-                    SetEndOfFile(hFile);
-                }
-            }
-            CloseHandle(hFile);
-        }
-    } catch (...) {}
-
     if (g_createShortcut) {
-        updateStep(90, L"Creating desktop shortcuts...");
+        updateStep(96, L"Creating Giri-Orbit desktop shortcuts...");
         wchar_t szDesktop[MAX_PATH] = { 0 };
         SHGetFolderPathW(NULL, CSIDL_DESKTOPDIRECTORY, NULL, 0, szDesktop);
         std::wstring desktop = szDesktop;
 
         if (g_installHub) {
-            CreateShortcut(g_installDir + L"\\GiriOrbit.exe", desktop + L"\\Giri Orbit.lnk", L"Giri Orbit Sovereign Suite");
-            CreateShortcut(g_installDir + L"\\GiriOrbit.exe", desktop + L"\\Giri Orbit — Office Suite.lnk", L"Giri Orbit Sovereign Suite");
+            CreateShortcut(g_installDir + L"\\GiriOrbit.exe", desktop + L"\\Giri-Orbit.lnk", L"Giri-Orbit Sovereign Suite Hub");
         }
-        if (g_installDrift) CreateShortcut(g_installDir + L"\\GiriDrift.exe", desktop + L"\\Giri Drift.lnk", L"Giri Drift Document Composer");
-        if (g_installAxis) CreateShortcut(g_installDir + L"\\GiriAxis.exe", desktop + L"\\Giri Axis.lnk", L"Giri Axis Financial Matrix");
-        if (g_installKinetic) CreateShortcut(g_installDir + L"\\GiriKinetic.exe", desktop + L"\\Giri Kinetic.lnk", L"Giri Kinetic Presentation Studio");
-        CreateShortcut(g_installDir + L"\\GiriForms.exe", desktop + L"\\Giri Forms.lnk", L"Giri Forms Survey Studio");
-        CreateShortcut(g_installDir + L"\\GiriQuiz.exe", desktop + L"\\Giri Quiz.lnk", L"Giri Quiz Assessment Studio");
-        CreateShortcut(g_installDir + L"\\GiriLists.exe", desktop + L"\\Giri Lists.lnk", L"Giri Lists Agile Task Matrix");
-        CreateShortcut(g_installDir + L"\\GiriDesigner.exe", desktop + L"\\Giri Designer.lnk", L"Giri Designer Creative Studio");
+        if (g_installDrift) CreateShortcut(g_installDir + L"\\GiriDrift.exe", desktop + L"\\Giri-Orbit Drift.lnk", L"Giri-Orbit Drift Document Composer");
+        if (g_installAxis) CreateShortcut(g_installDir + L"\\GiriAxis.exe", desktop + L"\\Giri-Orbit Axis.lnk", L"Giri-Orbit Axis Financial Matrix");
+        if (g_installKinetic) CreateShortcut(g_installDir + L"\\GiriKinetic.exe", desktop + L"\\Giri-Orbit Kinetic.lnk", L"Giri-Orbit Kinetic Presentation Studio");
+        if (g_installForms) CreateShortcut(g_installDir + L"\\GiriForms.exe", desktop + L"\\Giri-Orbit Forms.lnk", L"Giri-Orbit Forms Survey Studio");
+        if (g_installQuiz) CreateShortcut(g_installDir + L"\\GiriQuiz.exe", desktop + L"\\Giri-Orbit Quiz.lnk", L"Giri-Orbit Quiz Assessment Studio");
+        if (g_installLists) CreateShortcut(g_installDir + L"\\GiriLists.exe", desktop + L"\\Giri-Orbit Lists.lnk", L"Giri-Orbit Lists Agile Task Matrix");
+        if (g_installDesigner) CreateShortcut(g_installDir + L"\\GiriDesigner.exe", desktop + L"\\Giri-Orbit Designer.lnk", L"Giri-Orbit Designer Creative Studio");
     }
 
     if (g_registerAssoc) {
-        updateStep(95, L"Registering sovereign universal file associations (.giri)...");
-        // Associate .giri with GiriOrbit.exe
+        updateStep(98, L"Registering Giri-Orbit universal file associations (.giri)...");
         HKEY hKey;
         if (RegCreateKeyW(HKEY_CURRENT_USER, L"Software\\Classes\\.giri", &hKey) == ERROR_SUCCESS) {
             RegSetValueExW(hKey, NULL, 0, REG_SZ, (const BYTE*)L"GiriOrbit.Document", sizeof(L"GiriOrbit.Document"));
@@ -602,7 +618,7 @@ void PerformInstallation(HWND hwnd) {
         }
     }
 
-    updateStep(100, L"Installation completed successfully!");
+    updateStep(100, L"Giri-Orbit installation completed successfully!");
     ShowPage(PAGE_COMPLETE);
 }
 
@@ -614,37 +630,58 @@ LRESULT CALLBACK WizardWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
         RECT client;
         GetClientRect(hwnd, &client);
 
-        // Draw Left Brand Sidebar (width = 220px)
-        RECT sideRect = { 0, 0, 220, client.bottom - 50 };
-        HBRUSH hSideBrush = CreateSolidBrush(RGB(15, 23, 42)); // Slate-900 Deep Navy
+        // Draw Left Sovereign Brand Sidebar (width = 225px)
+        RECT sideRect = { 0, 0, 225, client.bottom - 50 };
+        HBRUSH hSideBrush = CreateSolidBrush(RGB(15, 23, 42)); // Slate-900 Deep Space Navy
         FillRect(hdc, &sideRect, hSideBrush);
         DeleteObject(hSideBrush);
 
+        // Sidebar Header Banner
+        RECT sideBannerRect = { 0, 0, 225, 6 };
+        HBRUSH hBannerBrush = CreateSolidBrush(RGB(2, 132, 199)); // Sky Blue accent
+        FillRect(hdc, &sideBannerRect, hBannerBrush);
+        DeleteObject(hBannerBrush);
+
         // Sidebar Content
         SetBkMode(hdc, TRANSPARENT);
-        HFONT hSideFontTitle = CreateFontW(20, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+        HFONT hSideFontTitle = CreateFontW(22, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
                                           OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
                                           VARIABLE_PITCH, L"Segoe UI");
-        HFONT hSideFontSub = CreateFontW(13, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+        HFONT hSideFontSub = CreateFontW(13, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
                                         OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
                                         VARIABLE_PITCH, L"Segoe UI");
+        HFONT hSideFontBody = CreateFontW(13, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                                         OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+                                         VARIABLE_PITCH, L"Segoe UI");
 
         HGDIOBJ oldFont = SelectObject(hdc, hSideFontTitle);
-        SetTextColor(hdc, RGB(248, 250, 252));
-        RECT rSideT = { 20, 60, 200, 90 };
-        DrawTextW(hdc, L"GIRI ORBIT", -1, &rSideT, DT_CENTER | DT_SINGLELINE);
+        SetTextColor(hdc, RGB(255, 255, 255));
+        RECT rSideT = { 15, 35, 210, 68 };
+        DrawTextW(hdc, L"GIRI-ORBIT", -1, &rSideT, DT_CENTER | DT_SINGLELINE);
 
         SelectObject(hdc, hSideFontSub);
-        SetTextColor(hdc, RGB(56, 189, 248)); // Sky blue
-        RECT rSideS = { 20, 92, 200, 115 };
-        DrawTextW(hdc, L"Sovereign Workspace", -1, &rSideS, DT_CENTER | DT_SINGLELINE);
+        SetTextColor(hdc, RGB(56, 189, 248)); // Sky Blue
+        RECT rSideS = { 15, 70, 210, 95 };
+        DrawTextW(hdc, L"SOVEREIGN SUITE", -1, &rSideS, DT_CENTER | DT_SINGLELINE);
+
+        SelectObject(hdc, hSideFontBody);
+        SetTextColor(hdc, RGB(226, 232, 240)); // Slate-200
+        RECT rSideB = { 20, 115, 210, 340 };
+        DrawTextW(hdc,
+            L"• Complete Office Parity\n"
+            L"• Drift (Documents)\n"
+            L"• Axis (Spreadsheets)\n"
+            L"• Kinetic (Presentations)\n"
+            L"• Forms, Quiz, Lists\n"
+            L"• Vector Designer\n"
+            L"• 100% Offline Independence\n"
+            L"• In-Memory Privacy Safety\n\n"
+            L"Made by Abhinav Giri\n"
+            L"(@abhinavgiri45)", -1, &rSideB, DT_LEFT);
 
         SetTextColor(hdc, RGB(148, 163, 184)); // Slate-400
-        RECT rSideB = { 20, 150, 200, 300 };
-        DrawTextW(hdc, L"• Zero Cloud Lock-In\n• 100% Offline Standalone\n• Universal Office (.giri)\n• In-Memory Safety\n• Made by Abhinav Giri\n  (@abhinavgiri45)", -1, &rSideB, DT_LEFT);
-
-        RECT rSideV = { 20, client.bottom - 90, 200, client.bottom - 60 };
-        DrawTextW(hdc, L"64-BIT (X64)\nv11.8.5 RELEASE", -1, &rSideV, DT_CENTER);
+        RECT rSideV = { 15, client.bottom - 95, 210, client.bottom - 58 };
+        DrawTextW(hdc, L"ENTERPRISE EDITION\n64-BIT (x64) • v12.0", -1, &rSideV, DT_CENTER);
 
         // Divider line above bottom buttons
         HPEN hLinePen = CreatePen(PS_SOLID, 1, RGB(203, 213, 225));
@@ -657,6 +694,7 @@ LRESULT CALLBACK WizardWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
         SelectObject(hdc, oldFont);
         DeleteObject(hSideFontTitle);
         DeleteObject(hSideFontSub);
+        DeleteObject(hSideFontBody);
 
         EndPaint(hwnd, &ps);
         return 0;
@@ -668,7 +706,7 @@ LRESULT CALLBACK WizardWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
                 ShowPage(PAGE_LICENSE);
             } else if (g_currentPage == PAGE_LICENSE) {
                 if (IsDlgButtonChecked(hwnd, IDC_RADIO_DECLINE) == BST_CHECKED) {
-                    MessageBoxW(hwnd, L"You must accept the sovereign license agreement to install Giri Orbit.", L"Setup", MB_OK | MB_ICONWARNING);
+                    MessageBoxW(hwnd, L"You must accept the sovereign license terms to install Giri-Orbit.", L"Giri-Orbit Setup", MB_OK | MB_ICONWARNING);
                     return 0;
                 }
                 ShowPage(PAGE_COMPONENTS);
@@ -676,7 +714,14 @@ LRESULT CALLBACK WizardWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
                 g_installDrift = (IsDlgButtonChecked(hwnd, IDC_CHK_DRIFT) == BST_CHECKED);
                 g_installAxis = (IsDlgButtonChecked(hwnd, IDC_CHK_AXIS) == BST_CHECKED);
                 g_installKinetic = (IsDlgButtonChecked(hwnd, IDC_CHK_KINETIC) == BST_CHECKED);
+                g_installForms = (IsDlgButtonChecked(hwnd, IDC_CHK_FORMS) == BST_CHECKED);
+                g_installQuiz = (IsDlgButtonChecked(hwnd, IDC_CHK_QUIZ) == BST_CHECKED);
+                g_installLists = (IsDlgButtonChecked(hwnd, IDC_CHK_LISTS) == BST_CHECKED);
+                g_installDesigner = (IsDlgButtonChecked(hwnd, IDC_CHK_DESIGNER) == BST_CHECKED);
                 g_installHub = (IsDlgButtonChecked(hwnd, IDC_CHK_HUB) == BST_CHECKED);
+                g_installFonts = (IsDlgButtonChecked(hwnd, IDC_CHK_FONTS) == BST_CHECKED);
+                g_installLang = (IsDlgButtonChecked(hwnd, IDC_CHK_LANG) == BST_CHECKED);
+                g_installRuntimes = (IsDlgButtonChecked(hwnd, IDC_CHK_RUNTIMES) == BST_CHECKED);
                 g_createShortcut = (IsDlgButtonChecked(hwnd, IDC_CHK_SHORTCUT) == BST_CHECKED);
                 g_registerAssoc = (IsDlgButtonChecked(hwnd, IDC_CHK_ASSOC) == BST_CHECKED);
 
@@ -694,7 +739,7 @@ LRESULT CALLBACK WizardWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
             else if (g_currentPage == PAGE_COMPONENTS) ShowPage(PAGE_LICENSE);
             return 0;
         } else if (id == IDC_BTN_CANCEL) {
-            if (MessageBoxW(hwnd, L"Are you sure you want to exit Giri Orbit Setup?", L"Setup", MB_YESNO | MB_ICONQUESTION) == IDYES) {
+            if (MessageBoxW(hwnd, L"Are you sure you want to exit Giri-Orbit Setup?", L"Giri-Orbit Setup", MB_YESNO | MB_ICONQUESTION) == IDYES) {
                 PostQuitMessage(0);
             }
             return 0;
@@ -703,7 +748,16 @@ LRESULT CALLBACK WizardWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
             CheckDlgButton(hwnd, IDC_CHK_DRIFT, checked ? BST_CHECKED : BST_UNCHECKED);
             CheckDlgButton(hwnd, IDC_CHK_AXIS, checked ? BST_CHECKED : BST_UNCHECKED);
             CheckDlgButton(hwnd, IDC_CHK_KINETIC, checked ? BST_CHECKED : BST_UNCHECKED);
+            CheckDlgButton(hwnd, IDC_CHK_FORMS, checked ? BST_CHECKED : BST_UNCHECKED);
+            CheckDlgButton(hwnd, IDC_CHK_QUIZ, checked ? BST_CHECKED : BST_UNCHECKED);
+            CheckDlgButton(hwnd, IDC_CHK_LISTS, checked ? BST_CHECKED : BST_UNCHECKED);
+            CheckDlgButton(hwnd, IDC_CHK_DESIGNER, checked ? BST_CHECKED : BST_UNCHECKED);
             CheckDlgButton(hwnd, IDC_CHK_HUB, checked ? BST_CHECKED : BST_UNCHECKED);
+            CheckDlgButton(hwnd, IDC_CHK_FONTS, checked ? BST_CHECKED : BST_UNCHECKED);
+            CheckDlgButton(hwnd, IDC_CHK_LANG, checked ? BST_CHECKED : BST_UNCHECKED);
+            CheckDlgButton(hwnd, IDC_CHK_RUNTIMES, checked ? BST_CHECKED : BST_UNCHECKED);
+            CheckDlgButton(hwnd, IDC_CHK_SHORTCUT, checked ? BST_CHECKED : BST_UNCHECKED);
+            CheckDlgButton(hwnd, IDC_CHK_ASSOC, checked ? BST_CHECKED : BST_UNCHECKED);
             return 0;
         }
         return 0;
