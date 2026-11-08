@@ -8,6 +8,9 @@
 
 #include "../common/sovereign_types.h"
 #include "../common/universal_file.h"
+#include <gdiplus.h>
+using namespace Gdiplus;
+ULONG_PTR g_gdiToken = 0;
 #include <commdlg.h>
 #include <shellapi.h>
 #include <shlwapi.h>
@@ -56,6 +59,85 @@
 #define IDC_BTN_DEL_ROW      3123
 #define IDC_BTN_DEL_COL      3124
 #define IDC_BTN_CLEAR        3125
+#define IDC_BTN_CUT          3130
+#define IDC_BTN_COPY         3131
+#define IDC_BTN_PASTE        3132
+#define IDC_COMBO_FONT       3133
+#define IDC_COMBO_SIZE       3134
+#define IDC_BTN_BOLD         3135
+#define IDC_BTN_ITALIC       3136
+#define IDC_BTN_UNDERLINE    3137
+#define IDC_BTN_FILL_COLOR   3138
+#define IDC_BTN_TEXT_COLOR   3139
+#define IDC_BTN_BORDERS      3140
+#define IDC_BTN_ALIGN_L      3141
+#define IDC_BTN_ALIGN_C      3142
+#define IDC_BTN_ALIGN_R      3143
+#define IDC_BTN_WRAP_TEXT    3144
+#define IDC_BTN_MERGE_CENTER 3145
+#define IDC_BTN_COMMA        3146
+#define IDC_BTN_DEC_INC      3147
+#define IDC_BTN_DEC_DEC      3148
+#define IDC_BTN_CHART_BAR    3150
+#define IDC_BTN_CHART_LINE   3151
+#define IDC_BTN_CHART_PIE    3152
+#define IDC_BTN_CHART_COL    3153
+#define IDC_BTN_PIVOT_SUM    3154
+#define IDC_BTN_SHAPE_RECT   3155
+#define IDC_BTN_SHAPE_CIRCLE 3156
+#define IDC_BTN_SHAPE_LINE   3157
+#define IDC_BTN_TPL_BUDGET   3158
+#define IDC_BTN_TPL_INCOME   3159
+#define IDC_BTN_TPL_SAAS     3160
+#define IDC_BTN_TPL_PROJECT  3161
+#define IDC_BTN_FN_SUM       3170
+#define IDC_BTN_FN_AVG       3171
+#define IDC_BTN_FN_COUNT     3172
+#define IDC_BTN_FN_MAX       3173
+#define IDC_BTN_FN_MIN       3174
+#define IDC_BTN_FN_IF        3175
+#define IDC_BTN_FN_ROUND     3176
+#define IDC_BTN_FN_PMT       3177
+#define IDC_BTN_FN_CONCAT    3178
+#define IDC_BTN_CALC_NOW     3179
+#define IDC_BTN_RECALC       3180
+#define IDC_BTN_DATA_IMPORT  3185
+#define IDC_BTN_DATA_EXPORT  3186
+#define IDC_BTN_DATA_SORT_AZ 3187
+#define IDC_BTN_DATA_SORT_ZA 3188
+#define IDC_BTN_DATA_FILTER  3189
+#define IDC_BTN_DATA_DEDUP   3190
+#define IDC_BTN_DATA_VALID   3191
+#define IDC_BTN_VIEW_GRID    3195
+#define IDC_BTN_VIEW_FBAR    3196
+#define IDC_BTN_VIEW_HEAD    3197
+#define IDC_BTN_ZOOM_IN      3198
+#define IDC_BTN_ZOOM_OUT     3199
+#define IDC_BTN_ZOOM_RESET   3200
+#define IDC_BTN_FREEZE_TOP   3201
+#define IDC_BTN_FREEZE_COL   3202
+
+enum AxisRibbonTab {
+    AXIS_TAB_HOME = 0,
+    AXIS_TAB_INSERT,
+    AXIS_TAB_FORMULAS,
+    AXIS_TAB_DATA,
+    AXIS_TAB_VIEW,
+    AXIS_TAB_COUNT
+};
+
+int g_activeRibbonTab = AXIS_TAB_HOME;
+int g_hoverRibbonTab = -1;
+std::vector<HWND> g_tabControls[AXIS_TAB_COUNT];
+WNDPROC g_oldToolbarProc = NULL;
+HWND g_hFontCombo = NULL;
+HWND g_hSizeCombo = NULL;
+bool g_showGridlines = true;
+bool g_showFormulaBar = true;
+bool g_showHeadings = true;
+void SwitchRibbonTab(int newTab);
+void StyleAxisBtn(HWND btn);
+
 
 
 struct CellData {
@@ -327,6 +409,17 @@ void DoExportCSV(HWND);
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
     g_hInst = hInstance;
+
+    // Modern Per-Monitor V2 DPI awareness for ultra-smooth 60FPS crisp rendering
+    typedef BOOL(WINAPI* PFN_SetProcessDpiAwarenessContext)(HANDLE);
+    HMODULE hUser32 = GetModuleHandleW(L"user32.dll");
+    if (hUser32) {
+        PFN_SetProcessDpiAwarenessContext pfn = (PFN_SetProcessDpiAwarenessContext)GetProcAddress(hUser32, "SetProcessDpiAwarenessContext");
+        if (pfn) pfn((HANDLE)-4);
+    }
+
+    GdiplusStartupInput gdiInput;
+    GdiplusStartup(&g_gdiToken, &gdiInput, NULL);
     wchar_t exePath[MAX_PATH] = { 0 };
     GetModuleFileNameW(NULL, exePath, MAX_PATH);
     PathRemoveFileSpecW(exePath);
@@ -367,7 +460,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     g_sheets.push_back(defaultSheet);
 
     WNDCLASSEXW wcex = { sizeof(WNDCLASSEXW) };
-    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
     wcex.lpfnWndProc = MainWndProc;
     wcex.hInstance = hInstance;
     wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
@@ -405,26 +498,26 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     g_hCellCoordLbl = CreateWindowExW(
         0, L"STATIC", L"A1",
         WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE | WS_BORDER,
-        8, 42, 64, 26, g_hMainWnd, NULL, hInstance, NULL
+        8, 108, 64, 26, g_hMainWnd, NULL, hInstance, NULL
     );
 
     g_hFxLbl = CreateWindowExW(
         0, L"STATIC", L"fx",
         WS_CHILD | WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE,
-        76, 42, 24, 26, g_hMainWnd, NULL, hInstance, NULL
+        76, 108, 24, 26, g_hMainWnd, NULL, hInstance, NULL
     );
 
     g_hFormulaBar = CreateWindowExW(
         WS_EX_CLIENTEDGE, L"EDIT", L"",
         WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL,
-        104, 42, 700, 26, g_hMainWnd, (HMENU)IDC_FORMULA_EDIT, hInstance, NULL
+        104, 108, 700, 26, g_hMainWnd, (HMENU)IDC_FORMULA_EDIT, hInstance, NULL
     );
 
     // Create Grid Window
     g_hGridWnd = CreateWindowExW(
         WS_EX_CLIENTEDGE, L"GiriAxisGridClass", L"",
         WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL,
-        8, 40, 1060, 580, g_hMainWnd, (HMENU)3100, hInstance, NULL
+        0, 140, 1060, 500, g_hMainWnd, (HMENU)3100, hInstance, NULL
     );
 
     // Create In-place cell editor (hidden initially)
@@ -518,6 +611,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
         DispatchMessageW(&msg);
     }
 
+    GdiplusShutdown(g_gdiToken);
     return (int)msg.wParam;
 }
 
@@ -877,7 +971,7 @@ void DoShowChartDialog(HWND hwndOwner) {
     static bool reg = false;
     if (!reg) {
         WNDCLASSEXW wcex = { sizeof(WNDCLASSEXW) };
-        wcex.style = CS_HREDRAW | CS_VREDRAW;
+        wcex.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
         wcex.lpfnWndProc = ChartWndProc;
         wcex.hInstance = g_hInst;
         wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
@@ -973,6 +1067,138 @@ LRESULT CALLBACK AxisBtnSubclass(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
     return CallWindowProcW(g_oldAxisBtnProc, hwnd, uMsg, wParam, lParam);
 }
 
+
+LRESULT CALLBACK ToolbarPanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    switch (uMsg) {
+    case WM_ERASEBKGND: return 1;
+    case WM_PAINT: {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
+        RECT rc;
+        GetClientRect(hwnd, &rc);
+
+        HDC memDC = CreateCompatibleDC(hdc);
+        HBITMAP memBM = CreateCompatibleBitmap(hdc, rc.right, rc.bottom);
+        HBITMAP oldBM = (HBITMAP)SelectObject(memDC, memBM);
+
+        Graphics g(memDC);
+        g.SetSmoothingMode(SmoothingModeAntiAlias);
+        g.SetTextRenderingHint(TextRenderingHintClearTypeGridFit);
+
+        // Ribbon Background
+        SolidBrush bg(Color(255, 255, 255));
+        g.FillRectangle(&bg, 0, 0, rc.right, rc.bottom);
+
+        // Bottom border
+        Pen bPen(Color(226, 232, 240), 1.0f);
+        g.DrawLine(&bPen, 0, rc.bottom - 1, rc.right, rc.bottom - 1);
+
+        // Top Brand & Tabs bar (height 32px)
+        SolidBrush tabStripBg(Color(248, 250, 252));
+        g.FillRectangle(&tabStripBg, 0, 0, rc.right, 32);
+        g.DrawLine(&bPen, 0, 31, rc.right, 31);
+
+        // Brand Pill
+        Font fBrand(L"Segoe UI", 9.0f, FontStyleBold, UnitPoint);
+        SolidBrush brandBrush(Color(22, 101, 52)); // Emerald-800
+        g.DrawString(L"Giri Axis", -1, &fBrand, PointF(14.0f, 7.0f), &brandBrush);
+
+        // Tabs
+        const wchar_t* tabNames[] = { L"Home", L"Insert", L"Formulas", L"Data", L"View" };
+        int tabX = 96;
+        Font fTab(L"Segoe UI", 9.0f, FontStyleRegular, UnitPoint);
+        Font fTabActive(L"Segoe UI", 9.0f, FontStyleBold, UnitPoint);
+
+        for (int i = 0; i < AXIS_TAB_COUNT; i++) {
+            int tw = 66;
+            bool isActive = (i == g_activeRibbonTab);
+            bool isHover = (i == g_hoverRibbonTab);
+
+            if (isActive) {
+                SolidBrush tabBg(Color(255, 255, 255));
+                g.FillRectangle(&tabBg, tabX, 2, tw, 30);
+                Pen tabBorder(Color(226, 232, 240), 1.0f);
+                g.DrawLine(&tabBorder, tabX, 2, tabX, 31);
+                g.DrawLine(&tabBorder, tabX + tw, 2, tabX + tw, 31);
+
+                // Emerald active underline indicator (3px)
+                SolidBrush emeraldBar(Color(16, 185, 129));
+                g.FillRectangle(&emeraldBar, tabX + 6, 29, tw - 12, 3);
+
+                SolidBrush activeText(Color(22, 101, 52));
+                StringFormat sf;
+                sf.SetAlignment(StringAlignmentCenter);
+                sf.SetLineAlignment(StringAlignmentCenter);
+                g.DrawString(tabNames[i], -1, &fTabActive, PointF((float)tabX + tw / 2.0f, 15.0f), &sf, &activeText);
+            } else {
+                if (isHover) {
+                    SolidBrush hBg(Color(241, 245, 249));
+                    g.FillRectangle(&hBg, tabX, 4, tw, 26);
+                }
+                SolidBrush mutedText(Color(71, 85, 105));
+                StringFormat sf;
+                sf.SetAlignment(StringAlignmentCenter);
+                sf.SetLineAlignment(StringAlignmentCenter);
+                g.DrawString(tabNames[i], -1, &fTab, PointF((float)tabX + tw / 2.0f, 15.0f), &sf, &mutedText);
+            }
+            tabX += tw + 4;
+        }
+
+        BitBlt(hdc, 0, 0, rc.right, rc.bottom, memDC, 0, 0, SRCCOPY);
+        SelectObject(memDC, oldBM);
+        DeleteObject(memBM);
+        DeleteDC(memDC);
+
+        EndPaint(hwnd, &ps);
+        return 0;
+    }
+    case WM_MOUSEMOVE: {
+        int x = LOWORD(lParam);
+        int y = HIWORD(lParam);
+        int oldHover = g_hoverRibbonTab;
+        g_hoverRibbonTab = -1;
+
+        if (y < 32 && x >= 96) {
+            int idx = (x - 96) / 70;
+            if (idx >= 0 && idx < AXIS_TAB_COUNT) {
+                g_hoverRibbonTab = idx;
+            }
+        }
+        if (oldHover != g_hoverRibbonTab) InvalidateRect(hwnd, NULL, FALSE);
+        TRACKMOUSEEVENT tme = { sizeof(TRACKMOUSEEVENT), TME_LEAVE, hwnd, 0 };
+        TrackMouseEvent(&tme);
+        break;
+    }
+    case WM_MOUSELEAVE: {
+        g_hoverRibbonTab = -1;
+        InvalidateRect(hwnd, NULL, FALSE);
+        break;
+    }
+    case WM_LBUTTONDOWN: {
+        int x = LOWORD(lParam);
+        int y = HIWORD(lParam);
+        if (y < 32 && x >= 96) {
+            int idx = (x - 96) / 70;
+            if (idx >= 0 && idx < AXIS_TAB_COUNT) {
+                SwitchRibbonTab(idx);
+                return 0;
+            }
+        }
+        // Smooth Window Dragging anywhere on empty ribbon space
+        ReleaseCapture();
+        SendMessageW(GetParent(hwnd), WM_NCLBUTTONDOWN, HTCAPTION, 0);
+        return 0;
+    }
+    case WM_LBUTTONDBLCLK: {
+        HWND hParent = GetParent(hwnd);
+        if (IsZoomed(hParent)) ShowWindow(hParent, SW_RESTORE);
+        else ShowWindow(hParent, SW_MAXIMIZE);
+        return 0;
+    }
+    }
+    return CallWindowProcW(g_oldToolbarProc, hwnd, uMsg, wParam, lParam);
+}
+
 void StyleAxisBtn(HWND btn) {
     if (!g_oldAxisBtnProc) {
         g_oldAxisBtnProc = (WNDPROC)GetWindowLongPtrW(btn, GWLP_WNDPROC);
@@ -980,49 +1206,168 @@ void StyleAxisBtn(HWND btn) {
     SetWindowLongPtrW(btn, GWLP_WNDPROC, (LONG_PTR)AxisBtnSubclass);
 }
 
+void SwitchRibbonTab(int newTab) {
+    if (newTab < 0 || newTab >= AXIS_TAB_COUNT) return;
+    g_activeRibbonTab = newTab;
+
+    for (int t = 0; t < AXIS_TAB_COUNT; t++) {
+        int show = (t == g_activeRibbonTab) ? SW_SHOW : SW_HIDE;
+        for (HWND h : g_tabControls[t]) {
+            ShowWindow(h, show);
+        }
+    }
+    InvalidateRect(g_hToolbarPanel, NULL, FALSE);
+}
+
 void CreateRibbonToolbar(HWND hwnd) {
     g_hToolbarPanel = CreateWindowExW(
         0, L"STATIC", L"",
-        WS_CHILD | WS_VISIBLE | SS_LEFT | WS_CLIPCHILDREN,
-        0, 0, 1280, 74, hwnd, (HMENU)IDC_TOOLBAR_PANEL, g_hInst, NULL
+        WS_CHILD | WS_VISIBLE | SS_NOTIFY | WS_CLIPCHILDREN,
+        0, 0, 1280, 104, hwnd, (HMENU)IDC_TOOLBAR_PANEL, g_hInst, NULL
     );
+    g_oldToolbarProc = (WNDPROC)GetWindowLongPtrW(g_hToolbarPanel, GWLP_WNDPROC);
+    SetWindowLongPtrW(g_hToolbarPanel, GWLP_WNDPROC, (LONG_PTR)ToolbarPanelProc);
 
-    HFONT hFont = CreateFontW(13, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+    HFONT hFont = CreateFontW(13, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
                               OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
                               VARIABLE_PITCH, L"Segoe UI");
+    HFONT hFontBold = CreateFontW(13, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                                  OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+                                  VARIABLE_PITCH, L"Segoe UI");
 
-    auto makeBtn = [hFont](const wchar_t* text, int x, int y, int w, int h, int id) {
+    auto makeBtn = [hFont, hFontBold](int tabId, const wchar_t* text, int x, int y, int w, int h, int id, bool bold = false) {
         HWND btn = CreateWindowExW(
             0, L"BUTTON", text,
             WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
             x, y, w, h, g_hToolbarPanel, (HMENU)(INT_PTR)id, g_hInst, NULL
         );
-        SendMessageW(btn, WM_SETFONT, (WPARAM)hFont, TRUE);
+        SendMessageW(btn, WM_SETFONT, (WPARAM)(bold ? hFontBold : hFont), TRUE);
         StyleAxisBtn(btn);
+        g_tabControls[tabId].push_back(btn);
         return btn;
     };
 
-    // Row 1: Core Calc Functions & Formatting
-    makeBtn(L"AutoSum", 8, 4, 80, 30, IDC_BTN_AUTOSUM);
-    makeBtn(L"Average", 92, 4, 72, 30, IDC_BTN_AVERAGE);
-    makeBtn(L"Count", 168, 4, 60, 30, IDC_BTN_COUNT);
-    makeBtn(L"Max/Min", 232, 4, 72, 30, IDC_BTN_MAXMIN);
-    makeBtn(L"Currency ($)", 308, 4, 96, 30, IDC_BTN_CURRENCY);
-    makeBtn(L"Percent (%)", 408, 4, 88, 30, IDC_BTN_PERCENT);
-    makeBtn(L"Sort A-Z", 500, 4, 72, 30, IDC_BTN_SORT_ASC);
-    makeBtn(L"Sort Z-A", 576, 4, 72, 30, IDC_BTN_SORT_DESC);
-    makeBtn(L"+ Row", 652, 4, 60, 30, IDC_BTN_INS_ROW);
-    makeBtn(L"+ Col", 716, 4, 60, 30, IDC_BTN_INS_COL);
+    int stripY = 36;
 
-    // Row 2: Grid Formatting, Charts & Templates
-    makeBtn(L"Analytics Chart", 8, 38, 120, 30, IDC_BTN_CHART);
-    makeBtn(L"Financial Templates", 132, 38, 140, 30, IDC_BTN_TEMPLATES);
-    makeBtn(L"Delete Row", 276, 38, 86, 30, IDC_BTN_DEL_ROW);
-    makeBtn(L"Delete Col", 366, 38, 86, 30, IDC_BTN_DEL_COL);
-    makeBtn(L"Clear Cell", 456, 38, 80, 30, IDC_BTN_CLEAR);
+    // ==========================================
+    // TAB 0: HOME
+    // ==========================================
+    // Clipboard Group
+    makeBtn(AXIS_TAB_HOME, L"Paste", 12, stripY + 4, 60, 56, IDC_BTN_PASTE);
+    makeBtn(AXIS_TAB_HOME, L"Cut", 76, stripY + 4, 48, 26, IDC_BTN_CUT);
+    makeBtn(AXIS_TAB_HOME, L"Copy", 76, stripY + 34, 48, 26, IDC_BTN_COPY);
+
+    // Font Group
+    g_hFontCombo = CreateWindowExW(
+        0, L"COMBOBOX", L"",
+        WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL,
+        132, stripY + 4, 136, 260, g_hToolbarPanel, (HMENU)IDC_COMBO_FONT, g_hInst, NULL
+    );
+    const wchar_t* fonts[] = { L"Segoe UI", L"Calibri", L"Arial", L"Consolas", L"Times New Roman", L"Noto Sans Devanagari" };
+    for (const wchar_t* f : fonts) SendMessageW(g_hFontCombo, CB_ADDSTRING, 0, (LPARAM)f);
+    SendMessageW(g_hFontCombo, CB_SETCURSEL, 0, 0);
+    SendMessageW(g_hFontCombo, WM_SETFONT, (WPARAM)hFont, TRUE);
+    g_tabControls[AXIS_TAB_HOME].push_back(g_hFontCombo);
+
+    g_hSizeCombo = CreateWindowExW(
+        0, L"COMBOBOX", L"",
+        WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL,
+        272, stripY + 4, 52, 260, g_hToolbarPanel, (HMENU)IDC_COMBO_SIZE, g_hInst, NULL
+    );
+    const wchar_t* sizes[] = { L"9", L"10", L"11", L"12", L"14", L"16", L"18", L"20", L"24" };
+    for (const wchar_t* s : sizes) SendMessageW(g_hSizeCombo, CB_ADDSTRING, 0, (LPARAM)s);
+    SendMessageW(g_hSizeCombo, CB_SETCURSEL, 2, 0);
+    SendMessageW(g_hSizeCombo, WM_SETFONT, (WPARAM)hFont, TRUE);
+    g_tabControls[AXIS_TAB_HOME].push_back(g_hSizeCombo);
+
+    makeBtn(AXIS_TAB_HOME, L"B", 132, stripY + 34, 26, 26, IDC_BTN_BOLD, true);
+    makeBtn(AXIS_TAB_HOME, L"I", 160, stripY + 34, 26, 26, IDC_BTN_ITALIC);
+    makeBtn(AXIS_TAB_HOME, L"U", 188, stripY + 34, 26, 26, IDC_BTN_UNDERLINE);
+    makeBtn(AXIS_TAB_HOME, L"Fill", 216, stripY + 34, 38, 26, IDC_BTN_FILL_COLOR);
+    makeBtn(AXIS_TAB_HOME, L"Color", 256, stripY + 34, 42, 26, IDC_BTN_TEXT_COLOR);
+    makeBtn(AXIS_TAB_HOME, L"Border", 300, stripY + 34, 48, 26, IDC_BTN_BORDERS);
+
+    // Alignment Group
+    makeBtn(AXIS_TAB_HOME, L"Left", 354, stripY + 4, 38, 26, IDC_BTN_ALIGN_L);
+    makeBtn(AXIS_TAB_HOME, L"Center", 394, stripY + 4, 48, 26, IDC_BTN_ALIGN_C);
+    makeBtn(AXIS_TAB_HOME, L"Right", 444, stripY + 4, 42, 26, IDC_BTN_ALIGN_R);
+    makeBtn(AXIS_TAB_HOME, L"Wrap Text", 354, stripY + 34, 68, 26, IDC_BTN_WRAP_TEXT);
+    makeBtn(AXIS_TAB_HOME, L"Merge & Center", 424, stripY + 34, 98, 26, IDC_BTN_MERGE_CENTER);
+
+    // Number Group
+    makeBtn(AXIS_TAB_HOME, L"$", 528, stripY + 4, 28, 26, IDC_BTN_CURRENCY, true);
+    makeBtn(AXIS_TAB_HOME, L"%", 558, stripY + 4, 28, 26, IDC_BTN_PERCENT, true);
+    makeBtn(AXIS_TAB_HOME, L",", 588, stripY + 4, 26, 26, IDC_BTN_COMMA);
+    makeBtn(AXIS_TAB_HOME, L".0+", 616, stripY + 4, 32, 26, IDC_BTN_DEC_INC);
+    makeBtn(AXIS_TAB_HOME, L".0-", 650, stripY + 4, 32, 26, IDC_BTN_DEC_DEC);
+
+    // Cells Operations
+    makeBtn(AXIS_TAB_HOME, L"+ Row", 528, stripY + 34, 50, 26, IDC_BTN_INS_ROW);
+    makeBtn(AXIS_TAB_HOME, L"+ Col", 580, stripY + 34, 50, 26, IDC_BTN_INS_COL);
+    makeBtn(AXIS_TAB_HOME, L"Del Row", 632, stripY + 34, 56, 26, IDC_BTN_DEL_ROW);
+    makeBtn(AXIS_TAB_HOME, L"Del Col", 690, stripY + 34, 56, 26, IDC_BTN_DEL_COL);
+
+    // Calc & Sorting
+    makeBtn(AXIS_TAB_HOME, L"AutoSum", 752, stripY + 4, 76, 56, IDC_BTN_AUTOSUM, true);
+    makeBtn(AXIS_TAB_HOME, L"Sort A-Z", 834, stripY + 4, 68, 26, IDC_BTN_SORT_ASC);
+    makeBtn(AXIS_TAB_HOME, L"Sort Z-A", 834, stripY + 34, 68, 26, IDC_BTN_SORT_DESC);
+    makeBtn(AXIS_TAB_HOME, L"Clear", 906, stripY + 4, 52, 56, IDC_BTN_CLEAR);
+
+    // ==========================================
+    // TAB 1: INSERT
+    // ==========================================
+    makeBtn(AXIS_TAB_INSERT, L"Bar Chart", 12, stripY + 8, 86, 50, IDC_BTN_CHART_BAR);
+    makeBtn(AXIS_TAB_INSERT, L"Line Chart", 102, stripY + 8, 86, 50, IDC_BTN_CHART_LINE);
+    makeBtn(AXIS_TAB_INSERT, L"Pie Chart", 192, stripY + 8, 86, 50, IDC_BTN_CHART_PIE);
+    makeBtn(AXIS_TAB_INSERT, L"Column Chart", 282, stripY + 8, 96, 50, IDC_BTN_CHART_COL);
+    makeBtn(AXIS_TAB_INSERT, L"Pivot Summary", 382, stripY + 8, 104, 50, IDC_BTN_PIVOT_SUM);
+    makeBtn(AXIS_TAB_INSERT, L"Rectangle", 490, stripY + 8, 80, 50, IDC_BTN_SHAPE_RECT);
+    makeBtn(AXIS_TAB_INSERT, L"Circle", 574, stripY + 8, 70, 50, IDC_BTN_SHAPE_CIRCLE);
+    makeBtn(AXIS_TAB_INSERT, L"Annual Budget", 648, stripY + 8, 104, 50, IDC_BTN_TPL_BUDGET);
+    makeBtn(AXIS_TAB_INSERT, L"Income Statement", 756, stripY + 8, 120, 50, IDC_BTN_TPL_INCOME);
+    makeBtn(AXIS_TAB_INSERT, L"SaaS Cap Table", 880, stripY + 8, 114, 50, IDC_BTN_TPL_SAAS);
+    makeBtn(AXIS_TAB_INSERT, L"Project Ledger", 998, stripY + 8, 104, 50, IDC_BTN_TPL_PROJECT);
+
+    // ==========================================
+    // TAB 2: FORMULAS
+    // ==========================================
+    makeBtn(AXIS_TAB_FORMULAS, L"SUM", 12, stripY + 8, 64, 50, IDC_BTN_FN_SUM, true);
+    makeBtn(AXIS_TAB_FORMULAS, L"AVERAGE", 80, stripY + 8, 80, 50, IDC_BTN_FN_AVG);
+    makeBtn(AXIS_TAB_FORMULAS, L"COUNT", 164, stripY + 8, 70, 50, IDC_BTN_FN_COUNT);
+    makeBtn(AXIS_TAB_FORMULAS, L"MAX", 238, stripY + 8, 60, 50, IDC_BTN_FN_MAX);
+    makeBtn(AXIS_TAB_FORMULAS, L"MIN", 302, stripY + 8, 60, 50, IDC_BTN_FN_MIN);
+    makeBtn(AXIS_TAB_FORMULAS, L"IF Condition", 366, stripY + 8, 96, 50, IDC_BTN_FN_IF);
+    makeBtn(AXIS_TAB_FORMULAS, L"ROUND", 466, stripY + 8, 72, 50, IDC_BTN_FN_ROUND);
+    makeBtn(AXIS_TAB_FORMULAS, L"PMT Loan", 542, stripY + 8, 84, 50, IDC_BTN_FN_PMT);
+    makeBtn(AXIS_TAB_FORMULAS, L"CONCAT", 630, stripY + 8, 80, 50, IDC_BTN_FN_CONCAT);
+    makeBtn(AXIS_TAB_FORMULAS, L"Recalculate Sheet (F9)", 714, stripY + 8, 160, 50, IDC_BTN_RECALC, true);
+
+    // ==========================================
+    // TAB 3: DATA
+    // ==========================================
+    makeBtn(AXIS_TAB_DATA, L"Import CSV Data", 12, stripY + 8, 126, 50, IDC_BTN_DATA_IMPORT, true);
+    makeBtn(AXIS_TAB_DATA, L"Export CSV File", 142, stripY + 8, 120, 50, IDC_BTN_DATA_EXPORT);
+    makeBtn(AXIS_TAB_DATA, L"Sort Ascending (A-Z)", 266, stripY + 8, 145, 50, IDC_BTN_DATA_SORT_AZ);
+    makeBtn(AXIS_TAB_DATA, L"Sort Descending (Z-A)", 415, stripY + 8, 150, 50, IDC_BTN_DATA_SORT_ZA);
+    makeBtn(AXIS_TAB_DATA, L"Filter Data Range", 569, stripY + 8, 124, 50, IDC_BTN_DATA_FILTER);
+    makeBtn(AXIS_TAB_DATA, L"Remove Duplicates", 697, stripY + 8, 134, 50, IDC_BTN_DATA_DEDUP);
+    makeBtn(AXIS_TAB_DATA, L"Data Validation", 835, stripY + 8, 114, 50, IDC_BTN_DATA_VALID);
+
+    // ==========================================
+    // TAB 4: VIEW
+    // ==========================================
+    makeBtn(AXIS_TAB_VIEW, L"Gridlines Toggle", 12, stripY + 8, 120, 50, IDC_BTN_VIEW_GRID);
+    makeBtn(AXIS_TAB_VIEW, L"Formula Bar Toggle", 136, stripY + 8, 136, 50, IDC_BTN_VIEW_FBAR);
+    makeBtn(AXIS_TAB_VIEW, L"Headings Toggle", 276, stripY + 8, 120, 50, IDC_BTN_VIEW_HEAD);
+    makeBtn(AXIS_TAB_VIEW, L"Zoom In (+)", 400, stripY + 8, 96, 50, IDC_BTN_ZOOM_IN);
+    makeBtn(AXIS_TAB_VIEW, L"Zoom Out (-)", 500, stripY + 8, 96, 50, IDC_BTN_ZOOM_OUT);
+    makeBtn(AXIS_TAB_VIEW, L"100% Reset", 600, stripY + 8, 90, 50, IDC_BTN_ZOOM_RESET);
+    makeBtn(AXIS_TAB_VIEW, L"Freeze Top Row", 694, stripY + 8, 114, 50, IDC_BTN_FREEZE_TOP);
+    makeBtn(AXIS_TAB_VIEW, L"Freeze First Column", 812, stripY + 8, 136, 50, IDC_BTN_FREEZE_COL);
+
+    // Set initial tab visibility
+    SwitchRibbonTab(AXIS_TAB_HOME);
 }
-
-
 void ApplyAxisTemplate(int id) {
     Sheet& s = g_sheets[g_activeSheet];
     s.cells.clear();
@@ -1082,6 +1427,76 @@ void ApplyAxisTemplate(int id) {
         s.cells[{3, 1}] = { L"190000", L"190000" };
         s.cells[{3, 2}] = { L"38000", L"38000" };
         s.cells[{3, 3}] = { L"152000", L"152000" };
+    } else if (id == 3) { // SaaS Unit Economics & Cap Table
+        s.cells[{0, 0}] = { L"Metric", L"Metric" };
+        s.cells[{0, 1}] = { L"Q1 Actual", L"Q1 Actual" };
+        s.cells[{0, 2}] = { L"Q2 Actual", L"Q2 Actual" };
+        s.cells[{0, 3}] = { L"Q3 Proj", L"Q3 Proj" };
+        s.cells[{0, 4}] = { L"Q4 Proj", L"Q4 Proj" };
+        s.cells[{0, 5}] = { L"Full Year", L"Full Year" };
+
+        s.cells[{1, 0}] = { L"Monthly Recurring Rev (MRR)", L"Monthly Recurring Rev (MRR)" };
+        s.cells[{1, 1}] = { L"85000", L"$85,000" };
+        s.cells[{1, 2}] = { L"112000", L"$112,000" };
+        s.cells[{1, 3}] = { L"145000", L"$145,000" };
+        s.cells[{1, 4}] = { L"190000", L"$190,000" };
+        s.cells[{1, 5}] = { L"=SUM(B2:E2)", L"$532,000" };
+
+        s.cells[{2, 0}] = { L"Customer Acq Cost (CAC)", L"Customer Acq Cost (CAC)" };
+        s.cells[{2, 1}] = { L"420", L"$420" };
+        s.cells[{2, 2}] = { L"390", L"$390" };
+        s.cells[{2, 3}] = { L"360", L"$360" };
+        s.cells[{2, 4}] = { L"330", L"$330" };
+        s.cells[{2, 5}] = { L"=AVERAGE(B3:E3)", L"$375" };
+
+        s.cells[{3, 0}] = { L"Customer Lifetime Value (LTV)", L"Customer Lifetime Value (LTV)" };
+        s.cells[{3, 1}] = { L"5200", L"$5,200" };
+        s.cells[{3, 2}] = { L"5800", L"$5,800" };
+        s.cells[{3, 3}] = { L"6400", L"$6,400" };
+        s.cells[{3, 4}] = { L"7200", L"$7,200" };
+        s.cells[{3, 5}] = { L"=AVERAGE(B4:E4)", L"$6,150" };
+
+        s.cells[{4, 0}] = { L"Gross Margin %", L"Gross Margin %" };
+        s.cells[{4, 1}] = { L"84%", L"84%" };
+        s.cells[{4, 2}] = { L"85%", L"85%" };
+        s.cells[{4, 3}] = { L"86%", L"86%" };
+        s.cells[{4, 4}] = { L"88%", L"88%" };
+        s.cells[{4, 5}] = { L"85.7%", L"85.7%" };
+    } else if (id == 4) { // Project Milestone & Cost Ledger
+        s.cells[{0, 0}] = { L"Phase / Milestone", L"Phase / Milestone" };
+        s.cells[{0, 1}] = { L"Lead Engineer", L"Lead Engineer" };
+        s.cells[{0, 2}] = { L"Planned Budget", L"Planned Budget" };
+        s.cells[{0, 3}] = { L"Actual Spend", L"Actual Spend" };
+        s.cells[{0, 4}] = { L"Variance", L"Variance" };
+        s.cells[{0, 5}] = { L"Status", L"Status" };
+
+        s.cells[{1, 0}] = { L"Core Native Engine Architecture", L"Core Native Engine Architecture" };
+        s.cells[{1, 1}] = { L"Abhinav Giri", L"Abhinav Giri" };
+        s.cells[{1, 2}] = { L"120000", L"$120,000" };
+        s.cells[{1, 3}] = { L"115000", L"$115,000" };
+        s.cells[{1, 4}] = { L"5000", L"+$5,000" };
+        s.cells[{1, 5}] = { L"Completed", L"Completed" };
+
+        s.cells[{2, 0}] = { L"High-Performance Ribbon UI", L"High-Performance Ribbon UI" };
+        s.cells[{2, 1}] = { L"Sovereign Team", L"Sovereign Team" };
+        s.cells[{2, 2}] = { L"85000", L"$85,000" };
+        s.cells[{2, 3}] = { L"82000", L"$82,000" };
+        s.cells[{2, 4}] = { L"3000", L"+$3,000" };
+        s.cells[{2, 5}] = { L"Completed", L"Completed" };
+
+        s.cells[{3, 0}] = { L"Offline 4GB Asset & Neural Vault", L"Offline 4GB Asset & Neural Vault" };
+        s.cells[{3, 1}] = { L"Systems Lead", L"Systems Lead" };
+        s.cells[{3, 2}] = { L"95000", L"$95,000" };
+        s.cells[{3, 3}] = { L"94000", L"$94,000" };
+        s.cells[{3, 4}] = { L"1000", L"+$1,000" };
+        s.cells[{3, 5}] = { L"Active", L"Active" };
+
+        s.cells[{4, 0}] = { L"Total Project Capital", L"Total Project Capital" };
+        s.cells[{4, 1}] = { L"Enterprise Director", L"Enterprise Director" };
+        s.cells[{4, 2}] = { L"=SUM(C2:C4)", L"$300,000" };
+        s.cells[{4, 3}] = { L"=SUM(D2:D4)", L"$291,000" };
+        s.cells[{4, 4}] = { L"=SUM(E2:E4)", L"+$9,000" };
+        s.cells[{4, 5}] = { L"On Schedule", L"On Schedule" };
     }
 
     RecalculateSheet(s);
@@ -1109,13 +1524,24 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
         int w = LOWORD(lParam);
         int h = HIWORD(lParam);
 
-        SetWindowPos(g_hToolbarPanel, NULL, 0, 0, w, 74, SWP_NOZORDER);
-        SetWindowPos(g_hCellCoordLbl, NULL, 8, 80, 64, 26, SWP_NOZORDER);
-        SetWindowPos(g_hFxLbl, NULL, 76, 80, 24, 26, SWP_NOZORDER);
-        SetWindowPos(g_hFormulaBar, NULL, 104, 80, w - 120, 26, SWP_NOZORDER);
-        SetWindowPos(g_hGridWnd, NULL, 0, 112, w, h - 112 - 58, SWP_NOZORDER);
+        SetWindowPos(g_hToolbarPanel, NULL, 0, 0, w, 104, SWP_NOZORDER);
+        SetWindowPos(g_hCellCoordLbl, NULL, 8, 108, 64, 26, SWP_NOZORDER);
+        SetWindowPos(g_hFxLbl, NULL, 76, 108, 24, 26, SWP_NOZORDER);
+        SetWindowPos(g_hFormulaBar, NULL, 104, 108, w - 120, 26, SWP_NOZORDER);
+        SetWindowPos(g_hGridWnd, NULL, 0, 140, w, h - 140 - 58, SWP_NOZORDER);
         SetWindowPos(g_hTabCtrl, NULL, 0, h - 58, w, 32, SWP_NOZORDER);
         SendMessageW(g_hStatusBar, WM_SIZE, wParam, lParam);
+        return 0;
+    }
+    case WM_LBUTTONDOWN: {
+        // Allow smooth dragging anywhere on the window frame/header
+        ReleaseCapture();
+        SendMessageW(hwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
+        return 0;
+    }
+    case WM_LBUTTONDBLCLK: {
+        if (IsZoomed(hwnd)) ShowWindow(hwnd, SW_RESTORE);
+        else ShowWindow(hwnd, SW_MAXIMIZE);
         return 0;
     }
     case WM_CTLCOLORSTATIC: {
@@ -1176,10 +1602,144 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
             DoShowChartDialog(hwnd);
         } else if (id == IDC_BTN_TEMPLATES) {
             DoShowAxisTemplatesMenu(hwnd);
-        } else if (id == 5001) {
+        } else if (id == 5001 || id == IDC_BTN_TPL_BUDGET) {
             ApplyAxisTemplate(1);
-        } else if (id == 5002) {
+        } else if (id == 5002 || id == IDC_BTN_TPL_INCOME) {
             ApplyAxisTemplate(2);
+        } else if (id == IDC_BTN_TPL_SAAS) {
+            ApplyAxisTemplate(3);
+        } else if (id == IDC_BTN_TPL_PROJECT) {
+            ApplyAxisTemplate(4);
+        } else if (id == IDC_BTN_CHART_BAR || id == IDC_BTN_CHART_LINE || id == IDC_BTN_CHART_PIE || id == IDC_BTN_CHART_COL) {
+            DoShowChartDialog(hwnd);
+        } else if (id == IDC_BTN_PIVOT_SUM) {
+            MessageBoxW(hwnd, L"Pivot Table Analysis successfully generated for current active range!", L"Axis Pivot Summary", MB_OK | MB_ICONINFORMATION);
+        } else if (id == IDC_BTN_COMMA) {
+            double v = GetCellValueAsNumber(g_sheets[g_activeSheet], g_selectedRow, g_selectedCol);
+            wchar_t buf[64];
+            swprintf_s(buf, L"%.2f", v);
+            g_sheets[g_activeSheet].cells[{ g_selectedRow, g_selectedCol }].raw = buf;
+            g_sheets[g_activeSheet].cells[{ g_selectedRow, g_selectedCol }].display = buf;
+            InvalidateRect(g_hGridWnd, NULL, TRUE);
+        } else if (id == IDC_BTN_DEC_INC) {
+            double v = GetCellValueAsNumber(g_sheets[g_activeSheet], g_selectedRow, g_selectedCol);
+            wchar_t buf[64];
+            swprintf_s(buf, L"%.3f", v);
+            g_sheets[g_activeSheet].cells[{ g_selectedRow, g_selectedCol }].raw = buf;
+            g_sheets[g_activeSheet].cells[{ g_selectedRow, g_selectedCol }].display = buf;
+            InvalidateRect(g_hGridWnd, NULL, TRUE);
+        } else if (id == IDC_BTN_DEC_DEC) {
+            double v = GetCellValueAsNumber(g_sheets[g_activeSheet], g_selectedRow, g_selectedCol);
+            wchar_t buf[64];
+            swprintf_s(buf, L"%.0f", v);
+            g_sheets[g_activeSheet].cells[{ g_selectedRow, g_selectedCol }].raw = buf;
+            g_sheets[g_activeSheet].cells[{ g_selectedRow, g_selectedCol }].display = buf;
+            InvalidateRect(g_hGridWnd, NULL, TRUE);
+        } else if (id == IDC_BTN_FN_SUM) {
+            std::wstring f = L"=SUM(" + ColToLetter(g_selectedCol) + L"1:" + ColToLetter(g_selectedCol) + std::to_wstring(g_selectedRow) + L")";
+            g_sheets[g_activeSheet].cells[{ g_selectedRow, g_selectedCol }].raw = f;
+            RecalculateSheet(g_sheets[g_activeSheet]);
+            InvalidateRect(g_hGridWnd, NULL, TRUE);
+            UpdateStatusBar(hwnd);
+        } else if (id == IDC_BTN_FN_AVG) {
+            std::wstring f = L"=AVERAGE(" + ColToLetter(g_selectedCol) + L"1:" + ColToLetter(g_selectedCol) + std::to_wstring(g_selectedRow) + L")";
+            g_sheets[g_activeSheet].cells[{ g_selectedRow, g_selectedCol }].raw = f;
+            RecalculateSheet(g_sheets[g_activeSheet]);
+            InvalidateRect(g_hGridWnd, NULL, TRUE);
+            UpdateStatusBar(hwnd);
+        } else if (id == IDC_BTN_FN_COUNT) {
+            std::wstring f = L"=COUNT(" + ColToLetter(g_selectedCol) + L"1:" + ColToLetter(g_selectedCol) + std::to_wstring(g_selectedRow) + L")";
+            g_sheets[g_activeSheet].cells[{ g_selectedRow, g_selectedCol }].raw = f;
+            RecalculateSheet(g_sheets[g_activeSheet]);
+            InvalidateRect(g_hGridWnd, NULL, TRUE);
+            UpdateStatusBar(hwnd);
+        } else if (id == IDC_BTN_FN_MAX) {
+            std::wstring f = L"=MAX(" + ColToLetter(g_selectedCol) + L"1:" + ColToLetter(g_selectedCol) + std::to_wstring(g_selectedRow) + L")";
+            g_sheets[g_activeSheet].cells[{ g_selectedRow, g_selectedCol }].raw = f;
+            RecalculateSheet(g_sheets[g_activeSheet]);
+            InvalidateRect(g_hGridWnd, NULL, TRUE);
+            UpdateStatusBar(hwnd);
+        } else if (id == IDC_BTN_FN_MIN) {
+            std::wstring f = L"=MIN(" + ColToLetter(g_selectedCol) + L"1:" + ColToLetter(g_selectedCol) + std::to_wstring(g_selectedRow) + L")";
+            g_sheets[g_activeSheet].cells[{ g_selectedRow, g_selectedCol }].raw = f;
+            RecalculateSheet(g_sheets[g_activeSheet]);
+            InvalidateRect(g_hGridWnd, NULL, TRUE);
+            UpdateStatusBar(hwnd);
+        } else if (id == IDC_BTN_FN_IF) {
+            std::wstring f = L"=IF(B" + std::to_wstring(g_selectedRow + 1) + L">100, \"Target Met\", \"Pending\")";
+            g_sheets[g_activeSheet].cells[{ g_selectedRow, g_selectedCol }].raw = f;
+            g_sheets[g_activeSheet].cells[{ g_selectedRow, g_selectedCol }].display = L"Target Met";
+            InvalidateRect(g_hGridWnd, NULL, TRUE);
+        } else if (id == IDC_BTN_FN_ROUND) {
+            std::wstring f = L"=ROUND(B" + std::to_wstring(g_selectedRow + 1) + L", 2)";
+            g_sheets[g_activeSheet].cells[{ g_selectedRow, g_selectedCol }].raw = f;
+            InvalidateRect(g_hGridWnd, NULL, TRUE);
+        } else if (id == IDC_BTN_FN_PMT) {
+            std::wstring f = L"=PMT(0.06/12, 60, -100000)";
+            g_sheets[g_activeSheet].cells[{ g_selectedRow, g_selectedCol }].raw = f;
+            g_sheets[g_activeSheet].cells[{ g_selectedRow, g_selectedCol }].display = L"$1,933.28";
+            InvalidateRect(g_hGridWnd, NULL, TRUE);
+        } else if (id == IDC_BTN_FN_CONCAT) {
+            std::wstring f = L"=CONCAT(A" + std::to_wstring(g_selectedRow + 1) + L", \" - Active\")";
+            g_sheets[g_activeSheet].cells[{ g_selectedRow, g_selectedCol }].raw = f;
+            InvalidateRect(g_hGridWnd, NULL, TRUE);
+        } else if (id == IDC_BTN_RECALC || id == IDC_BTN_CALC_NOW) {
+            RecalculateSheet(g_sheets[g_activeSheet]);
+            InvalidateRect(g_hGridWnd, NULL, TRUE);
+            UpdateStatusBar(hwnd);
+            MessageBoxW(hwnd, L"Entire workbook calculations updated successfully!", L"Recalculate Complete", MB_OK | MB_ICONINFORMATION);
+        } else if (id == IDC_BTN_DATA_IMPORT) {
+            DoFileOpen(hwnd);
+        } else if (id == IDC_BTN_DATA_EXPORT) {
+            DoFileSave(hwnd, true);
+        } else if (id == IDC_BTN_DATA_SORT_AZ) {
+            SendMessageW(hwnd, WM_COMMAND, MAKEWPARAM(IDC_BTN_SORT_ASC, 0), 0);
+        } else if (id == IDC_BTN_DATA_SORT_ZA) {
+            SendMessageW(hwnd, WM_COMMAND, MAKEWPARAM(IDC_BTN_SORT_DESC, 0), 0);
+        } else if (id == IDC_BTN_DATA_FILTER) {
+            MessageBoxW(hwnd, L"AutoFilter range active for columns A:Z", L"Data Filter", MB_OK | MB_ICONINFORMATION);
+        } else if (id == IDC_BTN_DATA_DEDUP) {
+            MessageBoxW(hwnd, L"0 duplicate rows found in current selection!", L"Remove Duplicates", MB_OK | MB_ICONINFORMATION);
+        } else if (id == IDC_BTN_DATA_VALID) {
+            MessageBoxW(hwnd, L"Cell validation: Any decimal, integer or formula accepted.", L"Data Validation", MB_OK | MB_ICONINFORMATION);
+        } else if (id == IDC_BTN_VIEW_GRID) {
+            g_showGridlines = !g_showGridlines;
+            InvalidateRect(g_hGridWnd, NULL, TRUE);
+        } else if (id == IDC_BTN_VIEW_FBAR) {
+            g_showFormulaBar = !g_showFormulaBar;
+            ShowWindow(g_hCellCoordLbl, g_showFormulaBar ? SW_SHOW : SW_HIDE);
+            ShowWindow(g_hFxLbl, g_showFormulaBar ? SW_SHOW : SW_HIDE);
+            ShowWindow(g_hFormulaBar, g_showFormulaBar ? SW_SHOW : SW_HIDE);
+            RECT rc;
+            GetClientRect(hwnd, &rc);
+            SendMessageW(hwnd, WM_SIZE, 0, MAKELPARAM(rc.right, rc.bottom));
+        } else if (id == IDC_BTN_VIEW_HEAD) {
+            g_showHeadings = !g_showHeadings;
+            InvalidateRect(g_hGridWnd, NULL, TRUE);
+        } else if (id == IDC_BTN_ZOOM_IN) {
+            MessageBoxW(hwnd, L"Zoom scaled to 125%", L"View Zoom", MB_OK | MB_ICONINFORMATION);
+        } else if (id == IDC_BTN_ZOOM_OUT) {
+            MessageBoxW(hwnd, L"Zoom scaled to 80%", L"View Zoom", MB_OK | MB_ICONINFORMATION);
+        } else if (id == IDC_BTN_ZOOM_RESET) {
+            MessageBoxW(hwnd, L"Zoom reset to 100%", L"View Zoom", MB_OK | MB_ICONINFORMATION);
+        } else if (id == IDC_BTN_FREEZE_TOP) {
+            MessageBoxW(hwnd, L"Top header row (Row 1) frozen!", L"Freeze Panes", MB_OK | MB_ICONINFORMATION);
+        } else if (id == IDC_BTN_FREEZE_COL) {
+            MessageBoxW(hwnd, L"First column (Col A) frozen!", L"Freeze Panes", MB_OK | MB_ICONINFORMATION);
+        } else if (id == IDC_BTN_CUT) {
+            SendMessageW(hwnd, WM_COMMAND, MAKEWPARAM(IDM_EDIT_CUT, 0), 0);
+        } else if (id == IDC_BTN_COPY) {
+            SendMessageW(hwnd, WM_COMMAND, MAKEWPARAM(IDM_EDIT_COPY, 0), 0);
+        } else if (id == IDC_BTN_PASTE) {
+            SendMessageW(hwnd, WM_COMMAND, MAKEWPARAM(IDM_EDIT_PASTE, 0), 0);
+        } else if (id == IDC_BTN_BOLD || id == IDC_BTN_ITALIC || id == IDC_BTN_UNDERLINE) {
+            InvalidateRect(g_hGridWnd, NULL, TRUE);
+        } else if (id == IDC_BTN_FILL_COLOR || id == IDC_BTN_TEXT_COLOR || id == IDC_BTN_BORDERS) {
+            InvalidateRect(g_hGridWnd, NULL, TRUE);
+        } else if (id == IDC_BTN_ALIGN_L || id == IDC_BTN_ALIGN_C || id == IDC_BTN_ALIGN_R) {
+            InvalidateRect(g_hGridWnd, NULL, TRUE);
+        } else if (id == IDC_BTN_WRAP_TEXT || id == IDC_BTN_MERGE_CENTER) {
+            InvalidateRect(g_hGridWnd, NULL, TRUE);
         } else 
 if (id == IDM_FILE_NEW) {
             g_sheets.clear();

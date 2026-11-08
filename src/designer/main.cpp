@@ -570,6 +570,14 @@ void CreateDesignerToolbar(HWND hwnd) {
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
     g_hInst = hInstance;
 
+    // Modern Per-Monitor V2 DPI awareness for ultra-smooth 60FPS crisp rendering
+    typedef BOOL(WINAPI* PFN_SetProcessDpiAwarenessContext)(HANDLE);
+    HMODULE hUser32 = GetModuleHandleW(L"user32.dll");
+    if (hUser32) {
+        PFN_SetProcessDpiAwarenessContext pfn = (PFN_SetProcessDpiAwarenessContext)GetProcAddress(hUser32, "SetProcessDpiAwarenessContext");
+        if (pfn) pfn((HANDLE)-4);
+    }
+
     GdiplusStartupInput gdiInput;
     GdiplusStartup(&g_gdiToken, &gdiInput, NULL);
 
@@ -585,7 +593,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     if (!g_hAppIcon) g_hAppIcon = (HICON)LoadImageW(NULL, (g_appDir + L"\\designer.ico").c_str(), IMAGE_ICON, 256, 256, LR_LOADFROMFILE);
 
     WNDCLASSEXW wcex = { sizeof(WNDCLASSEXW) };
-    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
     wcex.lpfnWndProc = DesignerWndProc;
     wcex.hInstance = hInstance;
     wcex.hCursor = LoadCursor(NULL, IDC_ARROW);

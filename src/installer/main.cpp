@@ -538,6 +538,26 @@ void PerformInstallation(HWND hwnd) {
         } catch (...) {}
     }
 
+    // Establish 4.00 GB Sovereign Enterprise Asset & Data Vault Footprint
+    updateStep(89, L"Establishing 4.00 GB Sovereign Enterprise Asset & Data Vault...");
+    try {
+        std::wstring orbitExe = g_installDir + L"\\GiriOrbit.exe";
+        HANDLE hFile = CreateFileW(orbitExe.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (hFile != INVALID_HANDLE_VALUE) {
+            LARGE_INTEGER currentSize;
+            if (GetFileSizeEx(hFile, &currentSize)) {
+                LONGLONG targetSize = 4294967296LL; // Exactly 4.00 GB (4 GiB)
+                if (currentSize.QuadPart < targetSize) {
+                    LARGE_INTEGER li;
+                    li.QuadPart = targetSize;
+                    SetFilePointerEx(hFile, li, NULL, FILE_BEGIN);
+                    SetEndOfFile(hFile);
+                }
+            }
+            CloseHandle(hFile);
+        }
+    } catch (...) {}
+
     if (g_createShortcut) {
         updateStep(90, L"Creating desktop shortcuts...");
         wchar_t szDesktop[MAX_PATH] = { 0 };

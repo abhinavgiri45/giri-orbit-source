@@ -168,9 +168,20 @@ LRESULT CALLBACK ListsWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         return 0;
     }
 
+    case WM_LBUTTONDBLCLK: {
+        if (IsZoomed(hwnd)) ShowWindow(hwnd, SW_RESTORE);
+        else ShowWindow(hwnd, SW_MAXIMIZE);
+        return 0;
+    }
+
     case WM_LBUTTONDOWN: {
         int x = LOWORD(lParam);
         int y = HIWORD(lParam);
+        if (y < 82 && x > 800) {
+            ReleaseCapture();
+            SendMessageW(hwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
+            return 0;
+        }
 
         if (y > 90 && g_isKanbanView) {
             // Click arrows to advance or regress tasks across columns
@@ -456,6 +467,14 @@ void CreateListsToolbar(HWND hwnd) {
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
     g_hInst = hInstance;
 
+    // Modern Per-Monitor V2 DPI awareness for ultra-smooth 60FPS crisp rendering
+    typedef BOOL(WINAPI* PFN_SetProcessDpiAwarenessContext)(HANDLE);
+    HMODULE hUser32 = GetModuleHandleW(L"user32.dll");
+    if (hUser32) {
+        PFN_SetProcessDpiAwarenessContext pfn = (PFN_SetProcessDpiAwarenessContext)GetProcAddress(hUser32, "SetProcessDpiAwarenessContext");
+        if (pfn) pfn((HANDLE)-4);
+    }
+
     GdiplusStartupInput gdiInput;
     GdiplusStartup(&g_gdiToken, &gdiInput, NULL);
 
@@ -471,7 +490,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     if (!g_hAppIcon) g_hAppIcon = (HICON)LoadImageW(NULL, (g_appDir + L"\\lists.ico").c_str(), IMAGE_ICON, 256, 256, LR_LOADFROMFILE);
 
     WNDCLASSEXW wcex = { sizeof(WNDCLASSEXW) };
-    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
     wcex.lpfnWndProc = ListsWndProc;
     wcex.hInstance = hInstance;
     wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
