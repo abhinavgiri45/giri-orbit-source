@@ -86,10 +86,11 @@ inline bool TryLaunchSovereignAppMode(const wchar_t* toolName, const wchar_t* lp
     std::wstring indexPath = GetAppDataIndexPath();
     if (indexPath.empty()) return false;
 
-    // Convert local Windows path to file URI
+    // Convert local Windows path to valid file URI with percent-encoded spaces
     std::wstring fileUri = L"file:///";
     for (wchar_t ch : indexPath) {
         if (ch == L'\\') fileUri += L'/';
+        else if (ch == L' ') fileUri += L"%20";
         else fileUri += ch;
     }
     fileUri += L"#";
@@ -101,24 +102,43 @@ inline bool TryLaunchSovereignAppMode(const wchar_t* toolName, const wchar_t* lp
     std::wstring dataVault = std::wstring(localApp) + L"\\Programs\\Giri Orbit\\DataVault\\" + ((toolName && *toolName) ? toolName : L"hub");
     SHCreateDirectoryExW(NULL, dataVault.c_str(), NULL);
 
-    // Construct command line arguments
-    std::wstring cmdArgs = L"--app=\"" + fileUri + L"\" "
-                          + L"--user-data-dir=\"" + dataVault + L"\" "
-                          + L"--window-size=1280,820 "
-                          + L"--disable-extensions "
-                          + L"--no-default-browser-check "
-                          + L"--no-first-run";
+    // Construct full command line
+    std::wstring fullCommandLine = L"\"" + edgePath + L"\" "
+                                 + L"--app=\"" + fileUri + L"\" "
+                                 + L"--user-data-dir=\"" + dataVault + L"\" "
+                                 + L"--window-size=1280,820 "
+                                 + L"--disable-extensions "
+                                 + L"--no-default-browser-check "
+                                 + L"--no-first-run";
 
-    HINSTANCE hResult = ShellExecuteW(
+    STARTUPINFOW si = { sizeof(STARTUPINFOW) };
+    si.dwFlags = STARTF_USESHOWWINDOW;
+    si.wShowWindow = SW_SHOWNORMAL;
+    PROCESS_INFORMATION pi = { 0 };
+
+    std::vector<wchar_t> cmdBuf(fullCommandLine.begin(), fullCommandLine.end());
+    cmdBuf.push_back(L'\0');
+
+    BOOL bSuccess = CreateProcessW(
         NULL,
-        L"open",
-        edgePath.c_str(),
-        cmdArgs.c_str(),
+        cmdBuf.data(),
         NULL,
-        SW_SHOWNORMAL
+        NULL,
+        FALSE,
+        CREATE_NEW_PROCESS_GROUP | DETACHED_PROCESS,
+        NULL,
+        NULL,
+        &si,
+        &pi
     );
 
-    return ((INT_PTR)hResult > 32);
+    if (bSuccess) {
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+        return true;
+    }
+
+    return false;
 }
 
 } // namespace GiriOrbit
