@@ -158,8 +158,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
                                    L"  • Giri-Orbit Designer — Creative Graphic, Vector & Social Studio\n"
                                    L"  • Giri-Orbit Hub    — Sovereign Workspace & Orchestrator\n\n"
                                    L"Architecture: Native Windows C++ & Sovereign Edge Standalone Engine\n"
-                                   L"Author: Made by Abhinav Giri (@abhinavgiri45)\n"
-                                   L"Corporation: GIRI Corporation (A Subsidiary of Giri Group)\n\n"
+                                   L"Author & Developer: Abhinav Giri (@abhinavgiri45)\n\n"
                                    L"Click Next to choose components and continue, or Cancel to exit Setup.",
                                    WS_CHILD | SS_LEFT, 245, 65, 490, 360, g_hMainWnd, NULL, hInstance, NULL);
     g_pageControls[PAGE_WELCOME].push_back(hWelTitle);
@@ -180,7 +179,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
         L"Official Inquiries: abhinavgiri370@gmail.com | giricorporation.pvt@gmail.com\r\n"
         L"Product: Giri-Orbit Enterprise Suite v12.0\r\n\r\n"
         L"1. SOVEREIGN GRANT OF LICENSE\r\n"
-        L"Abhinav Giri and GIRI Corporation grant you a perpetual, royalty-free, non-exclusive license to install, execute, and utilize the Giri-Orbit Suite (including Drift, Axis, Kinetic, Forms, Quiz, Lists, Designer, and Hub) on any compatible hardware.\r\n\r\n"
+        L"Abhinav Giri grants you a perpetual, royalty-free, non-exclusive license to install, execute, and utilize the Giri-Orbit Suite (including Drift, Axis, Kinetic, Forms, Quiz, Lists, Designer, and Hub) on any compatible hardware.\r\n\r\n"
         L"2. 100% OFFLINE CONFIDENTIALITY & PRIVACY\r\n"
         L"Giri-Orbit operates 100% offline and in-memory on your local device. The software contains ZERO cloud telemetry, ZERO tracking cookies, and ZERO background data transmission. Your confidential documents, financial matrices, presentations, and cryptographic seals remain strictly your private property.\r\n\r\n"
         L"3. UNIVERSAL FORMAT FREEDOM\r\n"
@@ -323,8 +322,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
                                    L"  • Giri-Orbit Designer — Creative Graphic & Vector Studio\n"
                                    L"  • Giri-Orbit Hub    — Desktop Workspace Orchestrator\n\n"
                                    L"All tools operate 100% offline with zero cloud tracking.\n"
-                                   L"Made by Abhinav Giri (@abhinavgiri45)\n"
-                                   L"GIRI Corporation (A Subsidiary of Giri Group)\n\n"
+                                   L"Made by Abhinav Giri (@abhinavgiri45)\n\n"
                                    L"Click Finish to launch Giri-Orbit and start creating.",
                                    WS_CHILD | SS_LEFT, 245, 75, 490, 265, g_hMainWnd, NULL, hInstance, NULL);
 

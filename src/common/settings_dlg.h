@@ -222,7 +222,7 @@ inline void ShowProfileDialog(HWND hParent) {
                     L"Cryptographic Key: RSA-4096 / SHA-256 Offline Signed\n"
                     L"Enterprise Suite Footprint: 4.00 GB (4,000,000,000 bytes)\n"
                     L"Primary Author & Owner: Abhinav Giri (@abhinavgiri45)\n"
-                    L"Account Email: giricorporation.pvt@gmail.com",
+                    L"Author Email: abhinavgiri370@gmail.com",
                     WS_CHILD | WS_VISIBLE | SS_LEFT, 24, 235, 450, 85, hwnd, NULL, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
                 SendMessageW(hCard, WM_SETFONT, (WPARAM)hf, TRUE);
 
