@@ -24,6 +24,8 @@
 #define IDM_FILE_SAVEAS      1004
 #define IDM_FILE_PRINT       1005
 #define IDM_FILE_EXIT        1006
+#define IDM_SETTINGS         1098
+#define IDM_PROFILE          1099
 
 #define IDM_EDIT_UNDO        1010
 #define IDM_EDIT_REDO        1011

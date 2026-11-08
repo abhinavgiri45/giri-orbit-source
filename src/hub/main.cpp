@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include "../common/settings_dlg.h"
 
 #pragma comment(lib, "gdiplus.lib")
 #pragma comment(lib, "comctl32.lib")
@@ -646,31 +647,157 @@ void RenderCreateCard(Graphics& g, int x, int y, int index, bool isHover) {
             }
             g.DrawLine(&gGrid, px + 16 + (previewW - 32) * 0.33f, py + 18, px + 16 + (previewW - 32) * 0.33f, py + 48);
             g.DrawLine(&gGrid, px + 16 + (previewW - 32) * 0.66f, py + 18, px + 16 + (previewW - 32) * 0.66f, py + 48);
-        } else if (index == 3 || index == 4) {
-            // Form / Quiz preview
-            SolidBrush fHead(index == 3 ? Color(13, 148, 136) : Color(8, 145, 178));
-            g.FillRectangle(&fHead, px + 18, py + 14, previewW - 36, 6.0f);
+        } else if (index == 3) {
+            // 3. Form (Forms) preview - Professional Fluent Clipboard & Survey
+            GraphicsPath formCard;
+            AddRoundedRect(formCard, RectF(px + 14, py + 8, previewW - 28, previewH - 16), 3.0f);
+            SolidBrush whiteBrush(Color(255, 255, 255));
+            g.FillPath(&whiteBrush, &formCard);
+            Pen formBorder(Color(204, 251, 241), 1.0f);
+            g.DrawPath(&formBorder, &formCard);
 
-            SolidBrush dotCol(Color(203, 213, 225));
-            g.FillEllipse(&dotCol, px + 18, py + 26, 6.0f, 6.0f);
-            g.FillRectangle(&dotCol, px + 28, py + 27, previewW - 50, 4.0f);
+            // Teal header bar
+            SolidBrush fHead(Color(13, 148, 136));
+            g.FillRectangle(&fHead, px + 14, py + 8, previewW - 28, 9.0f);
 
-            g.FillEllipse(&dotCol, px + 18, py + 36, 6.0f, 6.0f);
-            g.FillRectangle(&dotCol, px + 28, py + 37, previewW - 50, 4.0f);
+            // Metallic clipboard top clip
+            SolidBrush clipBrush(Color(203, 213, 225));
+            g.FillRectangle(&clipBrush, px + previewW / 2.0f - 10.0f, py + 5.0f, 20.0f, 5.0f);
+
+            // Checkbox 1 (Checked with emerald green)
+            SolidBrush ckBox(Color(16, 185, 129));
+            g.FillRectangle(&ckBox, px + 18, py + 22, 6.0f, 6.0f);
+            SolidBrush lineDark(Color(51, 65, 85));
+            g.FillRectangle(&lineDark, px + 27, py + 23, previewW - 48, 4.0f);
+
+            // Checkbox 2 (Empty)
+            Pen emptyBox(Color(148, 163, 184), 1.0f);
+            g.DrawRectangle(&emptyBox, px + 18, py + 31, 6.0f, 6.0f);
+            SolidBrush lineMuted(Color(148, 163, 184));
+            g.FillRectangle(&lineMuted, px + 27, py + 32, previewW - 55, 4.0f);
+
+            // Star rating row
+            SolidBrush goldStar(Color(245, 158, 11));
+            SolidBrush grayStar(Color(226, 232, 240));
+            for (int s = 0; s < 4; s++) {
+                g.FillEllipse(s < 3 ? &goldStar : &grayStar, px + 18 + s * 8, py + 40, 5.0f, 5.0f);
+            }
+        } else if (index == 4) {
+            // 4. Quiz (Quiz) preview - Academic Exam & Achievement Star
+            GraphicsPath quizCard;
+            AddRoundedRect(quizCard, RectF(px + 14, py + 8, previewW - 28, previewH - 16), 3.0f);
+            SolidBrush whiteBrush(Color(255, 255, 255));
+            g.FillPath(&whiteBrush, &quizCard);
+            Pen quizBorder(Color(186, 230, 253), 1.0f);
+            g.DrawPath(&quizBorder, &quizCard);
+
+            // Azure header bar
+            SolidBrush qHead(Color(2, 132, 199));
+            g.FillRectangle(&qHead, px + 14, py + 8, previewW - 28, 9.0f);
+
+            // Gold Medal Star in top right
+            SolidBrush starMedal(Color(245, 158, 11));
+            g.FillEllipse(&starMedal, px + previewW - 24, py + 5, 8.0f, 8.0f);
+
+            // Question Stem
+            SolidBrush qStem(Color(30, 41, 59));
+            g.FillRectangle(&qStem, px + 18, py + 21, previewW - 44, 3.5f);
+
+            // Radio Option 1 (Selected with azure bullet)
+            Pen radPen(Color(2, 132, 199), 1.0f);
+            g.DrawEllipse(&radPen, px + 18, py + 28, 6.0f, 6.0f);
+            SolidBrush radDot(Color(2, 132, 199));
+            g.FillEllipse(&radDot, px + 19.5f, py + 29.5f, 3.0f, 3.0f);
+            SolidBrush optLine1(Color(71, 85, 105));
+            g.FillRectangle(&optLine1, px + 27, py + 29, previewW - 52, 4.0f);
+
+            // Radio Option 2 (Unselected)
+            Pen radPen2(Color(148, 163, 184), 1.0f);
+            g.DrawEllipse(&radPen2, px + 18, py + 37, 6.0f, 6.0f);
+            SolidBrush optLine2(Color(148, 163, 184));
+            g.FillRectangle(&optLine2, px + 27, py + 38, previewW - 60, 4.0f);
         } else if (index == 5) {
-            // List preview
+            // 5. List (Lists) preview - Agile Kanban Board Matrix
+            GraphicsPath listCard;
+            AddRoundedRect(listCard, RectF(px + 12, py + 8, previewW - 24, previewH - 16), 3.0f);
+            SolidBrush whiteBrush(Color(255, 255, 255));
+            g.FillPath(&whiteBrush, &listCard);
+            Pen listBorder(Color(233, 213, 255), 1.0f);
+            g.DrawPath(&listBorder, &listCard);
+
+            // Violet header bar
             SolidBrush lHead(Color(124, 58, 237));
-            g.FillRectangle(&lHead, px + 18, py + 14, previewW - 36, 6.0f);
-            SolidBrush lRow1(Color(243, 232, 255));
-            g.FillRectangle(&lRow1, px + 18, py + 24, previewW - 36, 6.0f);
-            SolidBrush lRow2(Color(248, 250, 252));
-            g.FillRectangle(&lRow2, px + 18, py + 32, previewW - 36, 6.0f);
+            g.FillRectangle(&lHead, px + 12, py + 8, previewW - 24, 8.0f);
+
+            // Task 1 (Done): Green check + line + tag
+            SolidBrush ckDone(Color(22, 163, 74));
+            g.FillRectangle(&ckDone, px + 16, py + 20, 5.0f, 5.0f);
+            SolidBrush lineDone(Color(71, 85, 105));
+            g.FillRectangle(&lineDone, px + 24, py + 21, previewW - 58, 3.0f);
+            SolidBrush tagDone(Color(34, 197, 94));
+            g.FillRectangle(&tagDone, px + previewW - 28, py + 20, 12.0f, 5.0f);
+
+            // Task 2 (Active): Amber bullet + line + tag
+            SolidBrush dotProg(Color(245, 158, 11));
+            g.FillEllipse(&dotProg, px + 16, py + 28, 5.0f, 5.0f);
+            SolidBrush lineProg(Color(100, 116, 139));
+            g.FillRectangle(&lineProg, px + 24, py + 29, previewW - 55, 3.0f);
+            SolidBrush tagProg(Color(245, 158, 11));
+            g.FillRectangle(&tagProg, px + previewW - 28, py + 28, 12.0f, 5.0f);
+
+            // Task 3 (Queue): Purple bullet + line
+            SolidBrush dotQueue(Color(124, 58, 237));
+            g.FillEllipse(&dotQueue, px + 16, py + 36, 5.0f, 5.0f);
+            SolidBrush lineQueue(Color(148, 163, 184));
+            g.FillRectangle(&lineQueue, px + 24, py + 37, previewW - 50, 3.0f);
         } else {
-            // Design preview (Abstract shapes)
-            SolidBrush dCir(Color(244, 114, 182));
-            g.FillEllipse(&dCir, px + 18, py + 14, 22.0f, 22.0f);
-            SolidBrush dRect(Color(192, 132, 252));
-            g.FillRectangle(&dRect, px + 44, py + 18, 18.0f, 18.0f);
+            // 6. Design (Designer) preview - Precision Vector Studio & Pen Tool
+            GraphicsPath studioCard;
+            AddRoundedRect(studioCard, RectF(px + 12, py + 8, previewW - 24, previewH - 16), 3.0f);
+            SolidBrush darkCanvas(Color(15, 23, 42));
+            g.FillPath(&darkCanvas, &studioCard);
+            Pen studioBorder(Color(51, 65, 85), 1.0f);
+            g.DrawPath(&studioBorder, &studioCard);
+
+            // Overlapping Vibrant Vector Shapes:
+            // 1. Cyan angled polygon
+            SolidBrush polyCyan(Color(180, 14, 165, 233));
+            PointF pCyan[4] = {
+                PointF(px + 16, py + 18),
+                PointF(px + 36, py + 12),
+                PointF(px + 42, py + 32),
+                PointF(px + 22, py + 36)
+            };
+            g.FillPolygon(&polyCyan, pCyan, 4);
+
+            // 2. Golden Amber polygon
+            SolidBrush polyGold(Color(180, 245, 158, 11));
+            PointF pGold[4] = {
+                PointF(px + 32, py + 20),
+                PointF(px + previewW - 16, py + 16),
+                PointF(px + previewW - 20, py + 38),
+                PointF(px + 34, py + 40)
+            };
+            g.FillPolygon(&polyGold, pGold, 4);
+
+            // 3. Neon Rose circle
+            SolidBrush cirRose(Color(210, 244, 63, 94));
+            g.FillEllipse(&cirRose, px + 26, py + 22, 16.0f, 16.0f);
+
+            // White Bézier Curve with Cyan Anchor Points
+            Pen bezPen(Color(255, 255, 255), 1.5f);
+            g.DrawBezier(&bezPen, PointF(px + 16, py + 42), PointF(px + 26, py + 14), PointF(px + 44, py + 44), PointF(px + previewW - 16, py + 22));
+
+            // Anchor handle nodes
+            SolidBrush nodeBrush(Color(255, 255, 255));
+            Pen nodePen(Color(14, 165, 233), 1.0f);
+            g.FillRectangle(&nodeBrush, px + 33, py + 26, 4.0f, 4.0f);
+            g.DrawRectangle(&nodePen, px + 33, py + 26, 4.0f, 4.0f);
+
+            // Fountain pen metallic tip pointing to anchor node
+            SolidBrush penGold(Color(251, 191, 36));
+            PointF penTip[3] = { PointF(px + 35, py + 28), PointF(px + 44, py + 34), PointF(px + 41, py + 38) };
+            g.FillPolygon(&penGold, penTip, 3);
         }
 
         // App badge inside preview
@@ -904,6 +1031,10 @@ void ShowGirionixAiDialog(HWND hParent);
 // ============================================================================
 
 void ShowSettingsDialog(HWND hParent) {
+    GiriOrbit::ShowSettingsDialog(hParent);
+}
+
+void OldShowSettingsDialog_Unused(HWND hParent) {
     static HWND s_hDlg = NULL;
     if (s_hDlg && IsWindow(s_hDlg)) {
         ShowWindow(s_hDlg, SW_RESTORE);
@@ -1018,6 +1149,9 @@ void ShowSettingsDialog(HWND hParent) {
             case WM_CLOSE:
                 DestroyWindow(hwnd);
                 return 0;
+            case WM_NCDESTROY:
+                s_hDlg = NULL;
+                break;
             }
             return DefWindowProcW(hwnd, msg, wParam, lParam);
         };
@@ -1045,6 +1179,10 @@ void ShowSettingsDialog(HWND hParent) {
 }
 
 void ShowProfileDialog(HWND hParent) {
+    GiriOrbit::ShowProfileDialog(hParent);
+}
+
+void OldShowProfileDialog_Unused(HWND hParent) {
     static HWND s_hDlg = NULL;
     if (s_hDlg && IsWindow(s_hDlg)) {
         ShowWindow(s_hDlg, SW_RESTORE);
@@ -1146,6 +1284,9 @@ void ShowProfileDialog(HWND hParent) {
             case WM_CLOSE:
                 DestroyWindow(hwnd);
                 return 0;
+            case WM_NCDESTROY:
+                s_hDlg = NULL;
+                break;
             }
             return DefWindowProcW(hwnd, msg, wParam, lParam);
         };
@@ -1281,6 +1422,9 @@ void ShowCreateTemplatesDialog(HWND hParent) {
             case WM_CLOSE:
                 DestroyWindow(hwnd);
                 return 0;
+            case WM_NCDESTROY:
+                s_hDlg = NULL;
+                break;
             }
             return DefWindowProcW(hwnd, msg, wParam, lParam);
         };
@@ -1401,6 +1545,9 @@ void ShowAppsDialog(HWND hParent) {
             case WM_CLOSE:
                 DestroyWindow(hwnd);
                 return 0;
+            case WM_NCDESTROY:
+                s_hDlg = NULL;
+                break;
             }
             return DefWindowProcW(hwnd, msg, wParam, lParam);
         };
@@ -1528,6 +1675,9 @@ void ShowMyContentDialog(HWND hParent) {
             case WM_CLOSE:
                 DestroyWindow(hwnd);
                 return 0;
+            case WM_NCDESTROY:
+                s_hDlg = NULL;
+                break;
             }
             return DefWindowProcW(hwnd, msg, wParam, lParam);
         };
@@ -1733,20 +1883,21 @@ LRESULT CALLBACK HubWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
         int contentX = LEFT_RAIL_WIDTH + 48;
 
-        // Direct Click on "See more in Create ->"
+        // Direct Click on "See more in Create ->" or "Create New" header
         int cardsRight = contentX + 7 * (CARD_WIDTH + CARD_GAP) - CARD_GAP;
-        if (x >= cardsRight - 170 && x <= cardsRight + 30 && y >= 140 && y <= 185) {
+        if ((x >= contentX && x <= contentX + 180 && y >= 140 && y <= 185) ||
+            (x >= cardsRight - 220 && x <= w - 20 && y >= 140 && y <= 185)) {
             ShowCreateTemplatesDialog(hwnd);
             return 0;
         }
 
         // Direct Click Rail Items
         if (x < LEFT_RAIL_WIDTH) {
-            int bottomY = h - 100;
-            if (y >= bottomY && y < bottomY + 44) {
+            int bottomY = h - 110;
+            if (y >= bottomY && y < bottomY + 52) {
                 ShowSettingsDialog(hwnd);
                 return 0;
-            } else if (y >= bottomY + 44 && y < h) {
+            } else if (y >= bottomY + 52) {
                 ShowProfileDialog(hwnd);
                 return 0;
             } else {

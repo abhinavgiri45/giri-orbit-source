@@ -25,6 +25,7 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include "../common/settings_dlg.h"
 #include <cmath>
 
 #include "../common/sovereign_types.h"

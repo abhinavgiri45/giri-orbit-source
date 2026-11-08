@@ -180,7 +180,7 @@ void EnterDesignerCanvasBlank(HWND hwnd);
 void LoadDesignerTemplate(HWND hwnd, int idx);
 
 void InitDesignerConfig() {
-    g_designerConfig.toolLetter = L"G";
+    g_designerConfig.toolLetter = L"D";
     g_designerConfig.toolName = L"Designer";
     g_designerConfig.fullToolName = L"Giri Designer";
     g_designerConfig.headline = L"Welcome to Designer for free on the web";

@@ -28,6 +28,7 @@
 #include <iomanip>
 #include <chrono>
 #include "../common/tool_start_ui.h"
+#include "../common/settings_dlg.h"
 
 #pragma comment(lib, "comctl32.lib")
 #pragma comment(lib, "comdlg32.lib")
@@ -122,6 +123,8 @@ using namespace Gdiplus;
 #define IDM_FILE_SAVEAS         4004
 #define IDM_FILE_PRINT          4005
 #define IDM_FILE_EXIT           4006
+#define IDM_SETTINGS            4050
+#define IDM_PROFILE             4051
 
 #define IDM_EDIT_UNDO           4010
 #define IDM_EDIT_REDO           4011
@@ -1086,6 +1089,10 @@ void CreateMainMenu(HWND hwnd) {
     AppendMenuW(hFile, MF_SEPARATOR, 0, NULL);
     AppendMenuW(hFile, MF_STRING, IDM_FILE_PRINT, L"&Print...\tCtrl+P");
     AppendMenuW(hFile, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(hFile, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(hFile, MF_STRING, IDM_SETTINGS, L"&Settings & Personalization...\tCtrl+,");
+    AppendMenuW(hFile, MF_STRING, IDM_PROFILE, L"&User Profile & Account...");
+    AppendMenuW(hFile, MF_SEPARATOR, 0, NULL);
     AppendMenuW(hFile, MF_STRING, IDM_FILE_EXIT, L"E&xit\tAlt+F4");
     AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hFile, L"&File");
 
@@ -1848,6 +1855,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 if (PrintDlgW(&pd)) DeleteDC(pd.hDC);
                 break;
             }
+            case IDM_SETTINGS: GiriOrbit::ShowSettingsDialog(hwnd); break;
+            case IDM_PROFILE: GiriOrbit::ShowProfileDialog(hwnd); break;
             case IDM_FILE_EXIT: DestroyWindow(hwnd); break;
 
             case IDM_EDIT_UNDO: SendMessageW(g_hRichEdit, EM_UNDO, 0, 0); break;

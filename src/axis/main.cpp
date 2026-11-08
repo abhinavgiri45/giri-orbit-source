@@ -19,6 +19,7 @@ ULONG_PTR g_gdiToken = 0;
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include "../common/settings_dlg.h"
 #include <cctype>
 #include <iomanip>
 #include "../common/tool_start_ui.h"
@@ -878,6 +879,10 @@ void CreateMainMenu(HWND hwnd) {
     AppendMenuW(hFile, MF_STRING, IDM_FILE_SAVEAS, L"Save &As...");
     AppendMenuW(hFile, MF_SEPARATOR, 0, NULL);
     AppendMenuW(hFile, MF_STRING, 1070, L"&Export CSV Data...");
+    AppendMenuW(hFile, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(hFile, MF_SEPARATOR, 0, NULL);
+    AppendMenuW(hFile, MF_STRING, IDM_SETTINGS, L"&Settings & Personalization...\tCtrl+,");
+    AppendMenuW(hFile, MF_STRING, IDM_PROFILE, L"&User Profile & Account...");
     AppendMenuW(hFile, MF_SEPARATOR, 0, NULL);
     AppendMenuW(hFile, MF_STRING, IDM_FILE_EXIT, L"E&xit\tAlt+F4");
     AppendMenuW(hMenuBar, MF_POPUP, (UINT_PTR)hFile, L"&File");
@@ -2175,6 +2180,10 @@ if (id == IDM_FILE_NEW) {
             UpdateStatusBar(hwnd);
         } else if (id == IDM_HELP_ABOUT) {
             ShowAboutDialog(hwnd, L"Giri Axis (High-Velocity Financial Matrix)");
+        } else if (id == IDM_SETTINGS) {
+            GiriOrbit::ShowSettingsDialog(hwnd);
+        } else if (id == IDM_PROFILE) {
+            GiriOrbit::ShowProfileDialog(hwnd);
         } else if (id == IDM_FILE_EXIT) {
             PostQuitMessage(0);
         }
