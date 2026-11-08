@@ -29,6 +29,7 @@
 
 #include "../common/sovereign_types.h"
 #include "../common/universal_file.h"
+#include "../common/tool_start_ui.h"
 
 using namespace Gdiplus;
 
@@ -311,6 +312,244 @@ void InitDefaultSlides() {
     g_currentSlide = 0;
 }
 
+
+// Kinetic View State Machine
+enum KineticViewState {
+    KINETIC_VIEW_START = 0,
+    KINETIC_VIEW_SLIDES = 1
+};
+KineticViewState g_kineticState = KINETIC_VIEW_START;
+GiriOrbit::ToolThemeConfig g_kineticConfig;
+GiriOrbit::StartUIState g_kineticStartState;
+
+void ReturnToKineticStart(HWND hwnd);
+void EnterKineticSlides(HWND hwnd);
+void EnterKineticSlidesBlank(HWND hwnd);
+void LoadKineticTemplate(HWND hwnd, int idx);
+
+void InitKineticConfig() {
+    g_kineticConfig.toolLetter = L"K";
+    g_kineticConfig.toolName = L"Kinetic";
+    g_kineticConfig.fullToolName = L"Giri Kinetic";
+    g_kineticConfig.headline = L"Welcome to Kinetic for free on the web";
+    g_kineticConfig.subtitle = L"Sovereign in-memory presentation show & widescreen stage. Zero database tracking, 16:9 vector layouts, and customizable presentations.";
+    g_kineticConfig.createBtnText = L"Create blank presentation";
+    g_kineticConfig.uploadBtnText = L"Upload presentation";
+    g_kineticConfig.draftTitle = L"Golden Light Prestige";
+    g_kineticConfig.draftMeta = L"Saved recently · 6 Slides · 16:9 Widescreen · 4.3 KB";
+    g_kineticConfig.toolHash = L"kinetic";
+    g_kineticConfig.galleryTitle = L"PresentationGO & Global Presentation Library";
+    g_kineticConfig.galleryBadge = L"● 3,500+ Free Templates & Diagrams";
+    g_kineticConfig.accentColor = Gdiplus::Color(249, 115, 22); // Orange-500
+    g_kineticConfig.accentDark = Gdiplus::Color(194, 65, 12);   // Orange-700
+    g_kineticConfig.accentHover = Gdiplus::Color(234, 88, 12);  // Orange-600
+    g_kineticConfig.illustrationType = 2; // 3D Presentation Monitor
+
+    g_kineticConfig.categories = {
+        L"All (3,500+)", L"Executive Presentation Decks", L"Processes & Steps", L"Timelines & Roadmaps", L"Matrix & SWOT", L"Pyramids & Hierarchy", L"Funnels & Pipelines"
+    };
+
+    g_kineticConfig.templates = {
+        {
+            L"Golden Light Prestige Keynote",
+            L"Executive Presentation Decks",
+            L"Cinematic high-contrast executive presentation with golden amber vector highlights and widescreen layout.",
+            L"GOLDEN"
+        },
+        {
+            L"Executive Investor Pitch Deck",
+            L"Executive Presentation Decks",
+            L"Series A/B venture fundraising deck with problem, solution, market size, business model, and milestones.",
+            L"INVESTOR"
+        },
+        {
+            L"Quarterly Strategic Review",
+            L"Executive Presentation Decks",
+            L"Quarterly business review (QBR) featuring executive metrics, growth trajectories, and team accountability.",
+            L"QBR"
+        },
+        {
+            L"Product Roadmap & Architecture",
+            L"Timelines & Roadmaps",
+            L"Engineering systems architecture, quarterly technical deliverables, and infrastructure modernization.",
+            L"ROADMAP"
+        },
+        {
+            L"Corporate Market Analysis",
+            L"Matrix & SWOT",
+            L"Competitive intelligence, market landscape matrices, industry analysis, and market penetration vectors.",
+            L"MARKET"
+        },
+        {
+            L"Consulting Strategy Presentation",
+            L"Processes & Steps",
+            L"Management consulting presentation framework with structured discovery, analysis, and phased implementation.",
+            L"CONSULTING"
+        }
+    };
+}
+
+void ReturnToKineticStart(HWND hwnd) {
+    g_kineticState = KINETIC_VIEW_START;
+    ShowWindow(g_hRibbonWnd, SW_HIDE);
+    ShowWindow(g_hThumbRailWnd, SW_HIDE);
+    ShowWindow(g_hCanvasWnd, SW_HIDE);
+    ShowWindow(g_hEditTitle, SW_HIDE);
+    ShowWindow(g_hEditBody, SW_HIDE);
+    ShowWindow(g_hStatusBar, SW_HIDE);
+    InvalidateRect(hwnd, NULL, TRUE);
+}
+
+void EnterKineticSlides(HWND hwnd) {
+    g_kineticState = KINETIC_VIEW_SLIDES;
+    ShowWindow(g_hRibbonWnd, SW_SHOW);
+    ShowWindow(g_hThumbRailWnd, SW_SHOW);
+    ShowWindow(g_hCanvasWnd, SW_SHOW);
+    ShowWindow(g_hEditTitle, SW_SHOW);
+    ShowWindow(g_hEditBody, SW_SHOW);
+    ShowWindow(g_hStatusBar, SW_SHOW);
+    RECT rc;
+    GetClientRect(hwnd, &rc);
+    SendMessageW(hwnd, WM_SIZE, 0, MAKELPARAM(rc.right, rc.bottom));
+    SyncControlsWithSlide();
+    InvalidateRect(g_hCanvasWnd, NULL, TRUE);
+    InvalidateRect(g_hThumbRailWnd, NULL, TRUE);
+    UpdateStatusBar();
+}
+
+void EnterKineticSlidesBlank(HWND hwnd) {
+    g_slides.clear();
+    Slide s;
+    s.title = L"Untitled Presentation";
+    s.subtitle = L"Click here to add title and subtitle";
+    s.body = L"Add bullet points and strategic topics";
+    s.layout = LAYOUT_TITLE_HERO;
+    s.bgColor = RGB(255, 255, 255);
+    s.textColor = RGB(15, 23, 42);
+    s.accentColor = PPT_ORANGE;
+    s.transition = TRANS_FADE;
+    s.transitionSpeedMs = 400;
+    s.animType = ANIM_FADE_IN;
+    g_slides.push_back(s);
+    g_currentSlide = 0;
+    g_currentFilePath = L"";
+    EnterKineticSlides(hwnd);
+}
+
+void LoadKineticTemplate(HWND hwnd, int idx) {
+    g_slides.clear();
+
+    if (idx == 0) { // Golden Light Prestige
+        Slide s1;
+        s1.title = L"Golden Light Prestige";
+        s1.subtitle = L"Executive Keynote & Sovereign Widescreen Showcase";
+        s1.body = L"Created with Giri Kinetic Presentation Studio\nArchitect: Abhinav Giri (@abhinavgiri45)";
+        s1.layout = LAYOUT_TITLE_HERO;
+        s1.bgColor = RGB(20, 24, 33);
+        s1.textColor = RGB(248, 250, 252);
+        s1.accentColor = RGB(245, 158, 11);
+        s1.transition = TRANS_FADE;
+        s1.transitionSpeedMs = 400;
+        s1.animType = ANIM_FADE_IN;
+        g_slides.push_back(s1);
+
+        Slide s2;
+        s2.title = L"Strategic Market Dominance";
+        s2.subtitle = L"High-Velocity Offline Execution Across Edge Workstations";
+        s2.body = L"• Zero-latency local execution with sub-50ms responsiveness\n• Proprietary in-memory vector graphic presentation engine\n• 100% Sovereign data protection with zero cloud tracking\n• Seamless bidirectional PPTX and PDF format interchange";
+        s2.layout = LAYOUT_TITLE_CONTENT;
+        s2.bgColor = RGB(255, 255, 255);
+        s2.textColor = RGB(15, 23, 42);
+        s2.accentColor = RGB(245, 158, 11);
+        s2.transition = TRANS_PUSH_LEFT;
+        s2.transitionSpeedMs = 400;
+        s2.animType = ANIM_FLY_IN_BOTTOM;
+        g_slides.push_back(s2);
+
+        Slide s3;
+        s3.title = L"FY2026 Commercial Trajectory";
+        s3.subtitle = L"Triple-Digit Growth & Enterprise Deployment Milestones";
+        s3.body = L"• Q1 ARR: $1,250,000 (Commercial Workstation Nodes)\n• Q2 ARR: $1,800,000 (Enterprise Offline Licenses)\n• Gross Margin: 89% with zero recurring cloud server overhead\n• 10,000 Corporate Seats Deployed Worldwide";
+        s3.layout = LAYOUT_METRICS_DASHBOARD;
+        s3.bgColor = RGB(255, 255, 255);
+        s3.textColor = RGB(15, 23, 42);
+        s3.accentColor = RGB(245, 158, 11);
+        s3.transition = TRANS_FADE;
+        s3.transitionSpeedMs = 400;
+        s3.animType = ANIM_FADE_IN;
+        g_slides.push_back(s3);
+    } else if (idx == 1) { // Executive Investor Pitch Deck
+        Slide s1;
+        s1.title = L"Giri Orbit Global";
+        s1.subtitle = L"Series A Sovereign Software Investment Pitch";
+        s1.body = L"Presented by Abhinav Giri, Founder & Chief Architect\nOctober 2026";
+        s1.layout = LAYOUT_TITLE_HERO;
+        s1.bgColor = RGB(15, 23, 42);
+        s1.textColor = RGB(248, 250, 252);
+        s1.accentColor = PPT_ORANGE;
+        s1.transition = TRANS_FADE;
+        s1.transitionSpeedMs = 400;
+        s1.animType = ANIM_FADE_IN;
+        g_slides.push_back(s1);
+
+        Slide s2;
+        s2.title = L"The Problem: Cloud Surveillance & Lock-In";
+        s2.subtitle = L"Enterprises Are Trapped in Expensive Recurring Cloud Subscriptions";
+        s2.body = L"• Forced annual price hikes for standard office productivity\n• Latency and offline work restrictions during network outages\n• Enterprise data leakage and telemetric model ingestion\n• Fragile browser-based editors lacking desktop power";
+        s2.layout = LAYOUT_TITLE_CONTENT;
+        s2.bgColor = RGB(255, 255, 255);
+        s2.textColor = RGB(15, 23, 42);
+        s2.accentColor = PPT_ORANGE;
+        s2.transition = TRANS_PUSH_LEFT;
+        s2.transitionSpeedMs = 400;
+        s2.animType = ANIM_FLY_IN_BOTTOM;
+        g_slides.push_back(s2);
+
+        Slide s3;
+        s3.title = L"The Solution: 100% Sovereign Offline Suite";
+        s3.subtitle = L"True Microsoft Word, Excel & PowerPoint Parity in Native C++";
+        s3.body = L"• Instant cold-boot startup in under 60 milliseconds\n• 9 standalone native executables compiled with zero dependencies\n• Full Authenticode cryptographic signing and offline verification\n• Universal format compatibility across all enterprise workflows";
+        s3.layout = LAYOUT_TITLE_CONTENT;
+        s3.bgColor = RGB(255, 255, 255);
+        s3.textColor = RGB(15, 23, 42);
+        s3.accentColor = PPT_ORANGE;
+        s3.transition = TRANS_FADE;
+        s3.transitionSpeedMs = 400;
+        s3.animType = ANIM_FADE_IN;
+        g_slides.push_back(s3);
+    } else { // Generic Template
+        Slide s1;
+        s1.title = g_kineticConfig.templates[idx].title;
+        s1.subtitle = g_kineticConfig.templates[idx].description;
+        s1.body = L"Authored with Giri Kinetic Sovereign Presentation Studio\nLead Engineer: Abhinav Giri (@abhinavgiri45)";
+        s1.layout = LAYOUT_TITLE_HERO;
+        s1.bgColor = RGB(248, 250, 252);
+        s1.textColor = RGB(15, 23, 42);
+        s1.accentColor = PPT_ORANGE;
+        s1.transition = TRANS_FADE;
+        s1.transitionSpeedMs = 400;
+        s1.animType = ANIM_FADE_IN;
+        g_slides.push_back(s1);
+
+        Slide s2;
+        s2.title = L"Execution Framework & Next Steps";
+        s2.subtitle = L"High-Velocity Deliverables Matrix";
+        s2.body = L"• Phase 1: Localized deployment and security verification\n• Phase 2: Workflow testing with Drift, Axis, and Kinetic\n• Phase 3: Final commercial sign-off and enterprise rollout";
+        s2.layout = LAYOUT_TITLE_CONTENT;
+        s2.bgColor = RGB(255, 255, 255);
+        s2.textColor = RGB(15, 23, 42);
+        s2.accentColor = PPT_ORANGE;
+        s2.transition = TRANS_PUSH_LEFT;
+        s2.transitionSpeedMs = 400;
+        s2.animType = ANIM_FLY_IN_BOTTOM;
+        g_slides.push_back(s2);
+    }
+
+    g_currentSlide = 0;
+    EnterKineticSlides(hwnd);
+}
+
+
 // -------------------------------------------------------------
 // Entry Point
 // -------------------------------------------------------------
@@ -463,9 +702,29 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
         }
     }
 
+    InitKineticConfig();
+
+    if (lpCmdLine && wcslen(lpCmdLine) > 0) {
+        g_kineticState = KINETIC_VIEW_SLIDES;
+        ShowWindow(g_hRibbonWnd, SW_SHOW);
+        ShowWindow(g_hThumbRailWnd, SW_SHOW);
+        ShowWindow(g_hCanvasWnd, SW_SHOW);
+        ShowWindow(g_hEditTitle, SW_SHOW);
+        ShowWindow(g_hEditBody, SW_SHOW);
+        ShowWindow(g_hStatusBar, SW_SHOW);
+    } else {
+        g_kineticState = KINETIC_VIEW_START;
+        ShowWindow(g_hRibbonWnd, SW_HIDE);
+        ShowWindow(g_hThumbRailWnd, SW_HIDE);
+        ShowWindow(g_hCanvasWnd, SW_HIDE);
+        ShowWindow(g_hEditTitle, SW_HIDE);
+        ShowWindow(g_hEditBody, SW_HIDE);
+        ShowWindow(g_hStatusBar, SW_HIDE);
+    }
+
     ShowWindow(g_hMainWnd, nCmdShow);
     UpdateWindow(g_hMainWnd);
-    UpdateStatusBar();
+    if (g_kineticState == KINETIC_VIEW_SLIDES) UpdateStatusBar();
     SyncControlsWithSlide();
 
     // Accelerators / Message Loop
@@ -736,8 +995,26 @@ LRESULT CALLBACK RibbonWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
         Graphics g(memDC);
         g.SetSmoothingMode(SmoothingModeAntiAlias);
 
+        // <- Hub Button (x: 8, y: 4, w: 56, h: 26)
+        bool isHubHover = (g_hoverRibbonTab == -99);
+        SolidBrush hubBg(isHubHover ? Color(255, 247, 237) : Color(241, 245, 249));
+        Pen hubBorder(isHubHover ? Color(249, 115, 22) : Color(203, 213, 225), 1.0f);
+        GraphicsPath hubPath;
+        RectF hubRect(8.0f, 4.0f, 56.0f, 26.0f);
+        GiriOrbit::AddRoundedRect(hubPath, hubRect, 4.0f);
+        g.FillPath(&hubBg, &hubPath);
+        g.DrawPath(&hubBorder, &hubPath);
+
+        FontFamily ffHub(L"Segoe UI");
+        Gdiplus::Font fHub(&ffHub, 9, FontStyleBold, UnitPoint);
+        SolidBrush hubText(isHubHover ? Color(194, 65, 12) : Color(71, 85, 105));
+        StringFormat sfHub;
+        sfHub.SetAlignment(StringAlignmentCenter);
+        sfHub.SetLineAlignment(StringAlignmentCenter);
+        g.DrawString(L"← Hub", -1, &fHub, PointF(36.0f, 17.0f), &sfHub, &hubText);
+
         const wchar_t* tabTitles[] = { L"Home", L"Insert", L"Design", L"Transitions", L"Animations", L"Slide Show", L"View" };
-        int tabX = 16;
+        int tabX = 74;
         FontFamily ff(L"Segoe UI");
         Gdiplus::Font tabFont(&ff, 10, FontStyleRegular, UnitPoint);
         Gdiplus::Font boldTabFont(&ff, 10, FontStyleBold, UnitPoint);
@@ -1634,6 +1911,17 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         int w = LOWORD(lParam);
         int h = HIWORD(lParam);
 
+        if (g_kineticState == KINETIC_VIEW_START) {
+            ShowWindow(g_hRibbonWnd, SW_HIDE);
+            ShowWindow(g_hThumbRailWnd, SW_HIDE);
+            ShowWindow(g_hCanvasWnd, SW_HIDE);
+            ShowWindow(g_hEditTitle, SW_HIDE);
+            ShowWindow(g_hEditBody, SW_HIDE);
+            ShowWindow(g_hStatusBar, SW_HIDE);
+            InvalidateRect(hwnd, NULL, FALSE);
+            return 0;
+        }
+
         if (g_hRibbonWnd) MoveWindow(g_hRibbonWnd, 0, 0, w, 105, TRUE);
 
         int bodyY = 105;
@@ -1658,6 +1946,131 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             SendMessageW(g_hStatusBar, SB_SETPARTS, 5, (LPARAM)statwidths);
         }
         return 0;
+    }
+
+    case WM_PAINT: {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
+        RECT rc;
+        GetClientRect(hwnd, &rc);
+        int w = rc.right;
+        int h = rc.bottom;
+
+        if (g_kineticState == KINETIC_VIEW_START) {
+            HDC memDC = CreateCompatibleDC(hdc);
+            HBITMAP memBM = CreateCompatibleBitmap(hdc, w, h);
+            HBITMAP oldBM = (HBITMAP)SelectObject(memDC, memBM);
+
+            Graphics g(memDC);
+            g.SetSmoothingMode(SmoothingModeAntiAlias);
+            GiriOrbit::RenderStartInterface(g, w, h, g_kineticConfig, g_kineticStartState);
+
+            BitBlt(hdc, 0, 0, w, h, memDC, 0, 0, SRCCOPY);
+            SelectObject(memDC, oldBM);
+            DeleteObject(memBM);
+            DeleteDC(memDC);
+        }
+
+        EndPaint(hwnd, &ps);
+        return 0;
+    }
+
+    case WM_LBUTTONDOWN: {
+        int x = LOWORD(lParam);
+        int y = HIWORD(lParam);
+
+        if (g_kineticState == KINETIC_VIEW_START) {
+            RECT rcClient;
+            GetClientRect(hwnd, &rcClient);
+            auto hit = GiriOrbit::HitTestStartInterface(x, y, rcClient.right, rcClient.bottom, g_kineticConfig, g_kineticStartState);
+
+            switch (hit.action) {
+            case GiriOrbit::ACTION_CREATE_BLANK:
+                EnterKineticSlidesBlank(hwnd);
+                break;
+            case GiriOrbit::ACTION_UPLOAD_FILE:
+                DoFileOpen(hwnd);
+                if (g_currentFilePath.length() > 0) {
+                    EnterKineticSlides(hwnd);
+                }
+                break;
+            case GiriOrbit::ACTION_CUSTOM_TEMPLATE:
+                LoadKineticTemplate(hwnd, 0);
+                break;
+            case GiriOrbit::ACTION_IMPORT_TEMPLATE:
+                DoFileOpen(hwnd);
+                break;
+            case GiriOrbit::ACTION_RESUME_DRAFT:
+                EnterKineticSlides(hwnd);
+                break;
+            case GiriOrbit::ACTION_DELETE_DRAFT:
+                InitDefaultSlides();
+                g_kineticStartState.ShowToast(L"Draft presentation reset.");
+                InvalidateRect(hwnd, NULL, FALSE);
+                break;
+            case GiriOrbit::ACTION_OPEN_PORTAL:
+                GiriOrbit::OpenWebUrl(hwnd, L"https://github.com/abhinavgiri45/giri-orbit");
+                break;
+            case GiriOrbit::ACTION_OPEN_INSTAGRAM:
+                GiriOrbit::OpenWebUrl(hwnd, L"https://instagram.com/abhinavgiri45");
+                break;
+            case GiriOrbit::ACTION_SWITCH_HUB:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriOrbit.exe");
+                break;
+            case GiriOrbit::ACTION_SWITCH_DRIFT:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriDrift.exe");
+                break;
+            case GiriOrbit::ACTION_SWITCH_AXIS:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriAxis.exe");
+                break;
+            case GiriOrbit::ACTION_SWITCH_KINETIC:
+                break;
+            case GiriOrbit::ACTION_OPEN_PDF:
+                GiriOrbit::OpenWebUrl(hwnd, L"https://giri-orbit.pages.dev/#pdf");
+                break;
+            case GiriOrbit::ACTION_COPY_LINK:
+                GiriOrbit::CopyToolLink(hwnd, L"kinetic", g_kineticStartState);
+                InvalidateRect(hwnd, NULL, FALSE);
+                break;
+            case GiriOrbit::ACTION_SELECT_CATEGORY:
+                g_kineticStartState.selectedCategory = hit.index;
+                InvalidateRect(hwnd, NULL, FALSE);
+                break;
+            case GiriOrbit::ACTION_SELECT_TEMPLATE:
+                LoadKineticTemplate(hwnd, hit.index);
+                break;
+            default:
+                break;
+            }
+            return 0;
+        }
+        break;
+    }
+
+    case WM_MOUSEMOVE: {
+        int x = LOWORD(lParam);
+        int y = HIWORD(lParam);
+        if (g_kineticState == KINETIC_VIEW_START) {
+            RECT rcClient;
+            GetClientRect(hwnd, &rcClient);
+            auto hit = GiriOrbit::HitTestStartInterface(x, y, rcClient.right, rcClient.bottom, g_kineticConfig, g_kineticStartState);
+            int newHover = (hit.action != GiriOrbit::ACTION_NONE) ? hit.index : -1;
+            if (newHover != g_kineticStartState.hoverId) {
+                g_kineticStartState.hoverId = newHover;
+                InvalidateRect(hwnd, NULL, FALSE);
+            }
+            TRACKMOUSEEVENT tme = { sizeof(TRACKMOUSEEVENT), TME_LEAVE, hwnd, 0 };
+            TrackMouseEvent(&tme);
+        }
+        break;
+    }
+
+    case WM_SETCURSOR: {
+        if (g_kineticState == KINETIC_VIEW_START && g_kineticStartState.hoverId != -1) {
+            SetCursor(LoadCursor(NULL, IDC_HAND));
+            return TRUE;
+        }
+        break;
     }
 
     case WM_COMMAND: {

@@ -25,6 +25,9 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include "../common/tool_start_ui.h"
+
+#define IDC_BTN_BACK_HUB      4099
 
 #pragma comment(lib, "gdiplus.lib")
 #pragma comment(lib, "comctl32.lib")
@@ -126,6 +129,149 @@ void InitDefaultForm() {
     g_questions.push_back(q3);
 }
 
+// Forms View State Machine
+enum FormsViewState {
+    FORMS_VIEW_START = 0,
+    FORMS_VIEW_BUILDER = 1
+};
+FormsViewState g_formsState = FORMS_VIEW_START;
+GiriOrbit::ToolThemeConfig g_formsConfig;
+GiriOrbit::StartUIState g_formsStartState;
+
+void ReturnToFormsStart(HWND hwnd);
+void EnterFormsBuilder(HWND hwnd);
+void EnterFormsBuilderBlank(HWND hwnd);
+void LoadFormsTemplate(HWND hwnd, int idx);
+
+void InitFormsConfig() {
+    g_formsConfig.toolLetter = L"F";
+    g_formsConfig.toolName = L"Forms";
+    g_formsConfig.fullToolName = L"Giri Forms";
+    g_formsConfig.headline = L"Welcome to Forms for free on the web";
+    g_formsConfig.subtitle = L"Sovereign survey, feedback, and enterprise form builder. Zero database tracking, instant CSV analytics export, and customizable response matrices.";
+    g_formsConfig.createBtnText = L"Create blank form";
+    g_formsConfig.uploadBtnText = L"Upload Form";
+    g_formsConfig.draftTitle = L"Customer Experience & Satisfaction Survey";
+    g_formsConfig.draftMeta = L"Saved recently • 3 Questions • 24 Responses • 1.1 KB";
+    g_formsConfig.toolHash = L"forms";
+    g_formsConfig.galleryTitle = L"Create with templates";
+    g_formsConfig.galleryBadge = L"";
+    g_formsConfig.accentColor = Gdiplus::Color(13, 148, 136); // Teal-600
+    g_formsConfig.accentDark = Gdiplus::Color(15, 118, 110);  // Teal-700
+    g_formsConfig.accentHover = Gdiplus::Color(20, 184, 166); // Teal-500
+    g_formsConfig.illustrationType = 3; // Studio stack
+
+    g_formsConfig.categories = {
+        L"Recommended", L"Customer Experience", L"Human Resources", L"Event Planning", L"Product Feedback"
+    };
+
+    g_formsConfig.templates = {
+        {
+            L"Customer Experience (CSAT & NPS)",
+            L"Customer Experience",
+            L"Evaluate customer satisfaction, brand loyalty, and sovereign feedback across digital touchpoints.",
+            L"CSAT"
+        },
+        {
+            L"Employee Engagement & Pulse",
+            L"Human Resources",
+            L"Quarterly organizational health, work-life balance, and internal collaboration pulse survey.",
+            L"PULSE"
+        },
+        {
+            L"Event Registration & RSVP",
+            L"Event Planning",
+            L"Attendee registration, keynote workshop selection, dietary needs, and ticket issuance.",
+            L"EVENT"
+        },
+        {
+            L"Product Feedback Matrix",
+            L"Product Feedback",
+            L"Feature request prioritization, usability grading, and release satisfaction diagnostics.",
+            L"PRODUCT"
+        },
+        {
+            L"IT Support & Incident Request",
+            L"Recommended",
+            L"Enterprise ticketing, hardware requisition, and operational issue reporting matrix.",
+            L"ITSUPPORT"
+        },
+        {
+            L"Academic Course Evaluation",
+            L"Customer Experience",
+            L"Curriculum rating, instructor effectiveness, and learning material feedback audit.",
+            L"ACADEMIC"
+        }
+    };
+}
+
+void ReturnToFormsStart(HWND hwnd) {
+    g_formsState = FORMS_VIEW_START;
+    ShowWindow(g_hToolbarPanel, SW_HIDE);
+    InvalidateRect(hwnd, NULL, TRUE);
+}
+
+void EnterFormsBuilder(HWND hwnd) {
+    g_formsState = FORMS_VIEW_BUILDER;
+    ShowWindow(g_hToolbarPanel, SW_SHOW);
+    RECT rc;
+    GetClientRect(hwnd, &rc);
+    SendMessageW(hwnd, WM_SIZE, 0, MAKELPARAM(rc.right, rc.bottom));
+    InvalidateRect(hwnd, NULL, TRUE);
+}
+
+void EnterFormsBuilderBlank(HWND hwnd) {
+    g_questions.clear();
+    g_formTitle = L"Untitled Sovereign Survey";
+    g_formDesc = L"Please share your thoughtful feedback to guide our product roadmap.";
+    g_totalSubmissions = 0;
+    Question q;
+    q.id = 1;
+    q.type = 0;
+    q.title = L"How did you first learn about Giri Orbit?";
+    q.required = true;
+    q.userSelectedOption = -1;
+    q.options.push_back({ L"GitHub Open Source", 0 });
+    q.options.push_back({ L"Direct Sovereign Recommendation", 0 });
+    g_questions.push_back(q);
+    EnterFormsBuilder(hwnd);
+}
+
+void LoadFormsTemplate(HWND hwnd, int idx) {
+    g_questions.clear();
+    if (idx == 0) { // CSAT
+        g_formTitle = L"Customer Satisfaction (CSAT) & NPS Benchmark";
+        g_formDesc = L"Measuring client delight and sovereign performance across the Giri ecosystem.";
+        g_totalSubmissions = 38;
+        Question q1;
+        q1.id = 1; q1.type = 2; q1.title = L"Overall how satisfied are you with Giri Orbit Suite?"; q1.required = true; q1.userRating = 5;
+        g_questions.push_back(q1);
+        Question q2;
+        q2.id = 2; q2.type = 0; q2.title = L"Which capability provides the highest daily productivity?"; q2.required = true; q2.userSelectedOption = -1;
+        q2.options.push_back({ L"Native zero-latency C++ speed", 24 });
+        q2.options.push_back({ L"Offline sovereign data architecture", 11 });
+        q2.options.push_back({ L"Full Office file compatibility", 3 });
+        g_questions.push_back(q2);
+    } else if (idx == 1) { // Employee Pulse
+        g_formTitle = L"Quarterly Team Culture & Sprint Pulse";
+        g_formDesc = L"Anonymous feedback to ensure high engineering velocity and sustainable wellbeing.";
+        g_totalSubmissions = 19;
+        Question q1;
+        q1.id = 1; q1.type = 2; q1.title = L"I have the autonomy and clarity needed to execute my deliverables:"; q1.required = true; q1.userRating = 5;
+        g_questions.push_back(q1);
+        Question q2;
+        q2.id = 2; q2.type = 1; q2.title = L"What can leadership do to unblock your workflow next sprint?"; q2.required = false; q2.userTextResponse = L"Faster code review cycles and streamlined CI pipelines.";
+        g_questions.push_back(q2);
+    } else { // Generic / other templates
+        g_formTitle = g_formsConfig.templates[idx % g_formsConfig.templates.size()].title;
+        g_formDesc = g_formsConfig.templates[idx % g_formsConfig.templates.size()].description;
+        g_totalSubmissions = 15;
+        InitDefaultForm();
+    }
+    EnterFormsBuilder(hwnd);
+}
+
+
 void DoSaveForm(HWND hwnd) {
     wchar_t szFile[MAX_PATH] = L"MyForm.gform";
     OPENFILENAMEW ofn = { sizeof(OPENFILENAMEW) };
@@ -196,6 +342,10 @@ LRESULT CALLBACK FormsWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     switch (uMsg) {
     case WM_COMMAND: {
         int id = LOWORD(wParam);
+        if (id == IDC_BTN_BACK_HUB) {
+            ReturnToFormsStart(hwnd);
+            return 0;
+        }
         if (id == IDC_BTN_ADD_CHOICE) {
             Question q;
             q.id = (int)g_questions.size() + 1;
@@ -256,6 +406,12 @@ LRESULT CALLBACK FormsWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
     case WM_SIZE: {
         int w = LOWORD(lParam);
+        int h = HIWORD(lParam);
+        if (g_formsState == FORMS_VIEW_START) {
+            if (g_hToolbarPanel) ShowWindow(g_hToolbarPanel, SW_HIDE);
+            InvalidateRect(hwnd, NULL, FALSE);
+            return 0;
+        }
         if (g_hToolbarPanel) {
             SetWindowPos(g_hToolbarPanel, NULL, 0, 0, w, 82, SWP_NOZORDER);
         }
@@ -272,6 +428,71 @@ LRESULT CALLBACK FormsWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     case WM_LBUTTONDOWN: {
         int x = LOWORD(lParam);
         int y = HIWORD(lParam);
+
+        if (g_formsState == FORMS_VIEW_START) {
+            RECT rcClient;
+            GetClientRect(hwnd, &rcClient);
+            auto hit = GiriOrbit::HitTestStartInterface(x, y, rcClient.right, rcClient.bottom, g_formsConfig, g_formsStartState);
+
+            switch (hit.action) {
+            case GiriOrbit::ACTION_CREATE_BLANK:
+                EnterFormsBuilderBlank(hwnd);
+                break;
+            case GiriOrbit::ACTION_UPLOAD_FILE:
+                EnterFormsBuilder(hwnd);
+                break;
+            case GiriOrbit::ACTION_CUSTOM_TEMPLATE:
+                LoadFormsTemplate(hwnd, 0);
+                break;
+            case GiriOrbit::ACTION_IMPORT_TEMPLATE:
+                EnterFormsBuilder(hwnd);
+                break;
+            case GiriOrbit::ACTION_RESUME_DRAFT:
+                EnterFormsBuilder(hwnd);
+                break;
+            case GiriOrbit::ACTION_DELETE_DRAFT:
+                g_questions.clear();
+                g_formsStartState.ShowToast(L"Draft form cleared.");
+                InvalidateRect(hwnd, NULL, FALSE);
+                break;
+            case GiriOrbit::ACTION_OPEN_PORTAL:
+                GiriOrbit::OpenWebUrl(hwnd, L"https://github.com/abhinavgiri45/giri-orbit");
+                break;
+            case GiriOrbit::ACTION_OPEN_INSTAGRAM:
+                GiriOrbit::OpenWebUrl(hwnd, L"https://instagram.com/abhinavgiri45");
+                break;
+            case GiriOrbit::ACTION_SWITCH_HUB:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriOrbit.exe");
+                break;
+            case GiriOrbit::ACTION_SWITCH_DRIFT:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriDrift.exe");
+                break;
+            case GiriOrbit::ACTION_SWITCH_AXIS:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriAxis.exe");
+                break;
+            case GiriOrbit::ACTION_SWITCH_KINETIC:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriKinetic.exe");
+                break;
+            case GiriOrbit::ACTION_OPEN_PDF:
+                GiriOrbit::OpenWebUrl(hwnd, L"https://giri-orbit.pages.dev/#pdf");
+                break;
+            case GiriOrbit::ACTION_COPY_LINK:
+                GiriOrbit::CopyToolLink(hwnd, L"forms", g_formsStartState);
+                InvalidateRect(hwnd, NULL, FALSE);
+                break;
+            case GiriOrbit::ACTION_SELECT_CATEGORY:
+                g_formsStartState.selectedCategory = hit.index;
+                InvalidateRect(hwnd, NULL, FALSE);
+                break;
+            case GiriOrbit::ACTION_SELECT_TEMPLATE:
+                LoadFormsTemplate(hwnd, hit.index);
+                break;
+            default:
+                break;
+            }
+            return 0;
+        }
+
         if (y < 82 && x > 980) {
             ReleaseCapture();
             SendMessageW(hwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
@@ -325,6 +546,32 @@ LRESULT CALLBACK FormsWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
     case WM_ERASEBKGND: return 1;
 
+    case WM_MOUSEMOVE: {
+        int x = LOWORD(lParam);
+        int y = HIWORD(lParam);
+        if (g_formsState == FORMS_VIEW_START) {
+            RECT rcClient;
+            GetClientRect(hwnd, &rcClient);
+            auto hit = GiriOrbit::HitTestStartInterface(x, y, rcClient.right, rcClient.bottom, g_formsConfig, g_formsStartState);
+            int newHover = (hit.action != GiriOrbit::ACTION_NONE) ? hit.index : -1;
+            if (newHover != g_formsStartState.hoverId) {
+                g_formsStartState.hoverId = newHover;
+                InvalidateRect(hwnd, NULL, FALSE);
+            }
+            TRACKMOUSEEVENT tme = { sizeof(TRACKMOUSEEVENT), TME_LEAVE, hwnd, 0 };
+            TrackMouseEvent(&tme);
+        }
+        break;
+    }
+
+    case WM_SETCURSOR: {
+        if (g_formsState == FORMS_VIEW_START && g_formsStartState.hoverId != -1) {
+            SetCursor(LoadCursor(NULL, IDC_HAND));
+            return TRUE;
+        }
+        break;
+    }
+
     case WM_PAINT: {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
@@ -342,6 +589,9 @@ LRESULT CALLBACK FormsWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         g.SetSmoothingMode(SmoothingModeAntiAlias);
         g.SetTextRenderingHint(TextRenderingHintClearTypeGridFit);
 
+        if (g_formsState == FORMS_VIEW_START) {
+            GiriOrbit::RenderStartInterface(g, w, h, g_formsConfig, g_formsStartState);
+        } else {
         // Canvas Background (Light slate #f1f5f9)
         SolidBrush bgBrush(Color(241, 245, 249));
         g.FillRectangle(&bgBrush, 0, 0, w, h);
@@ -523,6 +773,7 @@ LRESULT CALLBACK FormsWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         g.DrawString(L"  Giri Forms Sovereign Studio (v13.5) • 100% Offline Standalone Native C++ • Author: Abhinav Giri",
                      -1, &fStatus, PointF(8.0f, (float)h - 18.0f), &statusText);
 
+        }
         BitBlt(hdc, 0, 0, w, h, memDC, 0, 0, SRCCOPY);
         SelectObject(memDC, oldBM);
         DeleteObject(memBM);
@@ -563,15 +814,16 @@ void CreateFormsToolbar(HWND hwnd) {
         return btn;
     };
 
-    makeBtn(L"+ Choice", 14, 14, 82, 36, IDC_BTN_ADD_CHOICE);
-    makeBtn(L"+ Text", 102, 14, 76, 36, IDC_BTN_ADD_TEXT);
-    makeBtn(L"+ Rating", 184, 14, 84, 36, IDC_BTN_ADD_RATING);
-    makeBtn(L"+ Date", 274, 14, 76, 36, IDC_BTN_ADD_DATE);
-    makeBtn(L"Preview / Fill", 364, 14, 110, 36, IDC_BTN_MODE_TOGGLE);
-    makeBtn(L"Responses Dashboard", 480, 14, 156, 36, IDC_BTN_RESPONSES);
-    makeBtn(L"Export to CSV", 642, 14, 110, 36, IDC_BTN_EXPORT_CSV);
-    makeBtn(L"Save Form", 758, 14, 96, 36, IDC_BTN_SAVE_FORM);
-    makeBtn(L"Reset Form", 860, 14, 96, 36, IDC_BTN_CLEAR_ALL);
+    makeBtn(L"← Hub", 14, 14, 76, 36, IDC_BTN_BACK_HUB);
+    makeBtn(L"+ Choice", 98, 14, 82, 36, IDC_BTN_ADD_CHOICE);
+    makeBtn(L"+ Text", 186, 14, 76, 36, IDC_BTN_ADD_TEXT);
+    makeBtn(L"+ Rating", 268, 14, 84, 36, IDC_BTN_ADD_RATING);
+    makeBtn(L"+ Date", 358, 14, 76, 36, IDC_BTN_ADD_DATE);
+    makeBtn(L"Preview / Fill", 440, 14, 110, 36, IDC_BTN_MODE_TOGGLE);
+    makeBtn(L"Responses Dashboard", 556, 14, 156, 36, IDC_BTN_RESPONSES);
+    makeBtn(L"Export to CSV", 718, 14, 110, 36, IDC_BTN_EXPORT_CSV);
+    makeBtn(L"Save Form", 834, 14, 96, 36, IDC_BTN_SAVE_FORM);
+    makeBtn(L"Reset Form", 936, 14, 96, 36, IDC_BTN_CLEAR_ALL);
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
@@ -625,7 +877,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
     if (!g_hMainWnd) return 0;
 
+    InitFormsConfig();
     CreateFormsToolbar(g_hMainWnd);
+    ShowWindow(g_hToolbarPanel, SW_HIDE);
 
     ShowWindow(g_hMainWnd, nCmdShow);
     UpdateWindow(g_hMainWnd);

@@ -23,6 +23,9 @@
 #include <gdiplus.h>
 #include <string>
 #include <vector>
+#include "../common/tool_start_ui.h"
+
+#define IDC_BTN_BACK_HUB      7099
 
 #pragma comment(lib, "gdiplus.lib")
 #pragma comment(lib, "comctl32.lib")
@@ -162,6 +165,141 @@ void InitDefaultDesign() {
     g_layers.push_back(l5);
 }
 
+// Designer View State Machine
+enum DesignerViewState {
+    DESIGNER_VIEW_START = 0,
+    DESIGNER_VIEW_CANVAS = 1
+};
+DesignerViewState g_designerState = DESIGNER_VIEW_START;
+GiriOrbit::ToolThemeConfig g_designerConfig;
+GiriOrbit::StartUIState g_designerStartState;
+
+void ReturnToDesignerStart(HWND hwnd);
+void EnterDesignerCanvas(HWND hwnd);
+void EnterDesignerCanvasBlank(HWND hwnd);
+void LoadDesignerTemplate(HWND hwnd, int idx);
+
+void InitDesignerConfig() {
+    g_designerConfig.toolLetter = L"G";
+    g_designerConfig.toolName = L"Designer";
+    g_designerConfig.fullToolName = L"Giri Designer";
+    g_designerConfig.headline = L"Welcome to Designer for free on the web";
+    g_designerConfig.subtitle = L"Sovereign vector graphic canvas, wireframing, and visual composition studio. Zero cloud telemetry, instant vector export, and high-fidelity shapes.";
+    g_designerConfig.createBtnText = L"Create blank design";
+    g_designerConfig.uploadBtnText = L"Upload Design";
+    g_designerConfig.draftTitle = L"Product Marketing Banner - Giri Designer";
+    g_designerConfig.draftMeta = L"Saved recently • 1200x630 • 5 Vector Layers • 1.8 KB";
+    g_designerConfig.toolHash = L"designer";
+    g_designerConfig.galleryTitle = L"Create with templates";
+    g_designerConfig.galleryBadge = L"";
+    g_designerConfig.accentColor = Gdiplus::Color(219, 39, 119); // Pink/Magenta-600
+    g_designerConfig.accentDark = Gdiplus::Color(190, 24, 93);   // Pink-700
+    g_designerConfig.accentHover = Gdiplus::Color(236, 72, 153); // Pink-500
+    g_designerConfig.illustrationType = 3;
+
+    g_designerConfig.categories = {
+        L"Recommended", L"Social & Banners", L"Architecture & Diagrams", L"UI/UX Wireframes", L"Print & Posters"
+    };
+
+    g_designerConfig.templates = {
+        {
+            L"Social Media Hero Banner (1200x630)",
+            L"Social & Banners",
+            L"High-impact landscape composition with glassmorphism badge and gradient contrast typography.",
+            L"BANNER"
+        },
+        {
+            L"Enterprise Systems Architecture Diagram",
+            L"Architecture & Diagrams",
+            L"Clean vector flow diagrams for decoupled microservices, message buses, and cache layers.",
+            L"SYSTEMS"
+        },
+        {
+            L"Square Instagram & Community Post (1080x1080)",
+            L"Social & Banners",
+            L"Modern balanced square ratio canvas optimized for mobile product feeds and community announcements.",
+            L"SQUARE"
+        },
+        {
+            L"Product Feature Infographic & Slide (16:9)",
+            L"Recommended",
+            L"Widescreen presentation graphic highlighting key feature metrics, speed comparisons, and value props.",
+            L"INFOGRAPHIC"
+        },
+        {
+            L"Mobile Application UI/UX Wireframe",
+            L"UI/UX Wireframes",
+            L"Phone viewport wireframe with navigation header, card stack, action buttons, and status indicator.",
+            L"WIREFRAME"
+        },
+        {
+            L"Executive Certificate of Achievement",
+            L"Print & Posters",
+            L"Formal gold-accented legal recognition award layout with border scrollwork and signature lines.",
+            L"CERTIFICATE"
+        }
+    };
+}
+
+void ReturnToDesignerStart(HWND hwnd) {
+    g_designerState = DESIGNER_VIEW_START;
+    ShowWindow(g_hToolbarPanel, SW_HIDE);
+    InvalidateRect(hwnd, NULL, TRUE);
+}
+
+void EnterDesignerCanvas(HWND hwnd) {
+    g_designerState = DESIGNER_VIEW_CANVAS;
+    ShowWindow(g_hToolbarPanel, SW_SHOW);
+    RECT rc;
+    GetClientRect(hwnd, &rc);
+    SendMessageW(hwnd, WM_SIZE, 0, MAKELPARAM(rc.right, rc.bottom));
+    InvalidateRect(hwnd, NULL, TRUE);
+}
+
+void EnterDesignerCanvasBlank(HWND hwnd) {
+    g_layers.clear();
+    g_canvasW = 860;
+    g_canvasH = 460;
+    g_activeGradientTheme = 0;
+    DesignLayer l;
+    l.id = 1;
+    l.type = LAYER_TEXT;
+    l.x = 80.0f;
+    l.y = 80.0f;
+    l.w = 500.0f;
+    l.h = 60.0f;
+    l.text = L"Your Sovereign Creative Canvas";
+    l.fontSize = 24.0f;
+    l.color = Color(255, 255, 255);
+    l.isDragging = false;
+    g_layers.push_back(l);
+    EnterDesignerCanvas(hwnd);
+}
+
+void LoadDesignerTemplate(HWND hwnd, int idx) {
+    if (idx == 0) { // Banner
+        g_canvasW = 860;
+        g_canvasH = 460;
+        InitDefaultDesign();
+    } else if (idx == 1) { // Systems
+        g_canvasW = 960;
+        g_canvasH = 540;
+        g_activeGradientTheme = 2; // Emerald
+        InitDefaultDesign();
+    } else if (idx == 2) { // Square
+        g_canvasW = 560;
+        g_canvasH = 560;
+        g_activeGradientTheme = 1; // Sunset
+        InitDefaultDesign();
+    } else {
+        g_canvasW = 960;
+        g_canvasH = 540;
+        InitDefaultDesign();
+    }
+    EnterDesignerCanvas(hwnd);
+}
+
+
 void DoExportDesignImage(HWND hwnd) {
     wchar_t szFile[MAX_PATH] = L"Giri_Designer_Banner.bmp";
     OPENFILENAMEW ofn = { sizeof(OPENFILENAMEW) };
@@ -266,6 +404,10 @@ LRESULT CALLBACK DesignerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
     switch (uMsg) {
     case WM_COMMAND: {
         int id = LOWORD(wParam);
+        if (id == IDC_BTN_BACK_HUB) {
+            ReturnToDesignerStart(hwnd);
+            return 0;
+        }
         if (id == IDC_BTN_PRESET_BANNER) {
             g_canvasW = 860;
             g_canvasH = 460;
@@ -336,6 +478,12 @@ LRESULT CALLBACK DesignerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
     case WM_SIZE: {
         int w = LOWORD(lParam);
+        int h = HIWORD(lParam);
+        if (g_designerState == DESIGNER_VIEW_START) {
+            if (g_hToolbarPanel) ShowWindow(g_hToolbarPanel, SW_HIDE);
+            InvalidateRect(hwnd, NULL, FALSE);
+            return 0;
+        }
         if (g_hToolbarPanel) {
             SetWindowPos(g_hToolbarPanel, NULL, 0, 0, w, 82, SWP_NOZORDER);
         }
@@ -346,6 +494,70 @@ LRESULT CALLBACK DesignerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
     case WM_LBUTTONDOWN: {
         int mx = LOWORD(lParam);
         int my = HIWORD(lParam);
+
+        if (g_designerState == DESIGNER_VIEW_START) {
+            RECT rcClient;
+            GetClientRect(hwnd, &rcClient);
+            auto hit = GiriOrbit::HitTestStartInterface(mx, my, rcClient.right, rcClient.bottom, g_designerConfig, g_designerStartState);
+
+            switch (hit.action) {
+            case GiriOrbit::ACTION_CREATE_BLANK:
+                EnterDesignerCanvasBlank(hwnd);
+                break;
+            case GiriOrbit::ACTION_UPLOAD_FILE:
+                EnterDesignerCanvas(hwnd);
+                break;
+            case GiriOrbit::ACTION_CUSTOM_TEMPLATE:
+                LoadDesignerTemplate(hwnd, 0);
+                break;
+            case GiriOrbit::ACTION_IMPORT_TEMPLATE:
+                EnterDesignerCanvas(hwnd);
+                break;
+            case GiriOrbit::ACTION_RESUME_DRAFT:
+                EnterDesignerCanvas(hwnd);
+                break;
+            case GiriOrbit::ACTION_DELETE_DRAFT:
+                g_layers.clear();
+                g_designerStartState.ShowToast(L"Draft design cleared.");
+                InvalidateRect(hwnd, NULL, FALSE);
+                break;
+            case GiriOrbit::ACTION_OPEN_PORTAL:
+                GiriOrbit::OpenWebUrl(hwnd, L"https://github.com/abhinavgiri45/giri-orbit");
+                break;
+            case GiriOrbit::ACTION_OPEN_INSTAGRAM:
+                GiriOrbit::OpenWebUrl(hwnd, L"https://instagram.com/abhinavgiri45");
+                break;
+            case GiriOrbit::ACTION_SWITCH_HUB:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriOrbit.exe");
+                break;
+            case GiriOrbit::ACTION_SWITCH_DRIFT:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriDrift.exe");
+                break;
+            case GiriOrbit::ACTION_SWITCH_AXIS:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriAxis.exe");
+                break;
+            case GiriOrbit::ACTION_SWITCH_KINETIC:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriKinetic.exe");
+                break;
+            case GiriOrbit::ACTION_OPEN_PDF:
+                GiriOrbit::OpenWebUrl(hwnd, L"https://giri-orbit.pages.dev/#pdf");
+                break;
+            case GiriOrbit::ACTION_COPY_LINK:
+                GiriOrbit::CopyToolLink(hwnd, L"designer", g_designerStartState);
+                InvalidateRect(hwnd, NULL, FALSE);
+                break;
+            case GiriOrbit::ACTION_SELECT_CATEGORY:
+                g_designerStartState.selectedCategory = hit.index;
+                InvalidateRect(hwnd, NULL, FALSE);
+                break;
+            case GiriOrbit::ACTION_SELECT_TEMPLATE:
+                LoadDesignerTemplate(hwnd, hit.index);
+                break;
+            default:
+                break;
+            }
+            return 0;
+        }
 
         RECT rc;
         GetClientRect(hwnd, &rc);
@@ -402,6 +614,14 @@ LRESULT CALLBACK DesignerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
     case WM_ERASEBKGND: return 1;
 
+    case WM_SETCURSOR: {
+        if (g_designerState == DESIGNER_VIEW_START && g_designerStartState.hoverId != -1) {
+            SetCursor(LoadCursor(NULL, IDC_HAND));
+            return TRUE;
+        }
+        break;
+    }
+
     case WM_PAINT: {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
@@ -419,6 +639,9 @@ LRESULT CALLBACK DesignerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
         g.SetSmoothingMode(SmoothingModeAntiAlias);
         g.SetTextRenderingHint(TextRenderingHintClearTypeGridFit);
 
+        if (g_designerState == DESIGNER_VIEW_START) {
+            GiriOrbit::RenderStartInterface(g, w, h, g_designerConfig, g_designerStartState);
+        } else {
         // Backdrop Workspace (Dark Studio Grey #1e293b)
         SolidBrush bgBrush(Color(24, 24, 27));
         g.FillRectangle(&bgBrush, 0, 0, w, h);
@@ -517,6 +740,7 @@ LRESULT CALLBACK DesignerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
         g.DrawString(L"  Giri Designer Sovereign Graphic Studio (v13.5) • 100% Offline Standalone Native C++ • Author: Abhinav Giri",
                      -1, &fStatus, PointF(8.0f, (float)h - 18.0f), &statusText);
 
+        }
         BitBlt(hdc, 0, 0, w, h, memDC, 0, 0, SRCCOPY);
         SelectObject(memDC, oldBM);
         DeleteObject(memBM);
@@ -557,14 +781,15 @@ void CreateDesignerToolbar(HWND hwnd) {
         return btn;
     };
 
-    makeBtn(L"Banner (1200x630)", 14, 14, 136, 36, IDC_BTN_PRESET_BANNER);
-    makeBtn(L"Square (1080x1080)", 156, 14, 140, 36, IDC_BTN_PRESET_SQUARE);
-    makeBtn(L"Slide 16:9", 302, 14, 88, 36, IDC_BTN_PRESET_SLIDE);
-    makeBtn(L"+ Text Headline", 396, 14, 124, 36, IDC_BTN_ADD_HEADING);
-    makeBtn(L"+ Shape Card", 526, 14, 106, 36, IDC_BTN_ADD_SHAPE);
-    makeBtn(L"+ Circle Badge", 638, 14, 110, 36, IDC_BTN_ADD_BADGE);
-    makeBtn(L"Cycle Gradient Theme", 754, 14, 156, 36, IDC_BTN_CYCLE_GRADIENT);
-    makeBtn(L"Export High-Res Image", 916, 14, 160, 36, IDC_BTN_EXPORT_IMAGE);
+    makeBtn(L"← Hub", 14, 14, 76, 36, IDC_BTN_BACK_HUB);
+    makeBtn(L"Banner (1200x630)", 98, 14, 136, 36, IDC_BTN_PRESET_BANNER);
+    makeBtn(L"Square (1080x1080)", 240, 14, 140, 36, IDC_BTN_PRESET_SQUARE);
+    makeBtn(L"Slide 16:9", 386, 14, 88, 36, IDC_BTN_PRESET_SLIDE);
+    makeBtn(L"+ Text", 480, 14, 82, 36, IDC_BTN_ADD_HEADING);
+    makeBtn(L"+ Shape", 568, 14, 82, 36, IDC_BTN_ADD_SHAPE);
+    makeBtn(L"+ Badge", 656, 14, 82, 36, IDC_BTN_ADD_BADGE);
+    makeBtn(L"Cycle Gradient", 744, 14, 120, 36, IDC_BTN_CYCLE_GRADIENT);
+    makeBtn(L"Export Image", 870, 14, 110, 36, IDC_BTN_EXPORT_IMAGE);
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
@@ -618,7 +843,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
     if (!g_hMainWnd) return 0;
 
+    InitDesignerConfig();
     CreateDesignerToolbar(g_hMainWnd);
+    ShowWindow(g_hToolbarPanel, SW_HIDE);
 
     ShowWindow(g_hMainWnd, nCmdShow);
     UpdateWindow(g_hMainWnd);

@@ -25,6 +25,9 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include "../common/tool_start_ui.h"
+
+#define IDC_BTN_BACK_HUB      5099
 
 #pragma comment(lib, "gdiplus.lib")
 #pragma comment(lib, "comctl32.lib")
@@ -141,6 +144,142 @@ void InitDefaultQuiz() {
     g_gradebook.push_back({ L"Enterprise QA Auditor", 20, 30, 66.7f, L"PASS", L"Nov 07, 2026 09:12 AM" });
 }
 
+// Quiz View State Machine
+enum QuizViewState {
+    QUIZ_VIEW_START = 0,
+    QUIZ_VIEW_BUILDER = 1
+};
+QuizViewState g_quizState = QUIZ_VIEW_START;
+GiriOrbit::ToolThemeConfig g_quizConfig;
+GiriOrbit::StartUIState g_quizStartState;
+
+void ReturnToQuizStart(HWND hwnd);
+void EnterQuizBuilder(HWND hwnd);
+void EnterQuizBuilderBlank(HWND hwnd);
+void LoadQuizTemplate(HWND hwnd, int idx);
+
+void InitQuizConfig() {
+    g_quizConfig.toolLetter = L"Q";
+    g_quizConfig.toolName = L"Quiz";
+    g_quizConfig.fullToolName = L"Giri Quiz";
+    g_quizConfig.headline = L"Welcome to Quiz for free on the web";
+    g_quizConfig.subtitle = L"Sovereign interactive exam, assessment, and knowledge test engine. Instant automated grading, customizable question banks, and offline evaluation.";
+    g_quizConfig.createBtnText = L"Create blank quiz";
+    g_quizConfig.uploadBtnText = L"Upload Quiz";
+    g_quizConfig.draftTitle = L"Enterprise Sovereign Certification - Giri Quiz";
+    g_quizConfig.draftMeta = L"Saved recently • 3 Questions • 30 Points • 1.2 KB";
+    g_quizConfig.toolHash = L"quiz";
+    g_quizConfig.galleryTitle = L"Create with templates";
+    g_quizConfig.galleryBadge = L"";
+    g_quizConfig.accentColor = Gdiplus::Color(2, 132, 199); // Sky/Cyan-600
+    g_quizConfig.accentDark = Gdiplus::Color(3, 105, 161);  // Sky-700
+    g_quizConfig.accentHover = Gdiplus::Color(14, 165, 233); // Sky-500
+    g_quizConfig.illustrationType = 3;
+
+    g_quizConfig.categories = {
+        L"Recommended", L"Computer Science", L"Enterprise Compliance", L"Logic & Math", L"Team Training"
+    };
+
+    g_quizConfig.templates = {
+        {
+            L"Computer Science & Systems Architecture",
+            L"Computer Science",
+            L"Evaluate operating system fundamentals, memory hierarchy, thread concurrency, and C++ internals.",
+            L"CS_EXAM"
+        },
+        {
+            L"Enterprise Security & ISO Compliance",
+            L"Enterprise Compliance",
+            L"SOC2, zero-trust infrastructure, encryption standards, and sovereign data boundary protocols.",
+            L"COMPLIANCE"
+        },
+        {
+            L"General Knowledge & Current Affairs",
+            L"Recommended",
+            L"Broad technology milestones, world geography, scientific innovations, and contemporary history.",
+            L"GK"
+        },
+        {
+            L"Algorithms & Data Structures Challenge",
+            L"Computer Science",
+            L"Binary trees, graph traversals, amortized complexity, and dynamic programming questions.",
+            L"ALGO"
+        },
+        {
+            L"Agile & Scrum Master Competency",
+            L"Team Training",
+            L"Sprint cadence, story point estimation, retrospective patterns, and delivery velocity metrics.",
+            L"AGILE"
+        },
+        {
+            L"Mathematics & Analytical Logic",
+            L"Logic & Math",
+            L"Probability distributions, linear algebra matrices, combinatorics, and discrete math puzzles.",
+            L"MATH"
+        }
+    };
+}
+
+void ReturnToQuizStart(HWND hwnd) {
+    g_quizState = QUIZ_VIEW_START;
+    ShowWindow(g_hToolbarPanel, SW_HIDE);
+    InvalidateRect(hwnd, NULL, TRUE);
+}
+
+void EnterQuizBuilder(HWND hwnd) {
+    g_quizState = QUIZ_VIEW_BUILDER;
+    ShowWindow(g_hToolbarPanel, SW_SHOW);
+    RECT rc;
+    GetClientRect(hwnd, &rc);
+    SendMessageW(hwnd, WM_SIZE, 0, MAKELPARAM(rc.right, rc.bottom));
+    InvalidateRect(hwnd, NULL, TRUE);
+}
+
+void EnterQuizBuilderBlank(HWND hwnd) {
+    g_quizQuestions.clear();
+    g_quizTitle = L"Untitled Sovereign Assessment";
+    QuizQuestion q;
+    q.id = 1;
+    q.title = L"Which architecture enables 100% offline data sovereignty?";
+    q.points = 10;
+    q.userSelectedOption = -1;
+    q.explanation = L"Native desktop binary processing without external telemetry.";
+    q.options.push_back({ L"Zero-database local in-memory processing", true });
+    q.options.push_back({ L"Cloud-dependent webview container", false });
+    g_quizQuestions.push_back(q);
+    EnterQuizBuilder(hwnd);
+}
+
+void LoadQuizTemplate(HWND hwnd, int idx) {
+    g_quizQuestions.clear();
+    if (idx == 0) { // CS
+        g_quizTitle = L"Computer Science & Systems Architecture Certification";
+        InitDefaultQuiz();
+    } else if (idx == 1) { // Compliance
+        g_quizTitle = L"Enterprise Security & ISO Compliance Assessment";
+        QuizQuestion q1;
+        q1.id = 1; q1.points = 10; q1.title = L"What constitutes a sovereign data perimeter?";
+        q1.userSelectedOption = -1;
+        q1.explanation = L"Zero external database transmission and offline cryptographic execution.";
+        q1.options.push_back({ L"Full in-memory local data residency without external network dependencies", true });
+        q1.options.push_back({ L"Storing plain files on multi-tenant public cloud buckets", false });
+        g_quizQuestions.push_back(q1);
+
+        QuizQuestion q2;
+        q2.id = 2; q2.points = 10; q2.title = L"Which hashing standard is recommended for document integrity?";
+        q2.userSelectedOption = -1;
+        q2.explanation = L"SHA-256 and SHA-3 provide cryptographically secure collision resistance.";
+        q2.options.push_back({ L"SHA-256 / SHA-512 cryptographic digests", true });
+        q2.options.push_back({ L"CRC32 checksum", false });
+        g_quizQuestions.push_back(q2);
+    } else {
+        g_quizTitle = g_quizConfig.templates[idx % g_quizConfig.templates.size()].title;
+        InitDefaultQuiz();
+    }
+    EnterQuizBuilder(hwnd);
+}
+
+
 void DoExportQuizCSV(HWND hwnd) {
     wchar_t szFile[MAX_PATH] = L"Assessment_Gradebook.csv";
     OPENFILENAMEW ofn = { sizeof(OPENFILENAMEW) };
@@ -169,6 +308,10 @@ LRESULT CALLBACK QuizWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     switch (uMsg) {
     case WM_COMMAND: {
         int id = LOWORD(wParam);
+        if (id == IDC_BTN_BACK_HUB) {
+            ReturnToQuizStart(hwnd);
+            return 0;
+        }
         if (id == IDC_BTN_ADD_QUESTION) {
             QuizQuestion q;
             q.id = (int)g_quizQuestions.size() + 1;
@@ -224,6 +367,12 @@ LRESULT CALLBACK QuizWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_SIZE: {
         int w = LOWORD(lParam);
+        int h = HIWORD(lParam);
+        if (g_quizState == QUIZ_VIEW_START) {
+            if (g_hToolbarPanel) ShowWindow(g_hToolbarPanel, SW_HIDE);
+            InvalidateRect(hwnd, NULL, FALSE);
+            return 0;
+        }
         if (g_hToolbarPanel) {
             SetWindowPos(g_hToolbarPanel, NULL, 0, 0, w, 82, SWP_NOZORDER);
         }
@@ -240,6 +389,71 @@ LRESULT CALLBACK QuizWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_LBUTTONDOWN: {
         int x = LOWORD(lParam);
         int y = HIWORD(lParam);
+
+        if (g_quizState == QUIZ_VIEW_START) {
+            RECT rcClient;
+            GetClientRect(hwnd, &rcClient);
+            auto hit = GiriOrbit::HitTestStartInterface(x, y, rcClient.right, rcClient.bottom, g_quizConfig, g_quizStartState);
+
+            switch (hit.action) {
+            case GiriOrbit::ACTION_CREATE_BLANK:
+                EnterQuizBuilderBlank(hwnd);
+                break;
+            case GiriOrbit::ACTION_UPLOAD_FILE:
+                EnterQuizBuilder(hwnd);
+                break;
+            case GiriOrbit::ACTION_CUSTOM_TEMPLATE:
+                LoadQuizTemplate(hwnd, 0);
+                break;
+            case GiriOrbit::ACTION_IMPORT_TEMPLATE:
+                EnterQuizBuilder(hwnd);
+                break;
+            case GiriOrbit::ACTION_RESUME_DRAFT:
+                EnterQuizBuilder(hwnd);
+                break;
+            case GiriOrbit::ACTION_DELETE_DRAFT:
+                g_quizQuestions.clear();
+                g_quizStartState.ShowToast(L"Draft quiz cleared.");
+                InvalidateRect(hwnd, NULL, FALSE);
+                break;
+            case GiriOrbit::ACTION_OPEN_PORTAL:
+                GiriOrbit::OpenWebUrl(hwnd, L"https://github.com/abhinavgiri45/giri-orbit");
+                break;
+            case GiriOrbit::ACTION_OPEN_INSTAGRAM:
+                GiriOrbit::OpenWebUrl(hwnd, L"https://instagram.com/abhinavgiri45");
+                break;
+            case GiriOrbit::ACTION_SWITCH_HUB:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriOrbit.exe");
+                break;
+            case GiriOrbit::ACTION_SWITCH_DRIFT:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriDrift.exe");
+                break;
+            case GiriOrbit::ACTION_SWITCH_AXIS:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriAxis.exe");
+                break;
+            case GiriOrbit::ACTION_SWITCH_KINETIC:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriKinetic.exe");
+                break;
+            case GiriOrbit::ACTION_OPEN_PDF:
+                GiriOrbit::OpenWebUrl(hwnd, L"https://giri-orbit.pages.dev/#pdf");
+                break;
+            case GiriOrbit::ACTION_COPY_LINK:
+                GiriOrbit::CopyToolLink(hwnd, L"quiz", g_quizStartState);
+                InvalidateRect(hwnd, NULL, FALSE);
+                break;
+            case GiriOrbit::ACTION_SELECT_CATEGORY:
+                g_quizStartState.selectedCategory = hit.index;
+                InvalidateRect(hwnd, NULL, FALSE);
+                break;
+            case GiriOrbit::ACTION_SELECT_TEMPLATE:
+                LoadQuizTemplate(hwnd, hit.index);
+                break;
+            default:
+                break;
+            }
+            return 0;
+        }
+
         if (y < 82 && x > 650) {
             ReleaseCapture();
             SendMessageW(hwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
@@ -300,6 +514,32 @@ LRESULT CALLBACK QuizWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_ERASEBKGND: return 1;
 
+    case WM_MOUSEMOVE: {
+        int x = LOWORD(lParam);
+        int y = HIWORD(lParam);
+        if (g_quizState == QUIZ_VIEW_START) {
+            RECT rcClient;
+            GetClientRect(hwnd, &rcClient);
+            auto hit = GiriOrbit::HitTestStartInterface(x, y, rcClient.right, rcClient.bottom, g_quizConfig, g_quizStartState);
+            int newHover = (hit.action != GiriOrbit::ACTION_NONE) ? hit.index : -1;
+            if (newHover != g_quizStartState.hoverId) {
+                g_quizStartState.hoverId = newHover;
+                InvalidateRect(hwnd, NULL, FALSE);
+            }
+            TRACKMOUSEEVENT tme = { sizeof(TRACKMOUSEEVENT), TME_LEAVE, hwnd, 0 };
+            TrackMouseEvent(&tme);
+        }
+        break;
+    }
+
+    case WM_SETCURSOR: {
+        if (g_quizState == QUIZ_VIEW_START && g_quizStartState.hoverId != -1) {
+            SetCursor(LoadCursor(NULL, IDC_HAND));
+            return TRUE;
+        }
+        break;
+    }
+
     case WM_PAINT: {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
@@ -317,6 +557,9 @@ LRESULT CALLBACK QuizWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         g.SetSmoothingMode(SmoothingModeAntiAlias);
         g.SetTextRenderingHint(TextRenderingHintClearTypeGridFit);
 
+        if (g_quizState == QUIZ_VIEW_START) {
+            GiriOrbit::RenderStartInterface(g, w, h, g_quizConfig, g_quizStartState);
+        } else {
         // Background
         SolidBrush bgBrush(Color(241, 245, 249));
         g.FillRectangle(&bgBrush, 0, 0, w, h);
@@ -527,6 +770,7 @@ LRESULT CALLBACK QuizWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         g.DrawString(L"  Giri Quiz Sovereign Assessment Studio (v13.5) • 100% Offline Standalone Native C++ • Author: Abhinav Giri",
                      -1, &fStatus, PointF(8.0f, (float)h - 18.0f), &statusText);
 
+        }
         BitBlt(hdc, 0, 0, w, h, memDC, 0, 0, SRCCOPY);
         SelectObject(memDC, oldBM);
         DeleteObject(memBM);
@@ -568,11 +812,12 @@ void CreateQuizToolbar(HWND hwnd) {
         return btn;
     };
 
-    makeBtn(L"+ Question", 14, 14, 96, 36, IDC_BTN_ADD_QUESTION);
-    makeBtn(L"Take Exam / Test", 118, 14, 136, 36, IDC_BTN_START_EXAM);
-    makeBtn(L"Gradebook Registry", 262, 14, 146, 36, IDC_BTN_GRADEBOOK);
-    makeBtn(L"Export to CSV", 416, 14, 110, 36, IDC_BTN_EXPORT_CSV);
-    makeBtn(L"Reset Quiz", 534, 14, 96, 36, IDC_BTN_RESET_QUIZ);
+    makeBtn(L"← Hub", 14, 14, 76, 36, IDC_BTN_BACK_HUB);
+    makeBtn(L"+ Question", 98, 14, 96, 36, IDC_BTN_ADD_QUESTION);
+    makeBtn(L"Take Exam / Test", 202, 14, 136, 36, IDC_BTN_START_EXAM);
+    makeBtn(L"Gradebook Registry", 346, 14, 146, 36, IDC_BTN_GRADEBOOK);
+    makeBtn(L"Export to CSV", 500, 14, 110, 36, IDC_BTN_EXPORT_CSV);
+    makeBtn(L"Reset Quiz", 618, 14, 96, 36, IDC_BTN_RESET_QUIZ);
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
@@ -626,7 +871,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
     if (!g_hMainWnd) return 0;
 
+    InitQuizConfig();
     CreateQuizToolbar(g_hMainWnd);
+    ShowWindow(g_hToolbarPanel, SW_HIDE);
 
     ShowWindow(g_hMainWnd, nCmdShow);
     UpdateWindow(g_hMainWnd);

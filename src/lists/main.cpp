@@ -25,6 +25,9 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include "../common/tool_start_ui.h"
+
+#define IDC_BTN_BACK_HUB      6099
 
 #pragma comment(lib, "gdiplus.lib")
 #pragma comment(lib, "comctl32.lib")
@@ -98,6 +101,119 @@ void InitDefaultTasks() {
     g_tasks.push_back({ 107, L"Publish Release Notes for Giri Orbit v13.5 Sovereign", STATUS_TODO, PRIORITY_LOW, L"Release Ops", L"Nov 14", 0 });
 }
 
+// Lists View State Machine
+enum ListsViewState {
+    LISTS_VIEW_START = 0,
+    LISTS_VIEW_BOARD = 1
+};
+ListsViewState g_listsState = LISTS_VIEW_START;
+GiriOrbit::ToolThemeConfig g_listsConfig;
+GiriOrbit::StartUIState g_listsStartState;
+
+void ReturnToListsStart(HWND hwnd);
+void EnterListsBoard(HWND hwnd);
+void EnterListsBoardBlank(HWND hwnd);
+void LoadListsTemplate(HWND hwnd, int idx);
+
+void InitListsConfig() {
+    g_listsConfig.toolLetter = L"L";
+    g_listsConfig.toolName = L"Lists";
+    g_listsConfig.fullToolName = L"Giri Lists";
+    g_listsConfig.headline = L"Welcome to Lists for free on the web";
+    g_listsConfig.subtitle = L"Sovereign task tracking, sprint management, and checklist system. Instant priority filtering, zero latency status toggling, and offline board views.";
+    g_listsConfig.createBtnText = L"Create blank list";
+    g_listsConfig.uploadBtnText = L"Upload List";
+    g_listsConfig.draftTitle = L"Enterprise Sprint Roadmap - Giri Lists";
+    g_listsConfig.draftMeta = L"Saved recently • 7 Tasks • 4 Columns • 0.9 KB";
+    g_listsConfig.toolHash = L"lists";
+    g_listsConfig.galleryTitle = L"Create with templates";
+    g_listsConfig.galleryBadge = L"";
+    g_listsConfig.accentColor = Gdiplus::Color(124, 58, 237); // Purple-600
+    g_listsConfig.accentDark = Gdiplus::Color(109, 40, 217);  // Purple-700
+    g_listsConfig.accentHover = Gdiplus::Color(139, 92, 246); // Purple-500
+    g_listsConfig.illustrationType = 3;
+
+    g_listsConfig.categories = {
+        L"Recommended", L"Engineering Sprints", L"Product Launches", L"Operations", L"Personal"
+    };
+
+    g_listsConfig.templates = {
+        {
+            L"Agile Sprint Deliverables & Milestones",
+            L"Engineering Sprints",
+            L"Kanban board with backlog, active engineering sprints, code review pipeline, and deployed items.",
+            L"SPRINT"
+        },
+        {
+            L"Product Launch Go-To-Market Checklist",
+            L"Product Launches",
+            L"Comprehensive marketing, documentation, social outreach, and server infrastructure readiness.",
+            L"GTM"
+        },
+        {
+            L"Critical Bug & Security Remediation Matrix",
+            L"Engineering Sprints",
+            L"High-severity triage, patch verification, audit verification, and deployment timeline.",
+            L"BUGS"
+        },
+        {
+            L"Executive Operations & Vendor Deliverables",
+            L"Operations",
+            L"Cross-departmental contracts, SLA milestones, vendor compliance, and quarterly reviews.",
+            L"OPS"
+        },
+        {
+            L"New Employee Onboarding 30-60-90 Day Plan",
+            L"Operations",
+            L"Structured onboarding roadmap with environment setup, architecture reading, and initial commits.",
+            L"ONBOARD"
+        },
+        {
+            L"Personal Deep Work & Daily Habit Matrix",
+            L"Personal",
+            L"Daily flow state focus blocks, priority tasks, health tracking, and reflection logs.",
+            L"PERSONAL"
+        }
+    };
+}
+
+void ReturnToListsStart(HWND hwnd) {
+    g_listsState = LISTS_VIEW_START;
+    ShowWindow(g_hToolbarPanel, SW_HIDE);
+    InvalidateRect(hwnd, NULL, TRUE);
+}
+
+void EnterListsBoard(HWND hwnd) {
+    g_listsState = LISTS_VIEW_BOARD;
+    ShowWindow(g_hToolbarPanel, SW_SHOW);
+    RECT rc;
+    GetClientRect(hwnd, &rc);
+    SendMessageW(hwnd, WM_SIZE, 0, MAKELPARAM(rc.right, rc.bottom));
+    InvalidateRect(hwnd, NULL, TRUE);
+}
+
+void EnterListsBoardBlank(HWND hwnd) {
+    g_tasks.clear();
+    g_tasks.push_back({ 101, L"New Sovereign Deliverable", STATUS_TODO, PRIORITY_HIGH, L"You", L"Today", 0 });
+    EnterListsBoard(hwnd);
+}
+
+void LoadListsTemplate(HWND hwnd, int idx) {
+    g_tasks.clear();
+    if (idx == 0) { // Sprint
+        InitDefaultTasks();
+    } else if (idx == 1) { // Product Launch
+        g_tasks.push_back({ 201, L"Finalize Release Binary Builds & Checksums", STATUS_DONE, PRIORITY_CRITICAL, L"Abhinav Giri", L"Nov 08", 100 });
+        g_tasks.push_back({ 202, L"Update Sovereign Documentation & Change Logs", STATUS_IN_PROGRESS, PRIORITY_HIGH, L"Docs Team", L"Nov 08", 60 });
+        g_tasks.push_back({ 203, L"Deploy Cloudflare Pages Edge Distribution", STATUS_DONE, PRIORITY_HIGH, L"DevOps", L"Nov 08", 100 });
+        g_tasks.push_back({ 204, L"Publish Launch Announcement on GitHub & Socials", STATUS_TODO, PRIORITY_MED, L"Marketing", L"Nov 09", 0 });
+    } else {
+        InitDefaultTasks();
+    }
+    EnterListsBoard(hwnd);
+}
+
+
 void DoExportListsCSV(HWND hwnd) {
     wchar_t szFile[MAX_PATH] = L"Tasks_Matrix.csv";
     OPENFILENAMEW ofn = { sizeof(OPENFILENAMEW) };
@@ -128,6 +244,10 @@ LRESULT CALLBACK ListsWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     switch (uMsg) {
     case WM_COMMAND: {
         int id = LOWORD(wParam);
+        if (id == IDC_BTN_BACK_HUB) {
+            ReturnToListsStart(hwnd);
+            return 0;
+        }
         if (id == IDC_BTN_ADD_TASK) {
             TaskItem t;
             t.id = (int)g_tasks.size() + 101;
@@ -161,6 +281,12 @@ LRESULT CALLBACK ListsWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
     case WM_SIZE: {
         int w = LOWORD(lParam);
+        int h = HIWORD(lParam);
+        if (g_listsState == LISTS_VIEW_START) {
+            if (g_hToolbarPanel) ShowWindow(g_hToolbarPanel, SW_HIDE);
+            InvalidateRect(hwnd, NULL, FALSE);
+            return 0;
+        }
         if (g_hToolbarPanel) {
             SetWindowPos(g_hToolbarPanel, NULL, 0, 0, w, 82, SWP_NOZORDER);
         }
@@ -177,6 +303,71 @@ LRESULT CALLBACK ListsWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     case WM_LBUTTONDOWN: {
         int x = LOWORD(lParam);
         int y = HIWORD(lParam);
+
+        if (g_listsState == LISTS_VIEW_START) {
+            RECT rcClient;
+            GetClientRect(hwnd, &rcClient);
+            auto hit = GiriOrbit::HitTestStartInterface(x, y, rcClient.right, rcClient.bottom, g_listsConfig, g_listsStartState);
+
+            switch (hit.action) {
+            case GiriOrbit::ACTION_CREATE_BLANK:
+                EnterListsBoardBlank(hwnd);
+                break;
+            case GiriOrbit::ACTION_UPLOAD_FILE:
+                EnterListsBoard(hwnd);
+                break;
+            case GiriOrbit::ACTION_CUSTOM_TEMPLATE:
+                LoadListsTemplate(hwnd, 0);
+                break;
+            case GiriOrbit::ACTION_IMPORT_TEMPLATE:
+                EnterListsBoard(hwnd);
+                break;
+            case GiriOrbit::ACTION_RESUME_DRAFT:
+                EnterListsBoard(hwnd);
+                break;
+            case GiriOrbit::ACTION_DELETE_DRAFT:
+                g_tasks.clear();
+                g_listsStartState.ShowToast(L"Draft task matrix cleared.");
+                InvalidateRect(hwnd, NULL, FALSE);
+                break;
+            case GiriOrbit::ACTION_OPEN_PORTAL:
+                GiriOrbit::OpenWebUrl(hwnd, L"https://github.com/abhinavgiri45/giri-orbit");
+                break;
+            case GiriOrbit::ACTION_OPEN_INSTAGRAM:
+                GiriOrbit::OpenWebUrl(hwnd, L"https://instagram.com/abhinavgiri45");
+                break;
+            case GiriOrbit::ACTION_SWITCH_HUB:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriOrbit.exe");
+                break;
+            case GiriOrbit::ACTION_SWITCH_DRIFT:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriDrift.exe");
+                break;
+            case GiriOrbit::ACTION_SWITCH_AXIS:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriAxis.exe");
+                break;
+            case GiriOrbit::ACTION_SWITCH_KINETIC:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriKinetic.exe");
+                break;
+            case GiriOrbit::ACTION_OPEN_PDF:
+                GiriOrbit::OpenWebUrl(hwnd, L"https://giri-orbit.pages.dev/#pdf");
+                break;
+            case GiriOrbit::ACTION_COPY_LINK:
+                GiriOrbit::CopyToolLink(hwnd, L"lists", g_listsStartState);
+                InvalidateRect(hwnd, NULL, FALSE);
+                break;
+            case GiriOrbit::ACTION_SELECT_CATEGORY:
+                g_listsStartState.selectedCategory = hit.index;
+                InvalidateRect(hwnd, NULL, FALSE);
+                break;
+            case GiriOrbit::ACTION_SELECT_TEMPLATE:
+                LoadListsTemplate(hwnd, hit.index);
+                break;
+            default:
+                break;
+            }
+            return 0;
+        }
+
         if (y < 82 && x > 800) {
             ReleaseCapture();
             SendMessageW(hwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
@@ -231,6 +422,32 @@ LRESULT CALLBACK ListsWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
     case WM_ERASEBKGND: return 1;
 
+    case WM_MOUSEMOVE: {
+        int x = LOWORD(lParam);
+        int y = HIWORD(lParam);
+        if (g_listsState == LISTS_VIEW_START) {
+            RECT rcClient;
+            GetClientRect(hwnd, &rcClient);
+            auto hit = GiriOrbit::HitTestStartInterface(x, y, rcClient.right, rcClient.bottom, g_listsConfig, g_listsStartState);
+            int newHover = (hit.action != GiriOrbit::ACTION_NONE) ? hit.index : -1;
+            if (newHover != g_listsStartState.hoverId) {
+                g_listsStartState.hoverId = newHover;
+                InvalidateRect(hwnd, NULL, FALSE);
+            }
+            TRACKMOUSEEVENT tme = { sizeof(TRACKMOUSEEVENT), TME_LEAVE, hwnd, 0 };
+            TrackMouseEvent(&tme);
+        }
+        break;
+    }
+
+    case WM_SETCURSOR: {
+        if (g_listsState == LISTS_VIEW_START && g_listsStartState.hoverId != -1) {
+            SetCursor(LoadCursor(NULL, IDC_HAND));
+            return TRUE;
+        }
+        break;
+    }
+
     case WM_PAINT: {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
@@ -248,6 +465,9 @@ LRESULT CALLBACK ListsWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         g.SetSmoothingMode(SmoothingModeAntiAlias);
         g.SetTextRenderingHint(TextRenderingHintClearTypeGridFit);
 
+        if (g_listsState == LISTS_VIEW_START) {
+            GiriOrbit::RenderStartInterface(g, w, h, g_listsConfig, g_listsStartState);
+        } else {
         // Background
         SolidBrush bgBrush(Color(241, 245, 249));
         g.FillRectangle(&bgBrush, 0, 0, w, h);
@@ -416,6 +636,7 @@ LRESULT CALLBACK ListsWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         g.DrawString(L"  Giri Lists Sovereign Studio (v13.5) • 100% Offline Standalone Native C++ • Author: Abhinav Giri",
                      -1, &fStatus, PointF(8.0f, (float)h - 18.0f), &statusText);
 
+        }
         BitBlt(hdc, 0, 0, w, h, memDC, 0, 0, SRCCOPY);
         SelectObject(memDC, oldBM);
         DeleteObject(memBM);
@@ -456,12 +677,13 @@ void CreateListsToolbar(HWND hwnd) {
         return btn;
     };
 
-    makeBtn(L"+ Add Task", 14, 14, 96, 36, IDC_BTN_ADD_TASK);
-    makeBtn(L"Switch View (Kanban / Matrix)", 118, 14, 196, 36, IDC_BTN_TOGGLE_VIEW);
-    makeBtn(L"Filter: High Priority", 322, 14, 146, 36, IDC_BTN_FILTER_HIGH);
-    makeBtn(L"Show All", 476, 14, 84, 36, IDC_BTN_FILTER_ALL);
-    makeBtn(L"Export to CSV", 568, 14, 110, 36, IDC_BTN_EXPORT_CSV);
-    makeBtn(L"Reset Matrix", 686, 14, 100, 36, IDC_BTN_RESET_LIST);
+    makeBtn(L"← Hub", 14, 14, 76, 36, IDC_BTN_BACK_HUB);
+    makeBtn(L"+ Add Task", 98, 14, 96, 36, IDC_BTN_ADD_TASK);
+    makeBtn(L"Switch View (Kanban / Matrix)", 202, 14, 196, 36, IDC_BTN_TOGGLE_VIEW);
+    makeBtn(L"Filter: High Priority", 406, 14, 146, 36, IDC_BTN_FILTER_HIGH);
+    makeBtn(L"Show All", 560, 14, 84, 36, IDC_BTN_FILTER_ALL);
+    makeBtn(L"Export to CSV", 652, 14, 110, 36, IDC_BTN_EXPORT_CSV);
+    makeBtn(L"Reset Matrix", 770, 14, 100, 36, IDC_BTN_RESET_LIST);
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
@@ -515,7 +737,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
     if (!g_hMainWnd) return 0;
 
+    InitListsConfig();
     CreateListsToolbar(g_hMainWnd);
+    ShowWindow(g_hToolbarPanel, SW_HIDE);
 
     ShowWindow(g_hMainWnd, nCmdShow);
     UpdateWindow(g_hMainWnd);

@@ -21,6 +21,7 @@ ULONG_PTR g_gdiToken = 0;
 #include <algorithm>
 #include <cctype>
 #include <iomanip>
+#include "../common/tool_start_ui.h"
 
 #define MAX_GRID_ROWS 1000
 #define MAX_GRID_COLS 52
@@ -172,6 +173,257 @@ int g_scrollRow = 0;
 int g_scrollCol = 0;
 bool g_isEditing = false;
 std::wstring g_currentFilePath = L"";
+
+
+// Axis View State Machine
+enum AxisViewState {
+    AXIS_VIEW_START = 0,
+    AXIS_VIEW_GRID = 1
+};
+AxisViewState g_axisState = AXIS_VIEW_START;
+GiriOrbit::ToolThemeConfig g_axisConfig;
+GiriOrbit::StartUIState g_axisStartState;
+
+void ReturnToAxisStart(HWND hwnd);
+void EnterAxisGrid(HWND hwnd);
+void EnterAxisGridBlank(HWND hwnd);
+void LoadAxisTemplate(HWND hwnd, int idx);
+void UpdateStatusBar(HWND hwnd);
+void RecalculateSheet(Sheet& sheet);
+
+void InitAxisConfig() {
+    g_axisConfig.toolLetter = L"A";
+    g_axisConfig.toolName = L"Axis";
+    g_axisConfig.fullToolName = L"Giri Axis";
+    g_axisConfig.headline = L"Welcome to Axis for free on the web";
+    g_axisConfig.subtitle = L"Sovereign in-memory spreadsheet and financial modeling matrix. Zero database tracking, instant local calculation engine, and customizable financial templates.";
+    g_axisConfig.createBtnText = L"Create blank workbook";
+    g_axisConfig.uploadBtnText = L"Upload File";
+    g_axisConfig.draftTitle = L"Workbook 1 - Giri Axis";
+    g_axisConfig.draftMeta = L"Saved recently · 100 R x 52 C · 1.2 KB";
+    g_axisConfig.toolHash = L"axis";
+    g_axisConfig.galleryTitle = L"Create with templates";
+    g_axisConfig.galleryBadge = L"";
+    g_axisConfig.accentColor = Gdiplus::Color(16, 185, 129); // Emerald-500
+    g_axisConfig.accentDark = Gdiplus::Color(4, 120, 87);    // Emerald-700
+    g_axisConfig.accentHover = Gdiplus::Color(5, 150, 105);  // Emerald-600
+    g_axisConfig.illustrationType = 1; // 3D Column Bars
+
+    g_axisConfig.categories = {
+        L"Recommended", L"Budgets & Financials", L"Invoices & Billing", L"Project Trackers", L"Custom Templates 0"
+    };
+
+    g_axisConfig.templates = {
+        {
+            L"Budgets & Financials",
+            L"Budgets & Financials",
+            L"Quarterly departmental operating expenses, R&D allocation, cloud infra, and FY26 rollup.",
+            L"BUDGET"
+        },
+        {
+            L"P&L Financials",
+            L"Budgets & Financials",
+            L"Comprehensive Profit & Loss financial matrix with Gross Revenue, COGS, and Net Income.",
+            L"PNL"
+        },
+        {
+            L"SaaS KPI Run Rate",
+            L"Recommended",
+            L"Executive SaaS performance matrix tracking MRR Run Rate, Net Retention, and LTV / CAC.",
+            L"SAAS"
+        },
+        {
+            L"Shareholder Cap Table",
+            L"Budgets & Financials",
+            L"Equity ownership matrix with founder shares, employee option pool, and post-money valuation.",
+            L"CAPTABLE"
+        },
+        {
+            L"Deliverables Tracker",
+            L"Project Trackers",
+            L"Engineering sprint milestones, accountability lead, delivery status, and completion timeline.",
+            L"TRACKER"
+        },
+        {
+            L"Invoice & Receivables",
+            L"Invoices & Billing",
+            L"Commercial accounts receivable ledger with payment milestones, client invoicing, and net totals.",
+            L"INVOICE"
+        }
+    };
+}
+
+void ReturnToAxisStart(HWND hwnd) {
+    g_axisState = AXIS_VIEW_START;
+    ShowWindow(g_hToolbarPanel, SW_HIDE);
+    ShowWindow(g_hCellCoordLbl, SW_HIDE);
+    ShowWindow(g_hFxLbl, SW_HIDE);
+    ShowWindow(g_hFormulaBar, SW_HIDE);
+    ShowWindow(g_hGridWnd, SW_HIDE);
+    ShowWindow(g_hTabCtrl, SW_HIDE);
+    ShowWindow(g_hStatusBar, SW_HIDE);
+    InvalidateRect(hwnd, NULL, TRUE);
+}
+
+void EnterAxisGrid(HWND hwnd) {
+    g_axisState = AXIS_VIEW_GRID;
+    ShowWindow(g_hToolbarPanel, SW_SHOW);
+    ShowWindow(g_hCellCoordLbl, SW_SHOW);
+    ShowWindow(g_hFxLbl, SW_SHOW);
+    ShowWindow(g_hFormulaBar, SW_SHOW);
+    ShowWindow(g_hGridWnd, SW_SHOW);
+    ShowWindow(g_hTabCtrl, SW_SHOW);
+    ShowWindow(g_hStatusBar, SW_SHOW);
+    RECT rc;
+    GetClientRect(hwnd, &rc);
+    SendMessageW(hwnd, WM_SIZE, 0, MAKELPARAM(rc.right, rc.bottom));
+    InvalidateRect(g_hGridWnd, NULL, TRUE);
+    UpdateStatusBar(hwnd);
+}
+
+void EnterAxisGridBlank(HWND hwnd) {
+    g_sheets.clear();
+    Sheet s;
+    s.name = L"Sheet 1";
+    g_sheets.push_back(s);
+    g_activeSheet = 0;
+    g_currentFilePath = L"";
+    EnterAxisGrid(hwnd);
+}
+
+void LoadAxisTemplate(HWND hwnd, int idx) {
+    g_sheets.clear();
+    Sheet s;
+    s.name = L"Sheet 1";
+
+    if (idx == 0) { // Budgets & Financials
+        s.cells[{0, 0}] = { L"Category", L"Category" };
+        s.cells[{0, 1}] = { L"Q1", L"Q1" };
+        s.cells[{0, 2}] = { L"Q2", L"Q2" };
+        s.cells[{0, 3}] = { L"FY26 Total", L"FY26 Total" };
+
+        s.cells[{1, 0}] = { L"R&D Eng", L"R&D Eng" };
+        s.cells[{1, 1}] = { L"120000", L"$120,000" };
+        s.cells[{1, 2}] = { L"140000", L"$140,000" };
+        s.cells[{1, 3}] = { L"=SUM(B2:C2)", L"$260,000" };
+
+        s.cells[{2, 0}] = { L"Cloud Infra", L"Cloud Infra" };
+        s.cells[{2, 1}] = { L"45000", L"$45,000" };
+        s.cells[{2, 2}] = { L"48000", L"$48,000" };
+        s.cells[{2, 3}] = { L"=SUM(B3:C3)", L"$93,000" };
+
+        s.cells[{3, 0}] = { L"Total Opex", L"Total Opex" };
+        s.cells[{3, 1}] = { L"=SUM(B2:B3)", L"$165,000" };
+        s.cells[{3, 2}] = { L"=SUM(C2:C3)", L"$188,000" };
+        s.cells[{3, 3}] = { L"=SUM(D2:D3)", L"$353,000" };
+    } else if (idx == 1) { // P&L Financials
+        s.cells[{0, 0}] = { L"P&L Metric", L"P&L Metric" };
+        s.cells[{0, 1}] = { L"October", L"October" };
+        s.cells[{0, 2}] = { L"November", L"November" };
+        s.cells[{0, 3}] = { L"Q4 Total", L"Q4 Total" };
+
+        s.cells[{1, 0}] = { L"Gross Revenue", L"Gross Revenue" };
+        s.cells[{1, 1}] = { L"420000", L"$420,000" };
+        s.cells[{1, 2}] = { L"485000", L"$485,000" };
+        s.cells[{1, 3}] = { L"=SUM(B2:C2)", L"$905,000" };
+
+        s.cells[{2, 0}] = { L"Operating ENT", L"Operating ENT" };
+        s.cells[{2, 1}] = { L"135000", L"$135,000" };
+        s.cells[{2, 2}] = { L"152000", L"$152,000" };
+        s.cells[{2, 3}] = { L"=SUM(B3:C3)", L"$287,000" };
+
+        s.cells[{3, 0}] = { L"Net Income", L"Net Income" };
+        s.cells[{3, 1}] = { L"=B2-B3", L"$285,000" };
+        s.cells[{3, 2}] = { L"=C2-C3", L"$333,000" };
+        s.cells[{3, 3}] = { L"=SUM(D2:D3)", L"$618,000" };
+    } else if (idx == 2) { // SaaS KPI Run Rate
+        s.cells[{0, 0}] = { L"SaaS KPI", L"SaaS KPI" };
+        s.cells[{0, 1}] = { L"Q1 Actual", L"Q1 Actual" };
+        s.cells[{0, 2}] = { L"Q4 Target", L"Q4 Target" };
+        s.cells[{0, 3}] = { L"Trajectory", L"Trajectory" };
+
+        s.cells[{1, 0}] = { L"MRR Run Rate", L"MRR Run Rate" };
+        s.cells[{1, 1}] = { L"185000", L"$185,000" };
+        s.cells[{1, 2}] = { L"280000", L"$280,000" };
+        s.cells[{1, 3}] = { L"+51.3%", L"+51.3%" };
+
+        s.cells[{2, 0}] = { L"Net Retention", L"Net Retention" };
+        s.cells[{2, 1}] = { L"124%", L"124%" };
+        s.cells[{2, 2}] = { L"135%", L"135%" };
+        s.cells[{2, 3}] = { L"Elite Tier", L"Elite Tier" };
+
+        s.cells[{3, 0}] = { L"LTV / CAC", L"LTV / CAC" };
+        s.cells[{3, 1}] = { L"4.8x", L"4.8x" };
+        s.cells[{3, 2}] = { L"6.1x", L"6.1x" };
+        s.cells[{3, 3}] = { L"Exceptional", L"Exceptional" };
+    } else if (idx == 3) { // Shareholder Cap Table
+        s.cells[{0, 0}] = { L"Shareholder", L"Shareholder" };
+        s.cells[{0, 1}] = { L"Shares", L"Shares" };
+        s.cells[{0, 2}] = { L"Equity %", L"Equity %" };
+        s.cells[{0, 3}] = { L"Implied Value", L"Implied Value" };
+
+        s.cells[{1, 0}] = { L"Abhinav Giri", L"Abhinav Giri" };
+        s.cells[{1, 1}] = { L"6500000", L"6,500,000" };
+        s.cells[{1, 2}] = { L"65.0%", L"65.0%" };
+        s.cells[{1, 3}] = { L"$16,250,000", L"$16,250,000" };
+
+        s.cells[{2, 0}] = { L"Employee Pool", L"Employee Pool" };
+        s.cells[{2, 1}] = { L"1500000", L"1,500,000" };
+        s.cells[{2, 2}] = { L"15.0%", L"15.0%" };
+        s.cells[{2, 3}] = { L"$3,750,000", L"$3,750,000" };
+
+        s.cells[{3, 0}] = { L"Total Diluted", L"Total Diluted" };
+        s.cells[{3, 1}] = { L"10000000", L"10,000,000" };
+        s.cells[{3, 2}] = { L"100.0%", L"100.0%" };
+        s.cells[{3, 3}] = { L"$25,000,000", L"$25,000,000" };
+    } else if (idx == 4) { // Deliverables Tracker
+        s.cells[{0, 0}] = { L"Deliverable", L"Deliverable" };
+        s.cells[{0, 1}] = { L"Lead", L"Lead" };
+        s.cells[{0, 2}] = { L"Status", L"Status" };
+        s.cells[{0, 3}] = { L"Target Date", L"Target Date" };
+
+        s.cells[{1, 0}] = { L"Physics Core", L"Physics Core" };
+        s.cells[{1, 1}] = { L"Abhinav Giri", L"Abhinav Giri" };
+        s.cells[{1, 2}] = { L"Complete", L"Complete" };
+        s.cells[{1, 3}] = { L"Oct 2026", L"Oct 2026" };
+
+        s.cells[{2, 0}] = { L"Ribbon System", L"Ribbon System" };
+        s.cells[{2, 1}] = { L"Architecture", L"Architecture" };
+        s.cells[{2, 2}] = { L"Complete", L"Complete" };
+        s.cells[{2, 3}] = { L"Nov 2026", L"Nov 2026" };
+
+        s.cells[{3, 0}] = { L"Overall Velocity", L"Overall Velocity" };
+        s.cells[{3, 1}] = { L"Suite Team", L"Suite Team" };
+        s.cells[{3, 2}] = { L"87% On Schedule", L"87% On Schedule" };
+        s.cells[{3, 3}] = { L"Q4 FY26", L"Q4 FY26" };
+    } else { // Invoice & Receivables
+        s.cells[{0, 0}] = { L"Invoice #", L"Invoice #" };
+        s.cells[{0, 1}] = { L"Client Name", L"Client Name" };
+        s.cells[{0, 2}] = { L"Amount", L"Amount" };
+        s.cells[{0, 3}] = { L"Status", L"Status" };
+
+        s.cells[{1, 0}] = { L"INV-2026-001", L"INV-2026-001" };
+        s.cells[{1, 1}] = { L"Global Enterprise", L"Global Enterprise" };
+        s.cells[{1, 2}] = { L"45000", L"$45,000" };
+        s.cells[{1, 3}] = { L"Paid", L"Paid" };
+
+        s.cells[{2, 0}] = { L"INV-2026-002", L"INV-2026-002" };
+        s.cells[{2, 1}] = { L"Apex Systems", L"Apex Systems" };
+        s.cells[{2, 2}] = { L"78500", L"$78,500" };
+        s.cells[{2, 3}] = { L"Pending", L"Pending" };
+
+        s.cells[{3, 0}] = { L"Total Receivables", L"Total Receivables" };
+        s.cells[{3, 1}] = { L"", L"" };
+        s.cells[{3, 2}] = { L"=SUM(C2:C3)", L"$123,500" };
+        s.cells[{3, 3}] = { L"Active", L"Active" };
+    }
+
+    g_sheets.push_back(s);
+    g_activeSheet = 0;
+    RecalculateSheet(g_sheets[g_activeSheet]);
+    EnterAxisGrid(hwnd);
+}
+
 
 // Convert col index to letter (0 -> "A", 25 -> "Z", 26 -> "AA")
 std::wstring ColToLetter(int col) {
@@ -1098,14 +1350,31 @@ LRESULT CALLBACK ToolbarPanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
         g.FillRectangle(&tabStripBg, 0, 0, rc.right, 32);
         g.DrawLine(&bPen, 0, 31, rc.right, 31);
 
+        // <- Hub Button (x: 8, y: 4, w: 56, h: 24)
+        bool isHubHover = (g_hoverRibbonTab == -99);
+        SolidBrush hubBg(isHubHover ? Color(236, 253, 245) : Color(241, 245, 249));
+        Pen hubBorder(isHubHover ? Color(16, 185, 129) : Color(203, 213, 225), 1.0f);
+        GraphicsPath hubPath;
+        RectF hubRect(8.0f, 4.0f, 56.0f, 24.0f);
+        GiriOrbit::AddRoundedRect(hubPath, hubRect, 4.0f);
+        g.FillPath(&hubBg, &hubPath);
+        g.DrawPath(&hubBorder, &hubPath);
+
+        Font fHub(L"Segoe UI", 8.5f, FontStyleBold, UnitPoint);
+        SolidBrush hubText(isHubHover ? Color(5, 150, 105) : Color(71, 85, 105));
+        StringFormat sfHub;
+        sfHub.SetAlignment(StringAlignmentCenter);
+        sfHub.SetLineAlignment(StringAlignmentCenter);
+        g.DrawString(L"← Hub", -1, &fHub, PointF(36.0f, 16.0f), &sfHub, &hubText);
+
         // Brand Pill
         Font fBrand(L"Segoe UI", 9.0f, FontStyleBold, UnitPoint);
         SolidBrush brandBrush(Color(22, 101, 52)); // Emerald-800
-        g.DrawString(L"Giri Axis", -1, &fBrand, PointF(14.0f, 7.0f), &brandBrush);
+        g.DrawString(L"Giri Axis", -1, &fBrand, PointF(72.0f, 7.0f), &brandBrush);
 
         // Tabs
         const wchar_t* tabNames[] = { L"Home", L"Insert", L"Formulas", L"Data", L"View" };
-        int tabX = 96;
+        int tabX = 142;
         Font fTab(L"Segoe UI", 9.0f, FontStyleRegular, UnitPoint);
         Font fTabActive(L"Segoe UI", 9.0f, FontStyleBold, UnitPoint);
 
@@ -1158,8 +1427,10 @@ LRESULT CALLBACK ToolbarPanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
         int oldHover = g_hoverRibbonTab;
         g_hoverRibbonTab = -1;
 
-        if (y < 32 && x >= 96) {
-            int idx = (x - 96) / 70;
+        if (y < 32 && x >= 8 && x <= 64) {
+            g_hoverRibbonTab = -99;
+        } else if (y < 32 && x >= 142) {
+            int idx = (x - 142) / 70;
             if (idx >= 0 && idx < AXIS_TAB_COUNT) {
                 g_hoverRibbonTab = idx;
             }
@@ -1524,6 +1795,18 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
         int w = LOWORD(lParam);
         int h = HIWORD(lParam);
 
+        if (g_axisState == AXIS_VIEW_START) {
+            ShowWindow(g_hToolbarPanel, SW_HIDE);
+            ShowWindow(g_hCellCoordLbl, SW_HIDE);
+            ShowWindow(g_hFxLbl, SW_HIDE);
+            ShowWindow(g_hFormulaBar, SW_HIDE);
+            ShowWindow(g_hGridWnd, SW_HIDE);
+            ShowWindow(g_hTabCtrl, SW_HIDE);
+            ShowWindow(g_hStatusBar, SW_HIDE);
+            InvalidateRect(hwnd, NULL, FALSE);
+            return 0;
+        }
+
         SetWindowPos(g_hToolbarPanel, NULL, 0, 0, w, 104, SWP_NOZORDER);
         SetWindowPos(g_hCellCoordLbl, NULL, 8, 108, 64, 26, SWP_NOZORDER);
         SetWindowPos(g_hFxLbl, NULL, 76, 108, 24, 26, SWP_NOZORDER);
@@ -1533,11 +1816,133 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
         SendMessageW(g_hStatusBar, WM_SIZE, wParam, lParam);
         return 0;
     }
+
+    case WM_PAINT: {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
+        RECT rc;
+        GetClientRect(hwnd, &rc);
+        int w = rc.right;
+        int h = rc.bottom;
+
+        if (g_axisState == AXIS_VIEW_START) {
+            HDC memDC = CreateCompatibleDC(hdc);
+            HBITMAP memBM = CreateCompatibleBitmap(hdc, w, h);
+            HBITMAP oldBM = (HBITMAP)SelectObject(memDC, memBM);
+
+            Graphics g(memDC);
+            g.SetSmoothingMode(SmoothingModeAntiAlias);
+            GiriOrbit::RenderStartInterface(g, w, h, g_axisConfig, g_axisStartState);
+
+            BitBlt(hdc, 0, 0, w, h, memDC, 0, 0, SRCCOPY);
+            SelectObject(memDC, oldBM);
+            DeleteObject(memBM);
+            DeleteDC(memDC);
+        }
+
+        EndPaint(hwnd, &ps);
+        return 0;
+    }
     case WM_LBUTTONDOWN: {
+        int x = LOWORD(lParam);
+        int y = HIWORD(lParam);
+
+        if (g_axisState == AXIS_VIEW_START) {
+            RECT rcClient;
+            GetClientRect(hwnd, &rcClient);
+            auto hit = GiriOrbit::HitTestStartInterface(x, y, rcClient.right, rcClient.bottom, g_axisConfig, g_axisStartState);
+
+            switch (hit.action) {
+            case GiriOrbit::ACTION_CREATE_BLANK:
+                EnterAxisGridBlank(hwnd);
+                break;
+            case GiriOrbit::ACTION_UPLOAD_FILE:
+                DoFileOpen(hwnd);
+                if (g_currentFilePath.length() > 0) {
+                    EnterAxisGrid(hwnd);
+                }
+                break;
+            case GiriOrbit::ACTION_CUSTOM_TEMPLATE:
+                LoadAxisTemplate(hwnd, 0);
+                break;
+            case GiriOrbit::ACTION_IMPORT_TEMPLATE:
+                DoFileOpen(hwnd);
+                break;
+            case GiriOrbit::ACTION_RESUME_DRAFT:
+                EnterAxisGrid(hwnd);
+                break;
+            case GiriOrbit::ACTION_DELETE_DRAFT:
+                g_sheets[g_activeSheet].cells.clear();
+                g_axisStartState.ShowToast(L"Draft workbook cleared.");
+                InvalidateRect(hwnd, NULL, FALSE);
+                break;
+            case GiriOrbit::ACTION_OPEN_PORTAL:
+                GiriOrbit::OpenWebUrl(hwnd, L"https://github.com/abhinavgiri45/giri-orbit");
+                break;
+            case GiriOrbit::ACTION_OPEN_INSTAGRAM:
+                GiriOrbit::OpenWebUrl(hwnd, L"https://instagram.com/abhinavgiri45");
+                break;
+            case GiriOrbit::ACTION_SWITCH_HUB:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriOrbit.exe");
+                break;
+            case GiriOrbit::ACTION_SWITCH_DRIFT:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriDrift.exe");
+                break;
+            case GiriOrbit::ACTION_SWITCH_AXIS:
+                break;
+            case GiriOrbit::ACTION_SWITCH_KINETIC:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriKinetic.exe");
+                break;
+            case GiriOrbit::ACTION_OPEN_PDF:
+                GiriOrbit::OpenWebUrl(hwnd, L"https://giri-orbit.pages.dev/#pdf");
+                break;
+            case GiriOrbit::ACTION_COPY_LINK:
+                GiriOrbit::CopyToolLink(hwnd, L"axis", g_axisStartState);
+                InvalidateRect(hwnd, NULL, FALSE);
+                break;
+            case GiriOrbit::ACTION_SELECT_CATEGORY:
+                g_axisStartState.selectedCategory = hit.index;
+                InvalidateRect(hwnd, NULL, FALSE);
+                break;
+            case GiriOrbit::ACTION_SELECT_TEMPLATE:
+                LoadAxisTemplate(hwnd, hit.index);
+                break;
+            default:
+                break;
+            }
+            return 0;
+        }
+
         // Allow smooth dragging anywhere on the window frame/header
         ReleaseCapture();
         SendMessageW(hwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
         return 0;
+    }
+
+    case WM_MOUSEMOVE: {
+        int x = LOWORD(lParam);
+        int y = HIWORD(lParam);
+        if (g_axisState == AXIS_VIEW_START) {
+            RECT rcClient;
+            GetClientRect(hwnd, &rcClient);
+            auto hit = GiriOrbit::HitTestStartInterface(x, y, rcClient.right, rcClient.bottom, g_axisConfig, g_axisStartState);
+            int newHover = (hit.action != GiriOrbit::ACTION_NONE) ? hit.index : -1;
+            if (newHover != g_axisStartState.hoverId) {
+                g_axisStartState.hoverId = newHover;
+                InvalidateRect(hwnd, NULL, FALSE);
+            }
+            TRACKMOUSEEVENT tme = { sizeof(TRACKMOUSEEVENT), TME_LEAVE, hwnd, 0 };
+            TrackMouseEvent(&tme);
+        }
+        break;
+    }
+
+    case WM_SETCURSOR: {
+        if (g_axisState == AXIS_VIEW_START && g_axisStartState.hoverId != -1) {
+            SetCursor(LoadCursor(NULL, IDC_HAND));
+            return TRUE;
+        }
+        break;
     }
     case WM_LBUTTONDBLCLK: {
         if (IsZoomed(hwnd)) ShowWindow(hwnd, SW_RESTORE);

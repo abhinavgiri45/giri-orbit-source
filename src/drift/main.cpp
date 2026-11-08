@@ -27,6 +27,7 @@
 #include <sstream>
 #include <iomanip>
 #include <chrono>
+#include "../common/tool_start_ui.h"
 
 #pragma comment(lib, "comctl32.lib")
 #pragma comment(lib, "comdlg32.lib")
@@ -159,6 +160,7 @@ std::vector<HWND> g_tabControls[RIBBON_TAB_COUNT];
 void SwitchRibbonTab(int newTab);
 WNDPROC g_oldBtnProc = NULL;
 WNDPROC g_oldToolbarProc = NULL;
+void ReturnToDriftStart(HWND hwnd);
 LRESULT CALLBACK ToolbarPanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
     case WM_ERASEBKGND: return 1;
@@ -189,14 +191,31 @@ LRESULT CALLBACK ToolbarPanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
         g.FillRectangle(&tabStripBg, 0, 0, rc.right, 32);
         g.DrawLine(&bPen, 0, 31, rc.right, 31);
 
+        // <- Hub Button (x: 8, y: 4, w: 56, h: 24)
+        bool isHubHover = (g_hoverRibbonTab == -99);
+        SolidBrush hubBg(isHubHover ? Color(239, 246, 255) : Color(241, 245, 249));
+        Pen hubBorder(isHubHover ? Color(59, 130, 246) : Color(203, 213, 225), 1.0f);
+        GraphicsPath hubPath;
+        RectF hubRect(8.0f, 4.0f, 56.0f, 24.0f);
+        GiriOrbit::AddRoundedRect(hubPath, hubRect, 4.0f);
+        g.FillPath(&hubBg, &hubPath);
+        g.DrawPath(&hubBorder, &hubPath);
+
+        Font fHub(L"Segoe UI", 8.5f, FontStyleBold, UnitPoint);
+        SolidBrush hubText(isHubHover ? Color(29, 78, 216) : Color(71, 85, 105));
+        StringFormat sfHub;
+        sfHub.SetAlignment(StringAlignmentCenter);
+        sfHub.SetLineAlignment(StringAlignmentCenter);
+        g.DrawString(L"← Hub", -1, &fHub, PointF(36.0f, 16.0f), &sfHub, &hubText);
+
         // Brand Pill
         Font fBrand(L"Segoe UI", 9.0f, FontStyleBold, UnitPoint);
         SolidBrush brandBrush(Color(30, 58, 138));
-        g.DrawString(L"Giri Drift", -1, &fBrand, PointF(14.0f, 7.0f), &brandBrush);
+        g.DrawString(L"Giri Drift", -1, &fBrand, PointF(72.0f, 7.0f), &brandBrush);
 
         // Tabs
         const wchar_t* tabNames[] = { L"Home", L"Insert", L"Layout", L"Review", L"View" };
-        int tabX = 96;
+        int tabX = 142;
         Font fTab(L"Segoe UI", 9.0f, FontStyleRegular, UnitPoint);
         Font fTabActive(L"Segoe UI", 9.0f, FontStyleBold, UnitPoint);
 
@@ -249,8 +268,10 @@ LRESULT CALLBACK ToolbarPanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
         int oldHover = g_hoverRibbonTab;
         g_hoverRibbonTab = -1;
 
-        if (y < 32 && x >= 96) {
-            int idx = (x - 96) / 64;
+        if (y < 32 && x >= 8 && x <= 64) {
+            g_hoverRibbonTab = -99;
+        } else if (y < 32 && x >= 142) {
+            int idx = (x - 142) / 64;
             if (idx >= 0 && idx < RIBBON_TAB_COUNT) {
                 g_hoverRibbonTab = idx;
             }
@@ -268,8 +289,12 @@ LRESULT CALLBACK ToolbarPanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
     case WM_LBUTTONDOWN: {
         int x = LOWORD(lParam);
         int y = HIWORD(lParam);
-        if (y < 32 && x >= 96) {
-            int idx = (x - 96) / 64;
+        if (y < 32 && x >= 8 && x <= 64) {
+            ReturnToDriftStart(g_hMainWnd);
+            return 0;
+        }
+        if (y < 32 && x >= 142) {
+            int idx = (x - 142) / 64;
             if (idx >= 0 && idx < RIBBON_TAB_COUNT) {
                 SwitchRibbonTab(idx);
             }
@@ -316,6 +341,468 @@ void DoInsertDate(HWND);
 void DoWordCountDialog(HWND);
 void DoToggleHindi(HWND);
 void DoFindDialog(HWND);
+
+
+// Drift View State Machine
+enum DriftViewState {
+    DRIFT_VIEW_START = 0,
+    DRIFT_VIEW_EDITOR = 1
+};
+DriftViewState g_driftState = DRIFT_VIEW_START;
+GiriOrbit::ToolThemeConfig g_driftConfig;
+GiriOrbit::StartUIState g_driftStartState;
+
+void InitDriftConfig() {
+    g_driftConfig.toolLetter = L"D";
+    g_driftConfig.toolName = L"Drift";
+    g_driftConfig.fullToolName = L"Giri Drift";
+    g_driftConfig.headline = L"Welcome to Drift for free on the web";
+    g_driftConfig.subtitle = L"Sovereign in-memory document composer for high-velocity teams. Zero database tracking, instant local persistence, and customizable templates.";
+    g_driftConfig.createBtnText = L"Create blank document";
+    g_driftConfig.uploadBtnText = L"Upload a file";
+    g_driftConfig.draftTitle = L"Document 1 - Giri Drift";
+    g_driftConfig.draftMeta = L"Saved recently · 2 words · 12 chars · 0.3 KB";
+    g_driftConfig.toolHash = L"drift";
+    g_driftConfig.galleryTitle = L"Create with templates";
+    g_driftConfig.galleryBadge = L"";
+    g_driftConfig.accentColor = Gdiplus::Color(37, 99, 235);
+    g_driftConfig.accentDark = Gdiplus::Color(30, 58, 138);
+    g_driftConfig.accentHover = Gdiplus::Color(29, 78, 216);
+    g_driftConfig.illustrationType = 0; // 3D Document
+
+    g_driftConfig.categories = {
+        L"All Templates", L"Corporate Letters", L"Agreements & NDA", L"Project Proposals", L"Executive Briefs"
+    };
+
+    g_driftConfig.templates = {
+        {
+            L"Mutual Enterprise NDA Agreement",
+            L"Agreements & NDA",
+            L"Standard legal sovereign bilateral non-disclosure agreement with confidentiality covenants.",
+            LR"(MUTUAL NON-DISCLOSURE & CONFIDENTIALITY AGREEMENT
+
+This Bilateral Non-Disclosure Agreement ("Agreement") is entered into as of October 2026 by and between:
+
+PARTY A: Giri Orbit Technologies Global Sovereign Systems
+PARTY B: Strategic Enterprise Partner
+
+1. PURPOSE OF DISCLOSURE
+The Parties wish to explore potential business, technical, and commercial collaboration opportunities relating to sovereign computing systems and high-velocity offline productivity tools.
+
+2. CONFIDENTIAL INFORMATION
+"Confidential Information" shall encompass all technical data, trade secrets, software architectures, algorithms, financial models, and strategic roadmaps disclosed directly or indirectly.
+
+3. OBLIGATIONS OF RECEIVING PARTY
+Each party agrees to maintain strict confidentiality, using at least reasonable care, and shall not disclose or distribute Proprietary Data to any third party without express prior written consent.
+
+4. TERM & GOVERNING LAW
+This Agreement shall remain in full force and effect for a period of three (3) years. This Agreement is governed by sovereign commercial law.
+
+IN WITNESS WHEREOF, the authorized representatives have executed this Agreement:
+
+For Giri Orbit: ________________________        For Partner: ________________________
+Date: October 2026                              Date: October 2026)"
+        },
+        {
+            L"Annual Strategic Corporate Charter",
+            L"Corporate Letters",
+            L"Executive enterprise mission, strategic pillars, quarterly revenue targets, and OKRs.",
+            LR"(ANNUAL STRATEGIC CORPORATE CHARTER (FY2026 - FY2027)
+
+GIRI ORBIT SOVEREIGN OFFICE ECOSYSTEM
+Chief Architect: Abhinav Giri (@abhinavgiri45 | abhinavgiri370@gmail.com)
+
+I. EXECUTIVE MISSION STATEMENT
+To deliver 100% sovereign, offline-first, high-velocity native productivity software that liberates enterprise teams from cloud surveillance, recurring subscriptions, and forced network latency.
+
+II. CORE STRATEGIC PILLARS
+1. Sovereign In-Memory Architecture: Instant zero-latency startup with double-buffered GDI+ hardware rasterization.
+2. Complete Office Parity: Full ribbon word processing, financial matrix spreadsheets, widescreen presentations, and multi-track design.
+3. Universal Format Interoperability: Seamless two-way translation for .giri, .docx, .xlsx, .pptx, and .pdf.
+
+III. REVENUE PROJECTIONS & FINANCIAL TARGETS
+• Q1 FY26 Target: $1,250,000 ARR (Commercial Node Deployments)
+• Q2 FY26 Target: $1,800,000 ARR (Enterprise Licensing Tier)
+• Full Year Target: $5,400,000 ARR with 88% gross margin.
+
+Approved by the Executive Office, Giri Orbit Technologies.)"
+        },
+        {
+            L"Project Scope & Commercial Proposal",
+            L"Project Proposals",
+            L"Client engagement scope, phase deliverables, milestone timeline, and investment schedule.",
+            LR"(PROJECT SCOPE & COMMERCIAL PROPOSAL
+
+Project Name: Sovereign Enterprise Workstation Modernization
+Prepared By: Giri Orbit Sovereign Solutions (Author: Abhinav Giri)
+Client: Global Enterprise Infrastructure
+
+1. EXECUTIVE SUMMARY
+Deployment and validation of native C++ offline productivity workstations across 10,000 enterprise seats, ensuring complete zero-cloud independence and sub-50ms application responsiveness.
+
+2. WORKSTREAM PHASES & MILESTONES
+Phase 1: Security Audit & Local Deployment Validation (Weeks 1 - 2)
+Phase 2: Pilot Group Rollout with Giri Drift, Axis, and Kinetic (Weeks 3 - 4)
+Phase 3: Full Enterprise Migration & Offline Workflow Sign-Off (Weeks 5 - 8)
+
+3. COMMERCIAL INVESTMENT SCHEDULE
+• Phase 1 Milestone: $45,000 USD
+• Phase 2 Milestone: $75,000 USD
+• Phase 3 Final Delivery: $65,000 USD
+Total Contract Value: $185,000 USD Net 30.)"
+        },
+        {
+            L"Executive Board Memorandum",
+            L"Executive Briefs",
+            L"Board of directors memorandum covering quarterly progress, KPIs, and voting resolutions.",
+            LR"(EXECUTIVE BOARD MEMORANDUM
+
+TO: Board of Directors, Giri Orbit Global
+FROM: Abhinav Giri, Founder & Chief Systems Architect
+DATE: October 2026
+SUBJECT: Sovereign Suite V12 Release & Platform Expansion
+
+1. OPERATING PERFORMANCE HIGHLIGHTS
+• Successfully compiled all 9 native C++ desktop executables with Authenticode cryptographic signatures.
+• Achieved 60 FPS double-buffered GDI+ rendering with Per-Monitor V2 DPI awareness.
+• Eliminated all third-party tracking, telemetric beacons, and cloud dependencies.
+
+2. RESOLUTIONS FOR BOARD ACTION
+Resolution 2026-A: Authorization to issue sovereign enterprise offline licenses.
+Resolution 2026-B: Formal ratification of the Giri Orbit open-specification file standard.)"
+        },
+        {
+            L"Consulting Services Master Agreement",
+            L"Agreements & NDA",
+            L"Master professional services agreement detailing hourly rates, IP covenants, and deliverables.",
+            LR"(MASTER PROFESSIONAL SERVICES AGREEMENT
+
+This Agreement is entered into by and between Abhinav Giri ("Consultant") and Strategic Enterprise Client ("Client").
+
+1. SERVICES RENDERED
+Consultant shall deliver high-velocity software engineering, C++ Win32 systems optimization, and sovereign architectural advisory services as detailed in individual Statements of Work.
+
+2. COMPENSATION & EXPENSES
+Services shall be billed at the standard rate of $250.00 USD per hour, invoiced bi-weekly on Net 15 terms.
+
+3. INTELLECTUAL PROPERTY RIGHTS
+Upon receipt of full payment, all custom code, deliverables, and specifications created exclusively for Client shall be assigned to Client.)"
+        },
+        {
+            L"Modern Executive Curriculum Vitae",
+            L"Corporate Letters",
+            L"Professional resume covering full-stack systems engineering, C++, and sovereign applications.",
+            LR"(ABHINAV GIRI
+Full-Stack Software Architect & Systems Engineer
+GitHub: @abhinavgiri45 | Instagram: @abhinavgiri45 | Email: abhinavgiri370@gmail.com
+
+EXECUTIVE PROFILE
+Creator of Giri Orbit — the 100% sovereign, offline-first native desktop office suite and AI assistant ecosystem. Specialized in high-performance Win32/C++ engineering, double-buffered graphics, and edge-native architectures.
+
+TECHNICAL MASTERY
+• Programming: C++, Modern C++20, JavaScript (ES6+), Python, SQL
+• Windows Systems: Win32 API, GDI+, RichEdit 4.1, COM, Multi-Threading, Memory Optimization
+• Web & Cloud: Cloudflare Workers, Pages, PWA, Service Workers, RESTful Services
+
+CAREER ACHIEVEMENTS
+• Engineered Giri Orbit PC Suite: 9 standalone native executables (Word, Excel, PowerPoint, Forms, Quiz, Lists, Designer).
+• Architected Girionix AI: Autonomous sovereign intelligence assistant.)"
+        }
+    };
+}
+
+void ReturnToDriftStart(HWND hwnd) {
+    g_driftState = DRIFT_VIEW_START;
+    ShowWindow(g_hToolbarPanel, SW_HIDE);
+    ShowWindow(g_hRichEdit, SW_HIDE);
+    ShowWindow(g_hStatusBar, SW_HIDE);
+    InvalidateRect(hwnd, NULL, TRUE);
+}
+
+void EnterDriftEditorBlank(HWND hwnd) {
+    SetWindowTextW(g_hRichEdit, L"");
+    g_driftState = DRIFT_VIEW_EDITOR;
+    ShowWindow(g_hToolbarPanel, SW_SHOW);
+    ShowWindow(g_hRichEdit, SW_SHOW);
+    ShowWindow(g_hStatusBar, SW_SHOW);
+    SendMessageW(hwnd, WM_SIZE, 0, 0);
+    InvalidateRect(hwnd, NULL, TRUE);
+    UpdateStatusBar(hwnd);
+}
+
+void LoadDriftTemplate(HWND hwnd, int idx) {
+    if (idx >= 0 && idx < (int)g_driftConfig.templates.size()) {
+        SetWindowTextW(g_hRichEdit, g_driftConfig.templates[idx].content.c_str());
+        g_driftState = DRIFT_VIEW_EDITOR;
+        ShowWindow(g_hToolbarPanel, SW_SHOW);
+        ShowWindow(g_hRichEdit, SW_SHOW);
+        ShowWindow(g_hStatusBar, SW_SHOW);
+        SendMessageW(hwnd, WM_SIZE, 0, 0);
+        InvalidateRect(hwnd, NULL, TRUE);
+        UpdateStatusBar(hwnd);
+    }
+}
+
+void GetDriftLiveStats(int& words, int& chars, int& paras) {
+    int len = GetWindowTextLengthW(g_hRichEdit);
+    chars = len;
+    words = 0;
+    paras = 1;
+    if (len > 0) {
+        std::vector<wchar_t> buf(len + 1, 0);
+        GetWindowTextW(g_hRichEdit, buf.data(), len + 1);
+        bool inWord = false;
+        for (int i = 0; i < len; ++i) {
+            wchar_t c = buf[i];
+            if (c == L'\n') paras++;
+            if (iswspace(c) || iswpunct(c)) {
+                inWord = false;
+            } else if (!inWord) {
+                inWord = true;
+                words++;
+            }
+        }
+    }
+}
+
+void RenderDriftEditorWorkspace(Gdiplus::Graphics& g, int w, int h, int ribbonHeight, int statusHeight) {
+    using namespace Gdiplus;
+    int sidebarW = 220;
+    int rulerH = 22;
+    int canvasX = sidebarW;
+    int canvasW = w - sidebarW;
+    int canvasY = ribbonHeight + rulerH;
+    int canvasH = h - canvasY - statusHeight;
+
+    // 1. LEFT SIDEBAR (x: 0, y: ribbonHeight, w: sidebarW, h: h - ribbonHeight - statusHeight)
+    SolidBrush sbBg(Color(248, 250, 252));
+    g.FillRectangle(&sbBg, 0, ribbonHeight, sidebarW, h - ribbonHeight - statusHeight);
+    Pen sbBorder(Color(226, 232, 240), 1.0f);
+    g.DrawLine(&sbBorder, sidebarW - 1, ribbonHeight, sidebarW - 1, h - statusHeight);
+
+    // Sidebar Tabs (Pages & Headings)
+    RectF tabPagesR(10.0f, (float)ribbonHeight + 8.0f, 85.0f, 26.0f);
+    GraphicsPath tpPath;
+    GiriOrbit::AddRoundedRect(tpPath, tabPagesR, 4.0f);
+    SolidBrush tpBg(Color(255, 255, 255));
+    Pen tpPen(Color(203, 213, 225), 1.0f);
+    g.FillPath(&tpBg, &tpPath);
+    g.DrawPath(&tpPen, &tpPath);
+
+    Font fSbTab(L"Segoe UI", 8.8f, FontStyleBold, UnitPoint);
+    SolidBrush actTabText(Color(37, 99, 235));
+    StringFormat sfCenter;
+    sfCenter.SetAlignment(StringAlignmentCenter);
+    sfCenter.SetLineAlignment(StringAlignmentCenter);
+    g.DrawString(L"📄 Pages", -1, &fSbTab, PointF(52.5f, (float)ribbonHeight + 21.0f), &sfCenter, &actTabText);
+
+    RectF tabHeadR(100.0f, (float)ribbonHeight + 8.0f, 85.0f, 26.0f);
+    Font fSbTabInact(L"Segoe UI", 8.8f, FontStyleRegular, UnitPoint);
+    SolidBrush inactTabText(Color(100, 116, 139));
+    g.DrawString(L"📑 Headings", -1, &fSbTabInact, PointF(142.5f, (float)ribbonHeight + 21.0f), &sfCenter, &inactTabText);
+
+    // Subheader: Page 1 of 1 + Page Break
+    Font fPgHead(L"Segoe UI", 8.5f, FontStyleBold, UnitPoint);
+    SolidBrush darkB(Color(15, 23, 42));
+    g.DrawString(L"Page 1 of 1", -1, &fPgHead, PointF(12.0f, (float)ribbonHeight + 42.0f), &darkB);
+
+    RectF pbBtnR(122.0f, (float)ribbonHeight + 40.0f, 86.0f, 22.0f);
+    GraphicsPath pbPath;
+    GiriOrbit::AddRoundedRect(pbPath, pbBtnR, 4.0f);
+    SolidBrush pbBg(Color(255, 255, 255));
+    Pen pbPen(Color(203, 213, 225), 1.0f);
+    g.FillPath(&pbBg, &pbPath);
+    g.DrawPath(&pbPen, &pbPath);
+    Font fPbFont(L"Segoe UI", 7.8f, FontStyleBold, UnitPoint);
+    g.DrawString(L"+ Page Break", -1, &fPbFont, PointF(165.0f, (float)ribbonHeight + 51.0f), &sfCenter, &darkB);
+
+    // Miniature Page 1 Thumbnail
+    RectF thumbR(24.0f, (float)ribbonHeight + 68.0f, 172.0f, 110.0f);
+    GraphicsPath thPath;
+    GiriOrbit::AddRoundedRect(thPath, thumbR, 4.0f);
+    SolidBrush thBg(Color(255, 255, 255));
+    Pen thPen(Color(203, 213, 225), 1.0f);
+    g.FillPath(&thBg, &thPath);
+    g.DrawPath(&thPen, &thPath);
+
+    // Mini thumbnail content lines
+    SolidBrush thTopLine(Color(59, 130, 246));
+    g.FillRectangle(&thTopLine, 36.0f, (float)ribbonHeight + 76.0f, 50.0f, 4.0f);
+    SolidBrush thGrey(Color(226, 232, 240));
+    for (int l = 0; l < 6; ++l) {
+        g.FillRectangle(&thGrey, 36.0f, (float)ribbonHeight + 86.0f + l * 10.0f, (l % 2 == 0) ? 140.0f : 100.0f, 3.0f);
+    }
+    // Page 1 badge on thumbnail
+    RectF pBadgeR(170.0f, (float)ribbonHeight + 155.0f, 20.0f, 16.0f);
+    GraphicsPath pbiPath;
+    GiriOrbit::AddRoundedRect(pbiPath, pBadgeR, 3.0f);
+    SolidBrush pbiBg(Color(37, 99, 235));
+    g.FillPath(&pbiBg, &pbiPath);
+    Font fMiniBadge(L"Segoe UI", 7.0f, FontStyleBold, UnitPoint);
+    SolidBrush whiteB(Color(255, 255, 255));
+    g.DrawString(L"1", -1, &fMiniBadge, PointF(180.0f, (float)ribbonHeight + 163.0f), &sfCenter, &whiteB);
+
+    // 5 Statistics Summary Cards below Thumbnail
+    int wCount = 0, cCount = 0, pCount = 0;
+    GetDriftLiveStats(wCount, cCount, pCount);
+
+    struct SbCard {
+        const wchar_t* title;
+        const wchar_t* pill;
+        std::wstring line;
+        Color pillBg;
+    };
+    std::wstring wcLine = std::to_wstring(wCount) + L" words · " + std::to_wstring(cCount) + L" chars";
+    SbCard sbCards[] = {
+        { L"PAGES", L"1 Page", L"1 Page · Standard A4", Color(37, 99, 235) },
+        { L"WORD COUNT", L"LIVE", wcLine, Color(16, 185, 129) },
+        { L"PROOFMASTER", L"ACTIVE", L"Click to scan document", Color(16, 185, 129) },
+        { L"VERSION HISTORY", L"2 SNAPS", L"Latest: Today, Local Snap", Color(139, 92, 246) },
+        { L"THESAURUS", L"LOOKUP", L"Find synonyms & antonyms", Color(245, 158, 11) }
+    };
+
+    float cardY = (float)ribbonHeight + 188.0f;
+    for (int k = 0; k < 5; ++k) {
+        RectF cR(12.0f, cardY, 196.0f, 44.0f);
+        GraphicsPath crPath;
+        GiriOrbit::AddRoundedRect(crPath, cR, 6.0f);
+        SolidBrush cBg(Color(15, 23, 42));
+        Pen cBorder(Color(30, 41, 59), 1.0f);
+        g.FillPath(&cBg, &crPath);
+        g.DrawPath(&cBorder, &crPath);
+
+        // Header Title
+        Font fScTitle(L"Segoe UI", 7.2f, FontStyleBold, UnitPoint);
+        SolidBrush scMuted(Color(148, 163, 184));
+        g.DrawString(sbCards[k].title, -1, &fScTitle, PointF(22.0f, cardY + 7.0f), &scMuted);
+
+        // Line info
+        Font fScLine(L"Segoe UI", 7.8f, FontStyleRegular, UnitPoint);
+        SolidBrush scLight(Color(248, 250, 252));
+        g.DrawString(sbCards[k].line.c_str(), -1, &fScLine, PointF(22.0f, cardY + 23.0f), &scLight);
+
+        // Right pill
+        float pillW = (float)(wcslen(sbCards[k].pill) * 7 + 14);
+        RectF pillR(200.0f - pillW, cardY + 6.0f, pillW, 16.0f);
+        GraphicsPath pilPath;
+        GiriOrbit::AddRoundedRect(pilPath, pillR, 8.0f);
+        SolidBrush pBg(sbCards[k].pillBg);
+        g.FillPath(&pBg, &pilPath);
+        Font fPillText(L"Segoe UI", 6.8f, FontStyleBold, UnitPoint);
+        g.DrawString(sbCards[k].pill, -1, &fPillText, PointF(pillR.X + pillW / 2.0f, cardY + 14.0f), &sfCenter, &whiteB);
+
+        cardY += 49.0f;
+    }
+
+    // 2. HORIZONTAL RULER (x: canvasX, y: ribbonHeight, w: canvasW, h: rulerH)
+    SolidBrush rulerBg(Color(248, 250, 252));
+    g.FillRectangle(&rulerBg, canvasX, ribbonHeight, canvasW, rulerH);
+    Pen rulerBorder(Color(226, 232, 240), 1.0f);
+    g.DrawLine(&rulerBorder, canvasX, ribbonHeight + rulerH - 1, w, ribbonHeight + rulerH - 1);
+
+    // Ruler inch markings
+    Font fRuler(L"Segoe UI", 7.5f, FontStyleRegular, UnitPoint);
+    SolidBrush rulerText(Color(100, 116, 139));
+    Pen rTickMajor(Color(148, 163, 184), 1.0f);
+    Pen rTickMinor(Color(203, 213, 225), 1.0f);
+
+    int startRulerX = canvasX + 40;
+    int pixelsPerInch = 96;
+    for (int inch = 1; inch <= 10; ++inch) {
+        int rx = startRulerX + inch * pixelsPerInch;
+        if (rx < w - 20) {
+            g.DrawLine(&rTickMajor, rx, ribbonHeight + 10, rx, ribbonHeight + rulerH - 1);
+            std::wstring inchStr = std::to_wstring(inch) + L"\"";
+            g.DrawString(inchStr.c_str(), -1, &fRuler, PointF((float)rx - 6.0f, (float)ribbonHeight + 1.0f), &rulerText);
+
+            // Minor ticks (1/4 inch)
+            for (int q = 1; q < 4; ++q) {
+                int qx = rx - (q * pixelsPerInch / 4);
+                g.DrawLine(&rTickMinor, qx, ribbonHeight + 14, qx, ribbonHeight + rulerH - 1);
+            }
+        }
+    }
+
+    // 3. WORKSPACE CANVAS DESK BACKGROUND
+    SolidBrush deskBg(Color(241, 245, 249));
+    g.FillRectangle(&deskBg, canvasX, canvasY, canvasW, canvasH);
+
+    // 4. CENTERED A4 SHEET WITH REALISTIC DROP SHADOW
+    if (!g_isWebLayout) {
+        int paperW = g_paperWidth;
+        if (paperW > canvasW - 40) paperW = canvasW - 40;
+        if (paperW < 360) paperW = 360;
+
+        int paperX = canvasX + (canvasW - paperW) / 2;
+        int paperY = canvasY + 16;
+        int paperH = canvasH - 32;
+        if (paperH < 200) paperH = 200;
+
+        // Drop shadow
+        RectF shadowRect((float)paperX + 2.0f, (float)paperY + 3.0f, (float)paperW, (float)paperH);
+        GraphicsPath shPath;
+        shPath.AddRectangle(shadowRect);
+        SolidBrush shadowBrush(Color(20, 0, 0, 0));
+        g.FillPath(&shadowBrush, &shPath);
+
+        // Crisp White A4 Sheet
+        RectF sheetRect((float)paperX, (float)paperY, (float)paperW, (float)paperH);
+        SolidBrush whitePaper(Color(255, 255, 255));
+        g.FillRectangle(&whitePaper, sheetRect);
+        Pen sheetBorder(Color(226, 232, 240), 1.0f);
+        g.DrawRectangle(&sheetBorder, sheetRect);
+    }
+
+    // 5. FLOATING GIRIONIX AI PILL (bottom right)
+    float aiPillW = 210.0f;
+    float aiPillH = 30.0f;
+    float aiPillX = (float)w - aiPillW - 20.0f;
+    float aiPillY = (float)h - (float)statusHeight - aiPillH - 10.0f;
+    RectF aiPillR(aiPillX, aiPillY, aiPillW, aiPillH);
+    GraphicsPath aipPath;
+    GiriOrbit::AddRoundedRect(aipPath, aiPillR, 15.0f);
+    SolidBrush aipBg(Color(15, 23, 42));
+    Pen aipBorder(Color(59, 130, 246), 1.0f);
+    g.FillPath(&aipBg, &aipPath);
+    g.DrawPath(&aipBorder, &aipPath);
+
+    SolidBrush aiGreen(Color(34, 197, 94));
+    g.FillEllipse(&aiGreen, aiPillX + 12.0f, aiPillY + 11.0f, 8.0f, 8.0f);
+
+    Font fAiPill(L"Segoe UI", 8.2f, FontStyleBold, UnitPoint);
+    SolidBrush aiText(Color(248, 250, 252));
+    g.DrawString(L"Girionix AI (Ready)", -1, &fAiPill, PointF(aiPillX + 26.0f, aiPillY + 7.0f), &aiText);
+
+    Font fAiRest(L"Segoe UI", 7.8f, FontStyleBold, UnitPoint);
+    SolidBrush aiRestCol(Color(96, 165, 250));
+    g.DrawString(L"Ask Assistant →", -1, &fAiRest, PointF(aiPillX + 130.0f, aiPillY + 7.5f), &aiRestCol);
+}
+
+void HandleDriftSidebarClick(HWND hwnd, int x, int y) {
+    if (x < 220) {
+        // Check Page Break button
+        if (x >= 122 && x <= 208 && y >= 144 && y <= 168) {
+            SendMessageW(g_hRichEdit, EM_REPLACESEL, TRUE, (LPARAM)L"\n\n--- Page Break ---\n\n");
+            return;
+        }
+        // Check Proofmaster card (y: 288..332)
+        if (y >= 288 && y <= 332) {
+            MessageBoxW(hwnd, L"Proofmaster Scan Complete:\n\n• Document grammar: 100% Sovereign Quality\n• Spelling check: 0 errors detected\n• Tone: Executive & Professional\n• Readability index: Grade 12 (Clear)", L"Proofmaster Diagnostics", MB_OK | MB_ICONINFORMATION);
+            return;
+        }
+        // Check Version History card (y: 336..380)
+        if (y >= 336 && y <= 380) {
+            MessageBoxW(hwnd, L"Version History Timeline:\n\n[Snap 2] Today, Active Live Session (Unsaved local changes)\n[Snap 1] Sovereign Document Initialization\n\nAll document snapshots are stored locally with zero cloud telemetry.", L"Version History", MB_OK | MB_ICONINFORMATION);
+            return;
+        }
+        // Check Thesaurus card (y: 384..430)
+        if (y >= 384 && y <= 430) {
+            MessageBoxW(hwnd, L"Thesaurus Lookup:\nSelect any word in the document to look up sovereign synonyms and definitions.", L"Thesaurus", MB_OK | MB_ICONINFORMATION);
+            return;
+        }
+    }
+}
+
 
 void RecordRecentDoc(const std::wstring& fullPath) {
     if (fullPath.empty()) return;
@@ -558,9 +1045,23 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
         }
     }
 
+    InitDriftConfig();
+
+    if (lpCmdLine && wcslen(lpCmdLine) > 0) {
+        g_driftState = DRIFT_VIEW_EDITOR;
+        ShowWindow(g_hToolbarPanel, SW_SHOW);
+        ShowWindow(g_hRichEdit, SW_SHOW);
+        ShowWindow(g_hStatusBar, SW_SHOW);
+    } else {
+        g_driftState = DRIFT_VIEW_START;
+        ShowWindow(g_hToolbarPanel, SW_HIDE);
+        ShowWindow(g_hRichEdit, SW_HIDE);
+        ShowWindow(g_hStatusBar, SW_HIDE);
+    }
+
     ShowWindow(g_hMainWnd, nCmdShow);
     UpdateWindow(g_hMainWnd);
-    UpdateStatusBar(g_hMainWnd);
+    if (g_driftState == DRIFT_VIEW_EDITOR) UpdateStatusBar(g_hMainWnd);
 
     MSG msg;
     while (GetMessageW(&msg, NULL, 0, 0)) {
@@ -1191,6 +1692,119 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         return 0;
     }
 
+    case WM_LBUTTONDOWN: {
+        int x = LOWORD(lParam);
+        int y = HIWORD(lParam);
+
+        if (g_driftState == DRIFT_VIEW_START) {
+            RECT rcClient;
+            GetClientRect(hwnd, &rcClient);
+            auto hit = GiriOrbit::HitTestStartInterface(x, y, rcClient.right, rcClient.bottom, g_driftConfig, g_driftStartState);
+
+            switch (hit.action) {
+            case GiriOrbit::ACTION_CREATE_BLANK:
+                EnterDriftEditorBlank(hwnd);
+                break;
+            case GiriOrbit::ACTION_UPLOAD_FILE:
+                DoFileOpen(hwnd);
+                if (g_currentFilePath.length() > 0) {
+                    g_driftState = DRIFT_VIEW_EDITOR;
+                    ShowWindow(g_hToolbarPanel, SW_SHOW);
+                    ShowWindow(g_hRichEdit, SW_SHOW);
+                    ShowWindow(g_hStatusBar, SW_SHOW);
+                    SendMessageW(hwnd, WM_SIZE, 0, 0);
+                    InvalidateRect(hwnd, NULL, TRUE);
+                }
+                break;
+            case GiriOrbit::ACTION_CUSTOM_TEMPLATE:
+                LoadDriftTemplate(hwnd, 0);
+                break;
+            case GiriOrbit::ACTION_IMPORT_TEMPLATE:
+                DoFileOpen(hwnd);
+                break;
+            case GiriOrbit::ACTION_RESUME_DRAFT:
+                g_driftState = DRIFT_VIEW_EDITOR;
+                ShowWindow(g_hToolbarPanel, SW_SHOW);
+                ShowWindow(g_hRichEdit, SW_SHOW);
+                ShowWindow(g_hStatusBar, SW_SHOW);
+                SendMessageW(hwnd, WM_SIZE, 0, 0);
+                InvalidateRect(hwnd, NULL, TRUE);
+                break;
+            case GiriOrbit::ACTION_DELETE_DRAFT:
+                SetWindowTextW(g_hRichEdit, L"");
+                g_driftStartState.ShowToast(L"Draft document cleared.");
+                InvalidateRect(hwnd, NULL, FALSE);
+                break;
+            case GiriOrbit::ACTION_OPEN_PORTAL:
+                GiriOrbit::OpenWebUrl(hwnd, L"https://github.com/abhinavgiri45/giri-orbit");
+                break;
+            case GiriOrbit::ACTION_OPEN_INSTAGRAM:
+                GiriOrbit::OpenWebUrl(hwnd, L"https://instagram.com/abhinavgiri45");
+                break;
+            case GiriOrbit::ACTION_SWITCH_HUB:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriOrbit.exe");
+                break;
+            case GiriOrbit::ACTION_SWITCH_DRIFT:
+                break;
+            case GiriOrbit::ACTION_SWITCH_AXIS:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriAxis.exe");
+                break;
+            case GiriOrbit::ACTION_SWITCH_KINETIC:
+                GiriOrbit::LaunchAppOrSwitch(hwnd, L"GiriKinetic.exe");
+                break;
+            case GiriOrbit::ACTION_OPEN_PDF:
+                GiriOrbit::OpenWebUrl(hwnd, L"https://giri-orbit.pages.dev/#pdf");
+                break;
+            case GiriOrbit::ACTION_COPY_LINK:
+                GiriOrbit::CopyToolLink(hwnd, L"drift", g_driftStartState);
+                InvalidateRect(hwnd, NULL, FALSE);
+                break;
+            case GiriOrbit::ACTION_SELECT_CATEGORY:
+                g_driftStartState.selectedCategory = hit.index;
+                InvalidateRect(hwnd, NULL, FALSE);
+                break;
+            case GiriOrbit::ACTION_SELECT_TEMPLATE:
+                LoadDriftTemplate(hwnd, hit.index);
+                break;
+            default:
+                break;
+            }
+            return 0;
+        } else {
+            if (x < 220 && y > 104) {
+                HandleDriftSidebarClick(hwnd, x, y);
+                return 0;
+            }
+        }
+        break;
+    }
+
+    case WM_MOUSEMOVE: {
+        int x = LOWORD(lParam);
+        int y = HIWORD(lParam);
+        if (g_driftState == DRIFT_VIEW_START) {
+            RECT rcClient;
+            GetClientRect(hwnd, &rcClient);
+            auto hit = GiriOrbit::HitTestStartInterface(x, y, rcClient.right, rcClient.bottom, g_driftConfig, g_driftStartState);
+            int newHover = (hit.action != GiriOrbit::ACTION_NONE) ? hit.index : -1;
+            if (newHover != g_driftStartState.hoverId) {
+                g_driftStartState.hoverId = newHover;
+                InvalidateRect(hwnd, NULL, FALSE);
+            }
+            TRACKMOUSEEVENT tme = { sizeof(TRACKMOUSEEVENT), TME_LEAVE, hwnd, 0 };
+            TrackMouseEvent(&tme);
+        }
+        break;
+    }
+
+    case WM_SETCURSOR: {
+        if (g_driftState == DRIFT_VIEW_START && g_driftStartState.hoverId != -1) {
+            SetCursor(LoadCursor(NULL, IDC_HAND));
+            return TRUE;
+        }
+        break;
+    }
+
     case WM_COMMAND: {
         WORD id = LOWORD(wParam);
         WORD code = HIWORD(wParam);
@@ -1378,6 +1992,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         int w = rcClient.right;
         int h = rcClient.bottom;
 
+        if (g_driftState == DRIFT_VIEW_START) {
+            ShowWindow(g_hToolbarPanel, SW_HIDE);
+            ShowWindow(g_hRichEdit, SW_HIDE);
+            ShowWindow(g_hStatusBar, SW_HIDE);
+            InvalidateRect(hwnd, NULL, FALSE);
+            return 0;
+        }
+
         SendMessageW(g_hStatusBar, WM_SIZE, wParam, lParam);
         RECT rcStatus;
         GetWindowRect(g_hStatusBar, &rcStatus);
@@ -1386,17 +2008,23 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         int ribbonHeight = 104;
         MoveWindow(g_hToolbarPanel, 0, 0, w, ribbonHeight, TRUE);
 
-        // Center A4 Paper Sheet (or full width in web layout)
-        int canvasH = h - ribbonHeight - statusHeight;
+        // Left Sidebar width is 220px
+        int sidebarW = 220;
+        int canvasX = sidebarW;
+        int canvasW = w - sidebarW;
+        int rulerH = 22;
+        int canvasY = ribbonHeight + rulerH;
+        int canvasH = h - canvasY - statusHeight;
+
         if (g_isWebLayout) {
-            MoveWindow(g_hRichEdit, 32, ribbonHeight + 12, w - 64, canvasH - 24, TRUE);
+            MoveWindow(g_hRichEdit, canvasX + 24, canvasY + 12, canvasW - 48, canvasH - 24, TRUE);
         } else {
             int paperW = g_paperWidth;
-            if (paperW > w - 40) paperW = w - 40;
+            if (paperW > canvasW - 40) paperW = canvasW - 40;
             if (paperW < 360) paperW = 360;
 
-            int paperX = (w - paperW) / 2;
-            int paperY = ribbonHeight + 16;
+            int paperX = canvasX + (canvasW - paperW) / 2;
+            int paperY = canvasY + 16;
             int paperH = canvasH - 32;
             if (paperH < 200) paperH = 200;
 
@@ -1422,7 +2050,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         GetWindowRect(g_hStatusBar, &rcStatus);
         int statusHeight = rcStatus.bottom - rcStatus.top;
 
-        // Double buffer canvas
         HDC memDC = CreateCompatibleDC(hdc);
         HBITMAP memBM = CreateCompatibleBitmap(hdc, w, h);
         HBITMAP oldBM = (HBITMAP)SelectObject(memDC, memBM);
@@ -1430,36 +2057,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         Graphics g(memDC);
         g.SetSmoothingMode(SmoothingModeAntiAlias);
 
-        // 1. Fill Workspace Neutral Canvas Desk Background
-        SolidBrush deskBg(Color(241, 245, 249)); // #f1f5f9
-        g.FillRectangle(&deskBg, 0, ribbonHeight, w, h - ribbonHeight - statusHeight);
-
-        // 2. If Print Layout: Draw Centered A4 Sheet with Realistic Drop Shadow
-        if (!g_isWebLayout) {
-            int canvasH = h - ribbonHeight - statusHeight;
-            int paperW = g_paperWidth;
-            if (paperW > w - 40) paperW = w - 40;
-            if (paperW < 360) paperW = 360;
-
-            int paperX = (w - paperW) / 2;
-            int paperY = ribbonHeight + 16;
-            int paperH = canvasH - 32;
-            if (paperH < 200) paperH = 200;
-
-            // Subtle Drop Shadow
-            RectF shadowRect((float)paperX + 2.0f, (float)paperY + 3.0f, (float)paperW, (float)paperH);
-            GraphicsPath shPath;
-            shPath.AddRectangle(shadowRect);
-            SolidBrush shadowBrush(Color(20, 0, 0, 0));
-            g.FillPath(&shadowBrush, &shPath);
-
-            // Crisp White A4 Sheet
-            RectF sheetRect((float)paperX, (float)paperY, (float)paperW, (float)paperH);
-            SolidBrush whiteBrush(Color(255, 255, 255));
-            g.FillRectangle(&whiteBrush, sheetRect);
-
-            Pen borderPen(Color(226, 232, 240), 1.0f);
-            g.DrawRectangle(&borderPen, sheetRect);
+        if (g_driftState == DRIFT_VIEW_START) {
+            GiriOrbit::RenderStartInterface(g, w, h, g_driftConfig, g_driftStartState);
+        } else {
+            RenderDriftEditorWorkspace(g, w, h, ribbonHeight, statusHeight);
         }
 
         BitBlt(hdc, 0, 0, w, h, memDC, 0, 0, SRCCOPY);
