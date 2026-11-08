@@ -546,7 +546,7 @@ void PerformInstallation(HWND hwnd) {
         if (hFile != INVALID_HANDLE_VALUE) {
             LARGE_INTEGER currentSize;
             if (GetFileSizeEx(hFile, &currentSize)) {
-                LONGLONG targetSize = 4294967296LL; // Exactly 4.00 GB (4 GiB)
+                LONGLONG targetSize = 4000000000LL; // 4.00 GB Enterprise Vault (Safe 32-bit PE boundary)
                 if (currentSize.QuadPart < targetSize) {
                     LARGE_INTEGER li;
                     li.QuadPart = targetSize;
