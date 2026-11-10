@@ -106,9 +106,24 @@ g++ -std=c++20 -O2 -mwindows -municode src/installer/main.cpp src/installer/reso
 
 ---
 
-## 👤 Author & Licensing
+## 🔒 Strict Proprietary License & Commercial Terms (LICENSABLE ONLY — NO MODIFICATIONS PERMITTED)
+
+> ### ⚠️ STRICT PROPRIETARY SOFTWARE NOTICE: ALL RIGHTS RESERVED
+> 
+> **Copyright © 2025–2026 Abhinav Giri (@abhinavgiri45). All Rights Reserved.**
+>
+> This repository and all associated C++ source code, header files, resource definitions, binaries, design systems, algorithms, and architectural specifications are the **exclusive proprietary intellectual property of Abhinav Giri**.
+>
+> **Strict Legal Prohibitions:**
+> 1. **No Modifications or Derivative Works**: NO user, organization, or third party is permitted to modify, edit, alter, patch, customize, reverse-engineer, or create derivative works from this source code in any manner whatsoever.
+> 2. **No Unlicensed Use or Compilation**: This software is **NOT open source** and is **NOT free software**. No one may execute, compile, link, deploy, run, test, host, or use this software without an explicit, formal written commercial license executed directly by Abhinav Giri.
+> 3. **No Copying or Redistribution**: You may NOT copy, duplicate, distribute, sell, rent, lease, sublicense, mirror, or publish this software or any part thereof.
+> 4. **Fully Licensable Exclusively via the Author**: Commercial licenses, enterprise deployment permits, and institutional evaluation rights are granted exclusively through formal written agreements directly with Abhinav Giri.
+
+## 👤 Author & Licensing Inquiries
 
 - **Author**: Abhinav Giri
+- **Email**: `abhinavgiri370@gmail.com`
 - **GitHub**: [github.com/abhinavgiri45](https://github.com/abhinavgiri45)
 - **Instagram**: [@abhinavgiri45](https://instagram.com/abhinavgiri45)
-- **License**: Proprietary Commercial Software License (All Rights Reserved - Abhinav Giri).
+- **License**: Strict Proprietary Commercial Software License (All Rights Reserved — Licensable Only).

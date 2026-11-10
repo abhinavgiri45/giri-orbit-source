@@ -21,7 +21,7 @@ OPTION 2 (MANUAL LAUNCH):
   2. Click "Run anyway"
   
   Why does Windows show this?
-  Because Giri Orbit is a sovereign, independent open-source release
+  Because Giri Orbit is a sovereign, independent proprietary sovereign release
   built from scratch in native C++, with zero cloud telemetry.
   It is 100% clean, safe, and operates entirely in memory on your PC.
 
@@ -35,4 +35,5 @@ AUTHOR:
   Made by Abhinav Giri
   GitHub:    https://github.com/abhinavgiri45
   Instagram: @abhinavgiri45
+  License:   Strict Proprietary Commercial Software License (All Rights Reserved)
 ======================================================================

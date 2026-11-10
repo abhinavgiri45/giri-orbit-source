@@ -1,55 +1,124 @@
-PROPRIETARY COMMERCIAL SOFTWARE LICENSE & TERMS OF USE
-GIRI ORBIT SOVEREIGN OFFICE PRODUCTIVITY SUITE
-
-Copyright (c) 2026 Abhinav Giri. All Rights Reserved.
-All Rights Reserved.
-Official Contact: abhinavgiri370@gmail.com | GitHub: @abhinavgiri45
-
 ================================================================================
-IMPORTANT NOTICE — STRICTLY PROPRIETARY AND CONFIDENTIAL
+STRICT PROPRIETARY COMMERCIAL SOFTWARE LICENSE & ALL RIGHTS RESERVED AGREEMENT
+================================================================================
+PRODUCT: GIRI ORBIT SOVEREIGN PRODUCTIVITY SUITE (NATIVE C++ SOURCE EDITION)
+COPYRIGHT (C) 2025–2026 ABHINAV GIRI. ALL RIGHTS RESERVED.
+AUTHOR & SOLE COPYRIGHT OWNER: ABHINAV GIRI (@abhinavgiri45)
+OFFICIAL CONTACT & LICENSING: abhinavgiri370@gmail.com
 ================================================================================
 
-This software, including its source code, compiled binaries, algorithms, visual
-designs, graphical assets, icons, documentation, architecture specifications,
-and associated media ("Software"), is the exclusive proprietary property and trade
-secret of Abhinav Giri ("Author" / "Licensor").
+IMPORTANT LEGAL NOTICE — STRICTLY PROPRIETARY, CONFIDENTIAL & LICENSABLE ONLY:
+PLEASE READ THIS AGREEMENT CAREFULLY BEFORE ACCESSING, VIEWING, OR INTERACTING
+WITH THIS REPOSITORY, ITS SOURCE CODE, COMPILED BINARIES, ASSETS, OR DOCUMENTATION.
 
-1. PROPRIETARY OWNERSHIP & RESERVATION OF RIGHTS
-The Software is licensed, not sold. All rights, title, and interest in and to the
-Software, including all copyright, patent, trademark, trade secret, and other
-intellectual property rights therein, remain exclusively with Abhinav Giri. No
-title, ownership, or intellectual property rights in the Software are transferred
-to any licensee, user, or third party.
+BY ACCESSING, VIEWING, CLONING, DOWNLOADING, OR INSPECTING ANY PART OF THIS
+SOFTWARE ("SOFTWARE"), YOU AGREE TO BE UNCONDITIONALLY BOUND BY THE TERMS AND
+CONDITIONS OF THIS PROPRIETARY LICENSE. IF YOU DO NOT AGREE TO THESE TERMS, YOU
+MUST IMMEDIATELY CEASE ALL ACCESS, DELETE ALL LOCAL COPIES, AND REFRAIN FROM ANY
+INTERACTION WITH THIS REPOSITORY.
 
-2. PROHIBITED USES & RESTRICTIONS
-Except as expressly authorized in writing by Abhinav Giri:
-(a) You may NOT copy, reproduce, duplicate, distribute, sell, resell, lease, rent,
-    sublicense, assign, or commercially exploit any portion of the Software or its
-    source code.
-(b) You may NOT reverse engineer, decompile, disassemble, decrypt, unpack, or
-    otherwise attempt to derive the source code, underlying architecture, or
-    internal algorithms of any compiled executable or binary.
-(c) You may NOT modify, translate, adapt, alter, enhance, or create derivative
-    works based upon the Software or any part thereof.
-(d) You may NOT remove, alter, or obscure any copyright notices, proprietary
-    markings, digital signatures, brand attributes, or authorship attributions.
-(e) You may NOT host, publish, mirror, or redistribute the Software or its source
-    code on public repositories, software mirrors, app stores, or third-party
-    hosting services without prior explicit written permission from the Author.
+--------------------------------------------------------------------------------
+1. EXCLUSIVE PROPRIETARY OWNERSHIP & FULL RESERVATION OF RIGHTS
+--------------------------------------------------------------------------------
+The Software, including but not limited to all source code, object code, compiled
+binaries, scripts, algorithms, user interfaces, design systems, visual assets,
+icons, graphics, database schemas, cryptographic routines, documentation, and
+architectural specifications, is the exclusive proprietary intellectual property
+and trade secret of Abhinav Giri ("Author" / "Licensor").
 
-3. PERMITTED END-USER USE
-Subject to these terms, authorized end users are granted a personal, non-exclusive,
-non-transferable, revocable license to install and execute the compiled binary
-version of Giri Orbit solely for lawful personal or organizational productivity
-purposes on their own compatible devices.
+All rights, title, interest, ownership, copyright, patent, trademark, and trade
+secret rights in and to the Software worldwide are strictly and exclusively
+reserved by Abhinav Giri. Nothing in this repository or in any associated
+communication transfers any title, ownership, or intellectual property rights
+to any user, viewer, organization, or third party.
 
-4. NO WARRANTY & LIMITATION OF LIABILITY
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHOR
-OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, LOSS OF DATA, BUSINESS
-INTERRUPTION, OR OTHER LIABILITY ARISING OUT OF OR IN CONNECTION WITH THE USE
-OR PERFORMANCE OF THIS SOFTWARE.
+--------------------------------------------------------------------------------
+2. STRICT PROHIBITION ON MODIFICATIONS AND DERIVATIVE WORKS
+--------------------------------------------------------------------------------
+UNDER NO CIRCUMSTANCES MAY ANY USER, INDIVIDUAL, ENTITY, OR ORGANIZATION:
+(a) MODIFY, alter, edit, patch, adapt, translate, enhance, customize, or reformat
+    any line of source code, script, stylesheet, markup, binary, or asset.
+(b) CREATE DERIVATIVE WORKS, forks, branches, adaptations, or variations based
+    upon this Software or any part, concept, or implementation thereof.
+(c) DECOMPILE, reverse engineer, disassemble, decrypt, extract, or unpack any
+    compiled executable (.exe), dynamic library (.dll), object file (.o), or binary.
+(d) COMBINE, integrate, wrap, bundle, or merge any portion of this Software into
+    any third-party software, library, framework, service, or workflow.
+(e) REMOVE, alter, obscure, or suppress any copyright notice, license header,
+    authorship attribution (Abhinav Giri), watermark, digital signature, or
+    proprietary marking contained within or generated by the Software.
 
-For licensing inquiries, enterprise deployment permissions, or commercial rights:
-Contact: Abhinav Giri (abhinavgiri370@gmail.com)
+ANY UNAUTHORIZED MODIFICATION OR ATTEMPTED MODIFICATION CONSTITUTES WILLFUL
+COPYRIGHT INFRINGEMENT AND A DIRECT VIOLATION OF INTERNATIONAL INTELLECTUAL
+PROPERTY LAWS AND TREATIES.
+
+--------------------------------------------------------------------------------
+3. STRICT PROHIBITION ON UNLICENSED USE, EXECUTION, AND REDISTRIBUTION
+--------------------------------------------------------------------------------
+THIS SOFTWARE IS NOT OPEN SOURCE. THIS SOFTWARE IS NOT FREE SOFTWARE.
+NO PUBLIC OR IMPLIED LICENSE IS GRANTED.
+
+Except as expressly authorized under a separate, formal, written, signed commercial
+license agreement executed directly by Abhinav Giri:
+(a) NO USE: You may NOT execute, run, deploy, test, operate, or use this Software
+    or its source code for any personal, internal, academic, commercial, or
+    non-commercial purpose.
+(b) NO COPYING OR DISTRIBUTION: You may NOT copy, reproduce, duplicate, publish,
+    mirror, host, broadcast, transmit, distribute, sell, resell, lease, rent,
+    sublicense, assign, or share any part of the Software or its source code.
+(c) NO RE-HOSTING: You may NOT host, deploy, or mirror this repository or any of
+    its components on any public or private server, cloud host, package manager,
+    container registry, app store, or software index.
+
+--------------------------------------------------------------------------------
+4. SOURCE-AVAILABLE REFERENCE & VIEW-ONLY ACCESS
+--------------------------------------------------------------------------------
+Any availability of the source code on GitHub, Cloudflare Pages, or other hosting
+infrastructure is provided strictly on a "SOURCE-AVAILABLE, VIEW-ONLY REFERENCE"
+basis solely for transparency, portfolio review, and authorized development by
+Abhinav Giri.
+
+Merely accessing, viewing, starring, or bookmarking this repository DOES NOT
+confer or imply any license, permission, authorization, grant, or covenant not
+to sue. All rights remain solely and exclusively with Abhinav Giri.
+
+--------------------------------------------------------------------------------
+5. CLOSED REPOSITORY — NO EXTERNAL CONTRIBUTIONS
+--------------------------------------------------------------------------------
+This project is closed to outside contributions. Abhinav Giri does not accept
+unsolicited pull requests, patches, forks, or code modifications from third
+parties. Any pull request submitted will be closed without review or integration.
+
+--------------------------------------------------------------------------------
+6. COMMERCIAL LICENSING & ENTERPRISE PERMISSIONS
+--------------------------------------------------------------------------------
+This Software is fully licensable exclusively through formal written agreements
+directly with the Author. Commercial licenses, enterprise deployment permits,
+institutional evaluations, or bespoke licensing terms may be requested by
+contacting:
+
+    Abhinav Giri
+    Sole Author & Rights Holder
+    Email:     abhinavgiri370@gmail.com
+    GitHub:    https://github.com/abhinavgiri45
+    Instagram: @abhinavgiri45
+
+Any commercial license granted shall be in writing, signed by Abhinav Giri, and
+shall strictly govern the specific authorized scope, duration, and user count.
+No verbal agreement or implicit consent shall have any legal effect.
+
+--------------------------------------------------------------------------------
+7. DISCLAIMER OF WARRANTIES & LIMITATION OF LIABILITY
+--------------------------------------------------------------------------------
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, TITLE, ACCURACY, AND NON-INFRINGEMENT.
+
+IN NO EVENT SHALL ABHINAV GIRI BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, PUNITIVE, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF OR INABILITY TO USE THIS SOFTWARE, EVEN IF
+ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+================================================================================
