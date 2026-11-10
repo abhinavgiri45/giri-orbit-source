@@ -1,101 +1,86 @@
 ================================================================================
-STRICT PROPRIETARY COMMERCIAL SOFTWARE LICENSE & ALL RIGHTS RESERVED AGREEMENT
+PROPRIETARY FREEWARE & SOVEREIGN END-USER LICENSE AGREEMENT
+GIRI ORBIT SOVEREIGN PRODUCTIVITY SUITE
 ================================================================================
-PRODUCT: GIRI ORBIT SOVEREIGN PRODUCTIVITY SUITE (NATIVE C++ SOURCE EDITION)
-COPYRIGHT (C) 2025–2026 ABHINAV GIRI. ALL RIGHTS RESERVED.
-AUTHOR & SOLE COPYRIGHT OWNER: ABHINAV GIRI (@abhinavgiri45)
-OFFICIAL CONTACT & LICENSING: abhinavgiri370@gmail.com
+Copyright (c) 2025–2026 Abhinav Giri. All Rights Reserved.
+Author & Sole Copyright Owner: Abhinav Giri (@abhinavgiri45)
+Official Inquiries & Licensing: abhinavgiri370@gmail.com
 ================================================================================
 
-IMPORTANT LEGAL NOTICE — STRICTLY PROPRIETARY, CONFIDENTIAL & LICENSABLE ONLY:
-PLEASE READ THIS AGREEMENT CAREFULLY BEFORE ACCESSING, VIEWING, OR INTERACTING
-WITH THIS REPOSITORY, ITS SOURCE CODE, COMPILED BINARIES, ASSETS, OR DOCUMENTATION.
+IMPORTANT LEGAL NOTICE:
+PLEASE READ THIS LICENSE AGREEMENT CAREFULLY. THIS SOFTWARE IS FREE FOR ANYONE
+TO USE, BUT IT IS STRICTLY PROHIBITED TO MODIFY, ALTER, REBRAND, OR CREATE
+DERIVATIVE WORKS FROM THIS SOFTWARE OR ITS SOURCE CODE.
 
-BY ACCESSING, VIEWING, CLONING, DOWNLOADING, OR INSPECTING ANY PART OF THIS
-SOFTWARE ("SOFTWARE"), YOU AGREE TO BE UNCONDITIONALLY BOUND BY THE TERMS AND
-CONDITIONS OF THIS PROPRIETARY LICENSE. IF YOU DO NOT AGREE TO THESE TERMS, YOU
-MUST IMMEDIATELY CEASE ALL ACCESS, DELETE ALL LOCAL COPIES, AND REFRAIN FROM ANY
-INTERACTION WITH THIS REPOSITORY.
+BY DOWNLOADING, INSTALLING, RUNNING, ACCESSING, OR USING GIRI ORBIT ("SOFTWARE"),
+YOU AGREE TO BE UNCONDITIONALLY BOUND BY THE TERMS OF THIS AGREEMENT.
 
 --------------------------------------------------------------------------------
-1. EXCLUSIVE PROPRIETARY OWNERSHIP & FULL RESERVATION OF RIGHTS
+1. FREE END-USER LICENSE GRANT — ANYONE CAN USE IT
 --------------------------------------------------------------------------------
-The Software, including but not limited to all source code, object code, compiled
-binaries, scripts, algorithms, user interfaces, design systems, visual assets,
-icons, graphics, database schemas, cryptographic routines, documentation, and
-architectural specifications, is the exclusive proprietary intellectual property
-and trade secret of Abhinav Giri ("Author" / "Licensor").
+Abhinav Giri hereby grants to ANY individual, professional, student, business,
+enterprise, institution, or organization anywhere in the world a perpetual,
+worldwide, non-exclusive, royalty-free, revocable license to:
+(a) Install, execute, launch, and USE the Software on any number of personal
+    computers, laptops, mobile devices, tablets, and supported operating systems.
+(b) Create, edit, design, calculate, manage, export, and print any number of
+    documents, spreadsheets, presentations, forms, quizzes, task lists, vector
+    graphics, and PDF documents for ANY lawful personal, academic, educational,
+    professional, commercial, or enterprise purpose.
+(c) Freely retain 100% full sovereign ownership of all data, files, and content
+    created by the user with the Software.
 
-All rights, title, interest, ownership, copyright, patent, trademark, and trade
-secret rights in and to the Software worldwide are strictly and exclusively
-reserved by Abhinav Giri. Nothing in this repository or in any associated
-communication transfers any title, ownership, or intellectual property rights
-to any user, viewer, organization, or third party.
+USE OF THE SOFTWARE IS 100% FREE FOR ALL USERS WORLDWIDE.
 
 --------------------------------------------------------------------------------
-2. STRICT PROHIBITION ON MODIFICATIONS AND DERIVATIVE WORKS
+2. STRICT PROHIBITION ON MODIFICATIONS — NO ONE CAN MAKE CHANGES
 --------------------------------------------------------------------------------
-UNDER NO CIRCUMSTANCES MAY ANY USER, INDIVIDUAL, ENTITY, OR ORGANIZATION:
+THE SOFTWARE AND ITS SOURCE CODE MUST REMAIN EXACTLY AS AUTHORED BY ABHINAV GIRI.
+NO USER, THIRD PARTY, DEVELOPER, OR ORGANIZATION MAY:
 (a) MODIFY, alter, edit, patch, adapt, translate, enhance, customize, or reformat
     any line of source code, script, stylesheet, markup, binary, or asset.
-(b) CREATE DERIVATIVE WORKS, forks, branches, adaptations, or variations based
-    upon this Software or any part, concept, or implementation thereof.
-(c) DECOMPILE, reverse engineer, disassemble, decrypt, extract, or unpack any
-    compiled executable (.exe), dynamic library (.dll), object file (.o), or binary.
-(d) COMBINE, integrate, wrap, bundle, or merge any portion of this Software into
-    any third-party software, library, framework, service, or workflow.
+(b) CREATE DERIVATIVE WORKS, downstream forks, branches, adaptations, or
+    variations based upon this Software or any part thereof.
+(c) REVERSE ENGINEER, decompile, disassemble, decrypt, extract, or unpack any
+    compiled executable (.exe), dynamic library (.dll), or binary file.
+(d) REBRAND, rename, repackage, or distribute the Software or its source code
+    under any other brand, name, entity, or license.
 (e) REMOVE, alter, obscure, or suppress any copyright notice, license header,
-    authorship attribution (Abhinav Giri), watermark, digital signature, or
-    proprietary marking contained within or generated by the Software.
+    digital watermark, or authorship attribution identifying Abhinav Giri as the
+    sole creator and copyright owner.
 
-ANY UNAUTHORIZED MODIFICATION OR ATTEMPTED MODIFICATION CONSTITUTES WILLFUL
-COPYRIGHT INFRINGEMENT AND A DIRECT VIOLATION OF INTERNATIONAL INTELLECTUAL
-PROPERTY LAWS AND TREATIES.
-
---------------------------------------------------------------------------------
-3. STRICT PROHIBITION ON UNLICENSED USE, EXECUTION, AND REDISTRIBUTION
---------------------------------------------------------------------------------
-THIS SOFTWARE IS NOT OPEN SOURCE. THIS SOFTWARE IS NOT FREE SOFTWARE.
-NO PUBLIC OR IMPLIED LICENSE IS GRANTED.
-
-Except as expressly authorized under a separate, formal, written, signed commercial
-license agreement executed directly by Abhinav Giri:
-(a) NO USE: You may NOT execute, run, deploy, test, operate, or use this Software
-    or its source code for any personal, internal, academic, commercial, or
-    non-commercial purpose.
-(b) NO COPYING OR DISTRIBUTION: You may NOT copy, reproduce, duplicate, publish,
-    mirror, host, broadcast, transmit, distribute, sell, resell, lease, rent,
-    sublicense, assign, or share any part of the Software or its source code.
-(c) NO RE-HOSTING: You may NOT host, deploy, or mirror this repository or any of
-    its components on any public or private server, cloud host, package manager,
-    container registry, app store, or software index.
+ANY ATTEMPTED MODIFICATION OR CREATION OF DERIVATIVE WORKS WITHOUT THE PRIOR
+EXPRESS WRITTEN CONSENT OF ABHINAV GIRI IS STRICTLY PROHIBITED AND CONSTITUTES
+AN INFRINGEMENT OF COPYRIGHT AND INTELLECTUAL PROPERTY LAWS.
 
 --------------------------------------------------------------------------------
-4. SOURCE-AVAILABLE REFERENCE & VIEW-ONLY ACCESS
+3. DISTRIBUTION & REDISTRIBUTION
 --------------------------------------------------------------------------------
-Any availability of the source code on GitHub, Cloudflare Pages, or other hosting
-infrastructure is provided strictly on a "SOURCE-AVAILABLE, VIEW-ONLY REFERENCE"
-basis solely for transparency, portfolio review, and authorized development by
-Abhinav Giri.
-
-Merely accessing, viewing, starring, or bookmarking this repository DOES NOT
-confer or imply any license, permission, authorization, grant, or covenant not
-to sue. All rights remain solely and exclusively with Abhinav Giri.
-
---------------------------------------------------------------------------------
-5. CLOSED REPOSITORY — NO EXTERNAL CONTRIBUTIONS
---------------------------------------------------------------------------------
-This project is closed to outside contributions. Abhinav Giri does not accept
-unsolicited pull requests, patches, forks, or code modifications from third
-parties. Any pull request submitted will be closed without review or integration.
+(a) You may share direct links to the official Giri Orbit repository:
+    https://github.com/abhinavgiri45/giri-orbit
+    or the official live production deployment:
+    https://giri-orbit.pages.dev/
+(b) You may NOT upload, mirror, publish, or sell modified or standalone binary
+    packages of the Software on third-party software catalogs, package managers,
+    or app stores without prior written authorization from Abhinav Giri.
+(c) The Software must always be distributed in its complete, unmodified form
+    along with this License and original authorship attributions.
 
 --------------------------------------------------------------------------------
-6. COMMERCIAL LICENSING & ENTERPRISE PERMISSIONS
+4. INTELLECTUAL PROPERTY & OWNERSHIP
 --------------------------------------------------------------------------------
-This Software is fully licensable exclusively through formal written agreements
-directly with the Author. Commercial licenses, enterprise deployment permits,
-institutional evaluations, or bespoke licensing terms may be requested by
-contacting:
+The Software, its visual layouts, design systems, algorithms, source code,
+compiled binaries, and documentation are the exclusive intellectual property
+and trade secret of Abhinav Giri. This agreement grants a license to use the
+Software; it does NOT transfer any title, copyright, or ownership of the
+Software to any user or licensee.
+
+--------------------------------------------------------------------------------
+5. COMMERCIAL LICENSING & INQUIRIES
+--------------------------------------------------------------------------------
+While the Software is freely usable by anyone, enterprise-wide custom deployment
+agreements, OEM bundling, white-label arrangements, or bespoke terms may be
+obtained by contacting:
 
     Abhinav Giri
     Sole Author & Rights Holder
@@ -103,22 +88,13 @@ contacting:
     GitHub:    https://github.com/abhinavgiri45
     Instagram: @abhinavgiri45
 
-Any commercial license granted shall be in writing, signed by Abhinav Giri, and
-shall strictly govern the specific authorized scope, duration, and user count.
-No verbal agreement or implicit consent shall have any legal effect.
-
 --------------------------------------------------------------------------------
-7. DISCLAIMER OF WARRANTIES & LIMITATION OF LIABILITY
+6. DISCLAIMER OF WARRANTIES & LIMITATION OF LIABILITY
 --------------------------------------------------------------------------------
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS
-OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE, TITLE, ACCURACY, AND NON-INFRINGEMENT.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
 
-IN NO EVENT SHALL ABHINAV GIRI BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, PUNITIVE, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-ARISING IN ANY WAY OUT OF THE USE OF OR INABILITY TO USE THIS SOFTWARE, EVEN IF
-ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+IN NO EVENT SHALL ABHINAV GIRI BE LIABLE FOR ANY CLAIM, DAMAGES, LOSS OF DATA,
+OR OTHER LIABILITY ARISING FROM THE USE OF OR INABILITY TO USE THIS SOFTWARE.
 ================================================================================

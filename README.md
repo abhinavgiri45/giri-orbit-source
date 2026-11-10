@@ -1,129 +1,160 @@
-# Giri Orbit PC — Sovereign Desktop Suite (Native C++)
+<p align="center">
+  <img src="assets/giri-logo-symbol.png" alt="Giri Orbit Logo" width="80" height="80" style="border-radius: 16px; margin-bottom: 12px;">
+</p>
 
-> **100% Offline Standalone Desktop Applications Built From Scratch in Native C++**  
-> **Author & Creator:** Abhinav Giri  
-> **GitHub:** [@abhinavgiri45](https://github.com/abhinavgiri45) • **Instagram:** [@abhinavgiri45](https://instagram.com/abhinavgiri45) • **Email:** [abhinavgiri370@gmail.com](mailto:abhinavgiri370@gmail.com)  
-> **Architecture:** Pure Native Win32 C++20 • Zero Browser • Zero Cloud Telemetry • In-Memory Confidential Computing
+<h1 align="center">Giri Orbit — Sovereign Office Productivity Platform</h1>
 
----
+<p align="center">
+  <strong>Next-Generation Sovereign Office Suite Engineered for Absolute Privacy and Enterprise Velocity.</strong><br>
+  By <a href="https://github.com/abhinavgiri45/giri-orbit"><strong>Abhinav Giri</strong></a>
+</p>
 
-## ⚡ Overview
-
-Giri Orbit PC is an independent, sovereign desktop productivity suite crafted in pure native C++ with direct Win32 API integration. Designed for executive speed, maximum privacy, and absolute offline resilience, Giri Orbit eliminates web wrappers, electron bloat, and remote server dependencies.
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                        GIRI ORBIT SOVEREIGN SUITE                      │
-├─────────────────┬──────────────────────┬───────────────────────────────┤
-│   Giri Drift    │      Giri Axis       │         Giri Kinetic          │
-│ Document Studio │   Financial Matrix   │      Widescreen Studio        │
-│ (.giri, .gdrift)│   (.giri, .gaxis)    │      (.giri, .gkinetic)       │
-├─────────────────┴──────────────────────┴───────────────────────────────┤
-│                        Giri Orbit Suite Hub                            │
-│           Unified Launcher & Sovereign Orchestration Engine           │
-└────────────────────────────────────────────────────────────────────────┘
-```
+<p align="center">
+  <a href="https://giri-orbit.pages.dev/"><img src="https://img.shields.io/badge/Production%20Live-giri--orbit.pages.dev-2563eb?style=for-the-badge&logo=cloudflarepages&logoColor=white" alt="Live Demo"></a>
+  <img src="https://img.shields.io/badge/License-Proprietary%20%26%20Restricted-dc2626?style=for-the-badge" alt="Proprietary License">
+  <img src="https://img.shields.io/badge/Architecture-100%25%20Client--Side-16a34a?style=for-the-badge" alt="Client Side Architecture">
+  <img src="https://img.shields.io/badge/PWA-Offline%20Ready-7c3aed?style=for-the-badge" alt="PWA Ready">
+</p>
 
 ---
 
-## 📦 Dedicated Native Applications
+## 🚀 Live Deployment
 
-### 1. ✍️ Giri Drift (`GiriDrift.exe`)
-*Executive Document Composer & Sovereign Word Processor*
-- **Native RichEdit Engine**: In-memory document formatting, bold, italics, underline, strikethrough, alignment, bulleted/numbered lists, color typography.
-- **Real-Time Analytics**: Character counts, live word counts, and line/column cursor positioning.
-- **Sovereign Formats**: Native support for Universal `.giri`, `.gdrift`, Rich Text (`.rtf`), and plain text (`.txt`).
-- **Zero Cloud**: Operates completely in-memory with zero network telemetry.
-
-### 2. 📊 Giri Axis (`GiriAxis.exe`)
-*High-Velocity Financial Matrix & Formula Spreadsheet*
-- **Dynamic 1000x52 Cell Grid**: Fast row/column headers, arrow key & Tab navigation, active emerald border highlighting.
-- **Embedded Formula Parser**: Real-time evaluation of `=SUM(...)`, `=AVERAGE(...)`, `=COUNT(...)`, `=MAX(...)`, `=MIN(...)`, and arithmetic expressions across ranges (e.g. `=SUM(B2:C2)`).
-- **Multi-Sheet Tabs**: Bottom tab control for multi-sheet modeling with dynamic sheet additions.
-- **Sovereign Formats**: Universal `.giri` format, `.gaxis` spreadsheets, and standard `.csv` data exchange.
-
-### 3. 🎬 Giri Kinetic (`GiriKinetic.exe`)
-*Cinematic Widescreen Presentation Studio*
-- **16:9 Widescreen Canvas**: Pixel-perfect presentation rendering with live editable titles, subtitles, and slide notes.
-- **Slide Thumbnails Strip**: Instant slide reordering, creation, duplication, and navigation.
-- **F5 Fullscreen Slide Show**: Hardware-accelerated full-screen presentation mode with keyboard arrow navigation.
-- **Global Templates & Watermarks**: Built-in template themes featuring external motif integration and watermark reference links to [PresentationGo](https://www.presentationgo.com).
-- **Sovereign Formats**: Universal `.giri` and `.gkinetic` slide decks.
-
-### 4. 🌐 Giri Orbit Hub (`GiriOrbit.exe`)
-*Sovereign Workspace Launcher & Orchestrator*
-- Single unified desktop dashboard for launching Drift, Axis, Kinetic, and quick-opening universal sovereign `.giri` files.
-- Non-blocking background GitHub update checker for automatic update notifications when connected online.
-
-### 5. 🛠️ Dedicated Setup Wizard (`Setup.exe`)
-*Native C++ Sovereign Installer*
-- Component Selection: Select individual tools (Drift, Axis, Kinetic, Hub) or click **Select All**.
-- Sovereign End-User License by **Abhinav Giri**.
-- Automated shortcut creation and `.giri` file association.
+The official production environment is actively deployed on Cloudflare Pages:
+👉 **[https://giri-orbit.pages.dev/](https://giri-orbit.pages.dev/)**
 
 ---
 
-## 🔒 The Universal `.giri` Format
+## 🔒 Proprietary Freeware License (FREE TO USE FOR EVERYONE — STRICTLY NO MODIFICATIONS)
 
-The `.giri` file format is an open, sovereign container that universally represents any office document across Drift, Axis, and Kinetic without vendor lock-in:
-
-```
-GIRI_ORBIT_SOVEREIGN_V1
-TOOL:drift | axis | kinetic
-AUTHOR:Abhinav Giri
-ENCODING:UTF-8
-DATA_START
-<Encrypted or Plaintext Document / Matrix / Slide Deck Payload>
-```
-
----
-
-## 🛠️ Building From Source
-
-Prerequisites: MinGW-w64 GCC with C++20 support (`w64devkit` or MSYS2).
-
-```powershell
-# Compile Giri Drift
-windres -i src/drift/resource.rc -o src/drift/resource.o
-g++ -std=c++20 -O2 -mwindows -municode src/drift/main.cpp src/drift/resource.o -o bin/GiriDrift.exe -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lole32
-
-# Compile Giri Axis
-windres -i src/axis/resource.rc -o src/axis/resource.o
-g++ -std=c++20 -O2 -mwindows -municode src/axis/main.cpp src/axis/resource.o -o bin/GiriAxis.exe -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lole32
-
-# Compile Giri Kinetic
-windres -i src/kinetic/resource.rc -o src/kinetic/resource.o
-g++ -std=c++20 -O2 -mwindows -municode src/kinetic/main.cpp src/kinetic/resource.o -o bin/GiriKinetic.exe -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lole32
-
-# Compile Giri Orbit Hub
-windres -i src/hub/resource.rc -o src/hub/resource.o
-g++ -std=c++20 -O2 -mwindows -municode src/hub/main.cpp src/hub/resource.o -o bin/GiriOrbit.exe -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lwininet
-
-# Compile Dedicated Setup Wizard
-windres -i src/installer/resource.rc -o src/installer/resource.o
-g++ -std=c++20 -O2 -mwindows -municode src/installer/main.cpp src/installer/resource.o -o bin/Setup.exe -lcomctl32 -lcomdlg32 -lshell32 -lshlwapi -lgdi32 -lole32 -luuid
-```
-
----
-
-## 🔒 Strict Proprietary License & Commercial Terms (LICENSABLE ONLY — NO MODIFICATIONS PERMITTED)
-
-> ### ⚠️ STRICT PROPRIETARY SOFTWARE NOTICE: ALL RIGHTS RESERVED
+> ### ⚠️ END-USER LICENSE AGREEMENT: ALL RIGHTS RESERVED
 > 
 > **Copyright © 2025–2026 Abhinav Giri (@abhinavgiri45). All Rights Reserved.**
 >
-> This repository and all associated C++ source code, header files, resource definitions, binaries, design systems, algorithms, and architectural specifications are the **exclusive proprietary intellectual property of Abhinav Giri**.
+> 1. **Free for Everyone to Use**: Any person, student, business, or organization worldwide is granted a free license to install, run, and **USE** Giri Orbit on any personal computer or mobile device for any personal, commercial, or enterprise productivity purpose.
+> 2. **Strict Prohibition on Modifications**: **NO ONE may modify, alter, edit, patch, decompile, or create derivative works** from this software or its source code. The software must remain intact as authored by Abhinav Giri.
+> 3. **No Unauthorized Rebranding or Reselling**: You may NOT repackage, rebrand, resell, or distribute modified builds of this software under any other name.
+> 4. **100% Data Sovereignty**: All documents, sheets, and presentations created by users are 100% their own sovereign private property.
 >
-> **Strict Legal Prohibitions:**
-> 1. **No Modifications or Derivative Works**: NO user, organization, or third party is permitted to modify, edit, alter, patch, customize, reverse-engineer, or create derivative works from this source code in any manner whatsoever.
-> 2. **No Unlicensed Use or Compilation**: This software is **NOT open source** and is **NOT free software**. No one may execute, compile, link, deploy, run, test, host, or use this software without an explicit, formal written commercial license executed directly by Abhinav Giri.
-> 3. **No Copying or Redistribution**: You may NOT copy, duplicate, distribute, sell, rent, lease, sublicense, mirror, or publish this software or any part thereof.
-> 4. **Fully Licensable Exclusively via the Author**: Commercial licenses, enterprise deployment permits, and institutional evaluation rights are granted exclusively through formal written agreements directly with Abhinav Giri.
+> 📩 *For enterprise inquiries or specialized deployment arrangements:* **`abhinavgiri370@gmail.com`**
 
-## 👤 Author & Licensing Inquiries
+---
 
-- **Author**: Abhinav Giri
-- **Email**: `abhinavgiri370@gmail.com`
-- **GitHub**: [github.com/abhinavgiri45](https://github.com/abhinavgiri45)
-- **Instagram**: [@abhinavgiri45](https://instagram.com/abhinavgiri45)
-- **License**: Strict Proprietary Commercial Software License (All Rights Reserved — Licensable Only).
+## ✨ The Giri Orbit Suite
+
+Giri Orbit delivers an end-to-end office productivity experience that executes **entirely client-side in the browser** — with sub-millisecond document discovery, zero outbound telemetry leaks, and complete independence from central servers.
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                          GIRI ORBIT PLATFORM                           │
+├───────────────┬────────────────┬───────────────────┬───────────────────┤
+│  Giri Drift   │   Giri Axis    │   Giri Kinetic    │    Giri Aegis     │
+│ (Word Studio) │  (Sheet Calc)  │  (Slide Show UX)  │   (PDF Studio)    │
+└───────────────┴────────────────┴───────────────────┴───────────────────┘
+        │                │                 │                   │
+        └────────────────┴────────┬────────┴───────────────────┘
+                                  │
+         ┌────────────────────────┴────────────────────────┐
+         │  • Universal File Converter (15+ Formats)       │
+         │  • Google Drive Cloud Sync ("Continue with G")  │
+         │  • Girionix Pro AI Contextual Copilot           │
+         │  • Zero-Gravity Physics Recent Docs Matrix      │
+         └─────────────────────────────────────────────────┘
+```
+
+### 1. 📄 Giri Drift — Authentic Multi-Page Word Processor
+- **Physical Sheet Architecture**: Authentic Microsoft Word-style $816\text{px} \times 1056\text{px}$ ($8.5" \times 11"$) pages with authentic margins, subtle elevation shadow, and page separators.
+- **Dynamic Auto-Pagination**: Natural paragraph and word-boundary flow from Page 1 to Page 2, Page 3, and beyond without text cutting off or disappearing.
+- **1-Click Page Management**: Dedicated "+ Add Page" canvas bar, sidebar navigation miniatures, and <kbd>Ctrl</kbd>+<kbd>Enter</kbd> page break shortcuts.
+- **Office Features**: Multi-level headings, Table of Contents generator, Mail Merge with customizable recipients, dynamic watermarking, voice dictation, and print formatting.
+- **Native Formats**: Export and import `.gdrift`, `.docx`, `.odt`, `.rtf`, `.md`, `.txt`, `.html`, `.pdf`, `.epub`.
+
+### 2. 📊 Giri Axis — Intelligent High-Speed Spreadsheet
+- **Formula & Math Engine**: Real-time evaluation of `SUM`, `AVERAGE`, `VLOOKUP`, `IF`, `COUNTIF`, and financial functions.
+- **Data Matrix**: Clean Excel-style formula bar, name box, cell range selections, and live statistical summaries.
+- **Data Import & Export**: Full interoperability with `.xlsx`, `.gaxis`, `.csv`, `.tsv`, `.json`.
+
+### 3. 📽️ Giri Kinetic — Executive Slide Presentation Studio
+- **Fluent Office Ribbon**: Comprehensive Home, Insert, Review, Design, and Transitions ribbon suites.
+- **Visual Diagram Components**: Interactive circular loops, chevron flows, SWOT matrices, pyramid hierarchies, and funnel charts.
+- **Media & Tables**: Built-in 8×8 interactive table picker, live SVG bar/line/pie charts, WordArt generator, equation editor, and date/slide stamps.
+- **Presenter Mode**: Full-screen slide presentation engine with keyboard navigation and slide thumbnail sorter.
+- **Slide Deck Formats**: Supports `.pptx`, `.gkinetic`, `.pdf`, `.html` presentation decks.
+
+### 4. 📑 Giri Aegis — Enterprise PDF Studio
+- **PDF Viewing & Annotations**: Built-in PDF reader with page controls, zoom scaling, and signature stamps.
+- **Security & Redaction**: Client-side document stamping, digital signatures, and privacy redaction.
+- **Export**: Generates `.pdf` and native `.gaegis` containers.
+
+### 5. ☁️ Google Drive Cloud Sync
+- **Standard Google Identity**: Pixel-perfect "Continue with Google" sign-in card.
+- **1-Click Frictionless Connect**: Integrates directly with Google Identity Services (GIS) OAuth or sovereign local session persistence.
+- **Full File Management**: Search, filter, edit, save, and auto-sync documents directly to Google Drive folders from within Orbit.
+
+### 6. ⚡ Girionix Pro AI Copilot
+- Integrated side-drawer assistant powered by **Girionix Pro**.
+- Context-aware tool locking for Drift, Axis, Kinetic, and Aegis.
+- Direct import bridge to paste AI-generated outlines, tables, and slides into your active document with one click.
+
+---
+
+## ⌨️ Universal Keyboard Shortcuts
+
+| Shortcut | Action |
+|:---|:---|
+| <kbd>Ctrl</kbd> + <kbd>K</kbd> / <kbd>Cmd</kbd> + <kbd>K</kbd> | Open Universal Command Palette |
+| <kbd>Ctrl</kbd> + <kbd>J</kbd> / <kbd>Cmd</kbd> + <kbd>J</kbd> | Toggle Girionix Pro AI Copilot |
+| <kbd>Ctrl</kbd> + <kbd>S</kbd> / <kbd>Cmd</kbd> + <kbd>S</kbd> | Force Local Save & Cloud Sync |
+| <kbd>Ctrl</kbd> + <kbd>Enter</kbd> / <kbd>Cmd</kbd> + <kbd>Enter</kbd> | Insert Physical Page (Drift) |
+| <kbd>Ctrl</kbd> + <kbd>P</kbd> / <kbd>Cmd</kbd> + <kbd>P</kbd> | Open Print Studio & Export PDF |
+| <kbd>Ctrl</kbd> + <kbd>Z</kbd> / <kbd>Ctrl</kbd> + <kbd>Y</kbd> | Undo / Redo |
+| <kbd>F5</kbd> | Launch Full-Screen Presentation (Kinetic) |
+| <kbd>Esc</kbd> | Dismiss Any Open Modal or Slide Over |
+
+---
+
+## 🛠️ Technology Stack
+
+- **Core Engine**: Pure native ES6+ JavaScript modules — zero heavy frontend runtime frameworks.
+- **Typography**: Inter, Plus Jakarta Sans, JetBrains Mono, Calibri, and system typography fallbacks.
+- **Storage**: Sovereign browser `localStorage` and `IndexedDB` with zero external dependencies.
+- **PWA Service Worker**: High-concurrency local cache (`sw.js`) ensuring seamless offline capability and instant page loads.
+- **Deployment**: Automated Cloudflare Pages deployment pipeline directly from GitHub `main`.
+
+---
+
+## 📁 Repository Structure
+
+```
+giri-orbit/
+├── index.html                   # Master single-page app shell & AI drawer
+├── manifest.json                # PWA Progressive Web App configuration
+├── sw.js                        # High-concurrency PWA Service Worker (v10.0)
+├── css/
+│   ├── styles.css               # Core styling & Drift multi-sheet layout
+│   ├── hub.css                  # Tool landing hubs & recent documents
+│   ├── sync.css                 # Google Drive modal & "Continue with Google" styles
+│   ├── mobile.css               # Comprehensive mobile & tablet responsiveness
+│   └── fontsAndSelection.css    # Typography and text selection enhancements
+├── js/
+│   ├── app.js                   # Platform orchestrator & view state manager
+│   ├── physics.js               # Zero-gravity floating card physics engine
+│   ├── modules/
+│   │   ├── drift.js             # Giri Drift word processing engine
+│   │   ├── axis.js              # Giri Axis spreadsheet engine
+│   │   ├── kinetic.js           # Giri Kinetic presentation engine
+│   │   ├── pdfStudio.js         # Giri Aegis PDF studio engine
+│   │   └── driveSyncManager.js  # Google Drive 1-click cloud sync manager
+│   └── components/
+│       ├── printManager.js      # Universal high-fidelity print manager
+│       ├── localFileDirectSync.js # File System Access API bridge
+│       └── fontPicker.js        # Universal dynamic font selector
+└── assets/                      # Official Abhinav Giri logos & marks
+```
+
+---
+
+<p align="center">
+  <strong>© 2025–2026 Abhinav Giri. All rights reserved.</strong><br>
+  Proprietary software — unauthorized distribution or copying is strictly prohibited.
+</p>
