@@ -93,8 +93,29 @@ inline bool TryLaunchSovereignAppMode(const wchar_t* toolName, const wchar_t* lp
         else if (ch == L' ') fileUri += L"%20";
         else fileUri += ch;
     }
-    fileUri += L"?desktop=1#";
-    fileUri += (toolName && *toolName) ? toolName : L"hub";
+    std::wstring toolStr = (toolName && *toolName) ? toolName : L"hub";
+    fileUri += L"?desktop=1&tool=" + toolStr;
+
+    // Forward command line / file path if provided (e.g. Explorer file double-click)
+    if (lpCmdLine && *lpCmdLine) {
+        std::wstring rawCmd(lpCmdLine);
+        while (!rawCmd.empty() && (rawCmd.front() == L' ' || rawCmd.front() == L'\"')) rawCmd.erase(0, 1);
+        while (!rawCmd.empty() && (rawCmd.back() == L' ' || rawCmd.back() == L'\"')) rawCmd.pop_back();
+
+        if (!rawCmd.empty()) {
+            std::wstring encodedFile = L"";
+            for (wchar_t ch : rawCmd) {
+                if (ch == L'\\') encodedFile += L'/';
+                else if (ch == L' ') encodedFile += L"%20";
+                else if (ch == L'&') encodedFile += L"%26";
+                else if (ch == L'#') encodedFile += L"%23";
+                else encodedFile += ch;
+            }
+            fileUri += L"&file=" + encodedFile;
+        }
+    }
+
+    fileUri += L"#" + toolStr;
 
     // Prepare unified Sovereign DataVault directory shared by all suite tools
     // This dramatically cuts storage footprint (avoids 9 duplicate Chromium profiles)

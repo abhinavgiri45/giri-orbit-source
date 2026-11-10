@@ -603,17 +603,51 @@ void PerformInstallation(HWND hwnd) {
     }
 
     if (g_registerAssoc) {
-        updateStep(98, L"Registering Giri-Orbit universal file associations (.giri)...");
-        HKEY hKey;
-        if (RegCreateKeyW(HKEY_CURRENT_USER, L"Software\\Classes\\.giri", &hKey) == ERROR_SUCCESS) {
-            RegSetValueExW(hKey, NULL, 0, REG_SZ, (const BYTE*)L"GiriOrbit.Document", sizeof(L"GiriOrbit.Document"));
-            RegCloseKey(hKey);
+        updateStep(98, L"Registering Giri-Orbit dedicated file associations (.giri, .gdrift, .gaxis, .gkinetic, .gform, .gdesign, .glist, .gquiz)...");
+        struct FileAssoc {
+            const wchar_t* ext;
+            const wchar_t* progId;
+            const wchar_t* desc;
+            const wchar_t* exeName;
+            const wchar_t* iconName;
+        };
+        FileAssoc assocs[] = {
+            { L".giri", L"GiriOrbit.Document", L"Giri-Orbit Universal Suite Document", L"GiriOrbit.exe", L"orbit.ico" },
+            { L".gdrift", L"GiriOrbit.Drift", L"Giri-Orbit Drift Document", L"GiriDrift.exe", L"drift.ico" },
+            { L".gaxis", L"GiriOrbit.Axis", L"Giri-Orbit Axis Financial Matrix", L"GiriAxis.exe", L"axis.ico" },
+            { L".gkinetic", L"GiriOrbit.Kinetic", L"Giri-Orbit Kinetic Presentation Deck", L"GiriKinetic.exe", L"kinetic.ico" },
+            { L".gform", L"GiriOrbit.Forms", L"Giri-Orbit Forms Survey Matrix", L"GiriForms.exe", L"forms.ico" },
+            { L".gdesign", L"GiriOrbit.Designer", L"Giri-Orbit Designer Vector Canvas", L"GiriDesigner.exe", L"designer.ico" },
+            { L".glist", L"GiriOrbit.Lists", L"Giri-Orbit Lists Agile Matrix", L"GiriLists.exe", L"lists.ico" },
+            { L".gquiz", L"GiriOrbit.Quiz", L"Giri-Orbit Quiz Certification Matrix", L"GiriQuiz.exe", L"quiz.ico" }
+        };
+
+        for (const auto& a : assocs) {
+            HKEY hKey;
+            std::wstring extKey = std::wstring(L"Software\\Classes\\") + a.ext;
+            if (RegCreateKeyW(HKEY_CURRENT_USER, extKey.c_str(), &hKey) == ERROR_SUCCESS) {
+                RegSetValueExW(hKey, NULL, 0, REG_SZ, (const BYTE*)a.progId, (DWORD)((wcslen(a.progId) + 1) * sizeof(wchar_t)));
+                RegCloseKey(hKey);
+            }
+            std::wstring progKey = std::wstring(L"Software\\Classes\\") + a.progId;
+            if (RegCreateKeyW(HKEY_CURRENT_USER, progKey.c_str(), &hKey) == ERROR_SUCCESS) {
+                RegSetValueExW(hKey, NULL, 0, REG_SZ, (const BYTE*)a.desc, (DWORD)((wcslen(a.desc) + 1) * sizeof(wchar_t)));
+                RegCloseKey(hKey);
+            }
+            std::wstring iconKey = progKey + L"\\DefaultIcon";
+            if (RegCreateKeyW(HKEY_CURRENT_USER, iconKey.c_str(), &hKey) == ERROR_SUCCESS) {
+                std::wstring iconPath = g_installDir + L"\\" + a.iconName;
+                RegSetValueExW(hKey, NULL, 0, REG_SZ, (const BYTE*)iconPath.c_str(), (DWORD)((iconPath.length() + 1) * sizeof(wchar_t)));
+                RegCloseKey(hKey);
+            }
+            std::wstring cmdKey = progKey + L"\\shell\\open\\command";
+            if (RegCreateKeyW(HKEY_CURRENT_USER, cmdKey.c_str(), &hKey) == ERROR_SUCCESS) {
+                std::wstring cmd = L"\"" + g_installDir + L"\\" + a.exeName + L"\" \"%1\"";
+                RegSetValueExW(hKey, NULL, 0, REG_SZ, (const BYTE*)cmd.c_str(), (DWORD)((cmd.length() + 1) * sizeof(wchar_t)));
+                RegCloseKey(hKey);
+            }
         }
-        if (RegCreateKeyW(HKEY_CURRENT_USER, L"Software\\Classes\\GiriOrbit.Document\\shell\\open\\command", &hKey) == ERROR_SUCCESS) {
-            std::wstring cmd = L"\"" + g_installDir + L"\\GiriOrbit.exe\" \"%1\"";
-            RegSetValueExW(hKey, NULL, 0, REG_SZ, (const BYTE*)cmd.c_str(), (DWORD)((cmd.length() + 1) * sizeof(wchar_t)));
-            RegCloseKey(hKey);
-        }
+        SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
     }
 
     updateStep(100, L"Giri-Orbit installation completed successfully!");
