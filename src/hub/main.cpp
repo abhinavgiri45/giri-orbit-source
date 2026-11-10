@@ -110,7 +110,7 @@ void AddRoundedRect(GraphicsPath& path, RectF rect, float radius) {
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
-    // Launch Sovereign Edge App Mode for 100% web, LibreOffice & MS Office parity
+    // Launch Sovereign Edge App Mode for 100% Giri Orbit web & desktop parity
     if (GiriOrbit::TryLaunchSovereignAppMode(L"hub", lpCmdLine)) {
         return 0;
     }

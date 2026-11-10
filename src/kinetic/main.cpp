@@ -509,7 +509,7 @@ void LoadKineticTemplate(HWND hwnd, int idx) {
 
         Slide s3;
         s3.title = L"The Solution: 100% Sovereign Offline Suite";
-        s3.subtitle = L"True Microsoft Word, Excel & PowerPoint Parity in Native C++";
+        s3.subtitle = L"True Sovereign Productivity in Native C++ — Giri Orbit Suite";
         s3.body = L"• Instant cold-boot startup in under 60 milliseconds\n• 9 standalone native executables compiled with zero dependencies\n• Full Authenticode cryptographic signing and offline verification\n• Universal format compatibility across all enterprise workflows";
         s3.layout = LAYOUT_TITLE_CONTENT;
         s3.bgColor = RGB(255, 255, 255);
@@ -556,7 +556,7 @@ void LoadKineticTemplate(HWND hwnd, int idx) {
 // Entry Point
 // -------------------------------------------------------------
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
-    // Launch Sovereign Edge App Mode for 100% web, LibreOffice & MS Office parity
+    // Launch Sovereign Edge App Mode for 100% Giri Orbit web & desktop parity
     if (GiriOrbit::TryLaunchSovereignAppMode(L"kinetic", lpCmdLine)) {
         return 0;
     }
@@ -2293,7 +2293,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case ID_HELP_ABOUT:
             MessageBoxW(hwnd,
                 L"Giri Kinetic — Cinematic Widescreen Presentation Studio\n"
-                L"PowerPoint / LibreOffice Impress Architecture\n\n"
+                L"Giri Orbit Kinetic Presentation Architecture\n\n"
                 L"Made by Abhinav Giri (@abhinavgiri45)\n"
                 L"100% Offline Standalone Native C++ Desktop Application\n"
                 L"Part of Giri Orbit Sovereign Suite\n\n"

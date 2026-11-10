@@ -14,7 +14,7 @@ OPTION 1 (RECOMMENDED - 1 CLICK):
 
 OPTION 2 (MANUAL LAUNCH):
   If you run the .exe directly and Windows shows:
-  "Windows protected your PC / Microsoft Defender SmartScreen"
+  "Windows protected your PC / Windows Defender SmartScreen"
   
   Simply:
   1. Click "More info"

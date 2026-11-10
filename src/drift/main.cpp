@@ -4,7 +4,7 @@
  * Official Contact: abhinavgiri370@gmail.com
  * Proprietary Commercial Software License (All Rights Reserved)
  * 100% Offline Standalone Native C++ Win32 & GDI+ Office Ribbon Desktop Suite
- * True Microsoft Word & LibreOffice Writer Architecture & Feature Completeness
+ * Giri Orbit Drift Architecture & Feature Completeness
  * ============================================================================
  */
 
@@ -926,7 +926,7 @@ void StyleRibbonBtn(HWND btn, bool isPrimary) {
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
-    // Launch Sovereign Edge App Mode for 100% web, LibreOffice & MS Office parity
+    // Launch Sovereign Edge App Mode for 100% Giri Orbit web & desktop parity
     if (GiriOrbit::TryLaunchSovereignAppMode(L"drift", lpCmdLine)) {
         return 0;
     }
@@ -1032,7 +1032,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
         L"Made by Abhinav Giri (github.com/abhinavgiri45 | abhinavgiri370@gmail.com)\n\n"
         L"Sovereign Desktop Architecture:\n"
         L" • 100% Offline Standalone Native C++ Desktop Application\n"
-        L" • Complete Microsoft Word & LibreOffice Writer Ribbon Architecture\n"
+        L" • Complete Giri Orbit Drift Sovereign Ribbon Architecture\n"
         L" • Full Typography Toolbar, Heading Styles, Line Spacing & Alignments\n"
         L" • Formatted Table Generator, Image Import, Special Symbols & Word Count\n"
         L" • Dynamic Google Hindi Devanagari & 105 Language Packs\n"

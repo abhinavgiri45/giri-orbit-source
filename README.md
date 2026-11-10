@@ -63,7 +63,7 @@ Giri Orbit delivers an end-to-end office productivity experience that executes *
 ```
 
 ### 1. 📄 Giri Drift — Authentic Multi-Page Word Processor
-- **Physical Sheet Architecture**: Authentic Microsoft Word-style $816\text{px} \times 1056\text{px}$ ($8.5" \times 11"$) pages with authentic margins, subtle elevation shadow, and page separators.
+- **Physical Sheet Architecture**: Authentic Giri Orbit Drift Sovereign Canvas $816\text{px} \times 1056\text{px}$ ($8.5" \times 11"$) pages with authentic margins, subtle elevation shadow, and page separators.
 - **Dynamic Auto-Pagination**: Natural paragraph and word-boundary flow from Page 1 to Page 2, Page 3, and beyond without text cutting off or disappearing.
 - **1-Click Page Management**: Dedicated "+ Add Page" canvas bar, sidebar navigation miniatures, and <kbd>Ctrl</kbd>+<kbd>Enter</kbd> page break shortcuts.
 - **Office Features**: Multi-level headings, Table of Contents generator, Mail Merge with customizable recipients, dynamic watermarking, voice dictation, and print formatting.

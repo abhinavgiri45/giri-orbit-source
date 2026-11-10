@@ -12,7 +12,7 @@
 
 namespace GiriOrbit {
 
-// 1. Locate Microsoft Edge or WebView2 runtime executable
+// 1. Locate system Edge or WebView2 runtime executable
 inline std::wstring GetEdgeExecutablePath() {
     const wchar_t* candidatePaths[] = {
         L"C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",

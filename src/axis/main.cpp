@@ -662,7 +662,7 @@ void DoFileSave(HWND, bool);
 void DoExportCSV(HWND);
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
-    // Launch Sovereign Edge App Mode for 100% web, LibreOffice & MS Office parity
+    // Launch Sovereign Edge App Mode for 100% Giri Orbit web & desktop parity
     if (GiriOrbit::TryLaunchSovereignAppMode(L"axis", lpCmdLine)) {
         return 0;
     }

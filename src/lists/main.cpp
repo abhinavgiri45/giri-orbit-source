@@ -94,7 +94,7 @@ void AddRoundedRect(GraphicsPath& path, RectF rect, float radius) {
 void InitDefaultTasks() {
     g_tasks.clear();
     g_tasks.push_back({ 101, L"Optimize Win32 C++ Desktop Double-Buffering", STATUS_DONE, PRIORITY_CRITICAL, L"Abhinav Giri", L"Nov 07", 100 });
-    g_tasks.push_back({ 102, L"Design MS Office Ribbon Tabs across Drift & Axis", STATUS_IN_PROGRESS, PRIORITY_HIGH, L"UI Core Team", L"Nov 08", 75 });
+    g_tasks.push_back({ 102, L"Design Giri Orbit Ribbon Tabs across Drift & Axis", STATUS_IN_PROGRESS, PRIORITY_HIGH, L"UI Core Team", L"Nov 08", 75 });
     g_tasks.push_back({ 103, L"Implement Dedicated Standalone Forms & Quiz Engines", STATUS_IN_PROGRESS, PRIORITY_HIGH, L"Engineers", L"Nov 09", 80 });
     g_tasks.push_back({ 104, L"Verify Zero Fake Files & Honest Storage Metrics", STATUS_DONE, PRIORITY_CRITICAL, L"Security QA", L"Nov 07", 100 });
     g_tasks.push_back({ 105, L"Add Widescreen 1920x1080 Graphic Presets to Designer", STATUS_REVIEW, PRIORITY_MED, L"Creative Studio", L"Nov 10", 90 });
@@ -688,7 +688,7 @@ void CreateListsToolbar(HWND hwnd) {
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
-    // Launch Sovereign Edge App Mode for 100% web, LibreOffice & MS Office parity
+    // Launch Sovereign Edge App Mode for 100% Giri Orbit web & desktop parity
     if (GiriOrbit::TryLaunchSovereignAppMode(L"lists", lpCmdLine)) {
         return 0;
     }
