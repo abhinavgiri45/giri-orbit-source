@@ -96,10 +96,12 @@ inline bool TryLaunchSovereignAppMode(const wchar_t* toolName, const wchar_t* lp
     fileUri += L"?desktop=1#";
     fileUri += (toolName && *toolName) ? toolName : L"hub";
 
-    // Prepare isolated DataVault profile directory
+    // Prepare unified Sovereign DataVault directory shared by all suite tools
+    // This dramatically cuts storage footprint (avoids 9 duplicate Chromium profiles)
+    // and seamlessly unifies localStorage, IndexedDB, and document caches across all tools!
     wchar_t localApp[MAX_PATH] = { 0 };
     SHGetFolderPathW(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, localApp);
-    std::wstring dataVault = std::wstring(localApp) + L"\\Programs\\Giri Orbit\\DataVault\\" + ((toolName && *toolName) ? toolName : L"hub");
+    std::wstring dataVault = std::wstring(localApp) + L"\\Programs\\Giri Orbit\\DataVault\\Shared";
     SHCreateDirectoryExW(NULL, dataVault.c_str(), NULL);
 
     // Construct full command line

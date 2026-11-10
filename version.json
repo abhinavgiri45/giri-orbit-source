@@ -1,5 +1,5 @@
 {
-  "version": "11.8.5",
+  "version": "14.6.0",
   "author": "Abhinav Giri",
   "github": "https://github.com/abhinavgiri45/giri-orbit",
   "instagram": "https://instagram.com/abhinavgiri45",
@@ -12,20 +12,34 @@
       "name": "Giri Drift",
       "type": "Executive Document Composer",
       "executable": "GiriDrift.exe",
-      "formats": [".giri", ".gdrift", ".rtf", ".txt"]
+      "formats": [
+        ".giri",
+        ".gdrift",
+        ".rtf",
+        ".txt"
+      ]
     },
     "axis": {
       "name": "Giri Axis",
       "type": "High-Velocity Financial Matrix & Spreadsheets",
       "executable": "GiriAxis.exe",
-      "formats": [".giri", ".gaxis", ".csv"]
+      "formats": [
+        ".giri",
+        ".gaxis",
+        ".csv"
+      ]
     },
     "kinetic": {
       "name": "Giri Kinetic",
       "type": "Cinematic Widescreen Presentation Studio",
       "executable": "GiriKinetic.exe",
-      "formats": [".giri", ".gkinetic"],
-      "partners": ["https://www.presentationgo.com"]
+      "formats": [
+        ".giri",
+        ".gkinetic"
+      ],
+      "partners": [
+        "https://www.presentationgo.com"
+      ]
     },
     "hub": {
       "name": "Giri Orbit Hub",
@@ -36,6 +50,52 @@
       "name": "Giri Orbit Dedicated Setup Wizard",
       "type": "Native Standalone Setup Wizard",
       "executable": "Setup.exe"
+    },
+    "forms": {
+      "name": "Giri Forms",
+      "type": "Executive Survey Studio & Data Matrix",
+      "executable": "GiriForms.exe",
+      "formats": [
+        ".gform",
+        ".json",
+        ".csv"
+      ]
+    },
+    "quiz": {
+      "name": "Giri Quiz",
+      "type": "Assessment & Certification Engine",
+      "executable": "GiriQuiz.exe",
+      "formats": [
+        ".gquiz",
+        ".json"
+      ]
+    },
+    "lists": {
+      "name": "Giri Lists",
+      "type": "Agile Matrix & Kanban Board",
+      "executable": "GiriLists.exe",
+      "formats": [
+        ".glist",
+        ".csv",
+        ".json"
+      ]
+    },
+    "designer": {
+      "name": "Giri Designer",
+      "type": "Creative Graphic & Vector Canvas",
+      "executable": "GiriDesigner.exe",
+      "formats": [
+        ".gdesign",
+        ".svg",
+        ".png"
+      ]
+    },
+    "storageOptimizer": {
+      "name": "Storage Optimizer & Web Bridge",
+      "type": "Hybrid Thin-Client Stream & Storage Reducer",
+      "formats": [
+        ".json"
+      ]
     }
   }
 }
